@@ -188,20 +188,20 @@ public:
 		
 		...
 		// Render your scene to a framebuffer (m_myFramebuffer)
+		// You still have to implement your own forward or gbuffer here
 		//bgfx::submit(0, m_myProgram)
 		
 		...
 		// Apply Post Processing using the filters!
 		mLumFilter.submit (bgfx::getTexture(m_myFramebuffer, 0));
 		mBloomFilter.submit (mLumFilter.getOutputTexture(), bgfx::getTexture(m_myFramebuffer, 0)); // Get the output of a filter as a texture that you can use in another filter!
-		mTonemappingFilter.
-		mTonemappingFilter.submit ();
+		mBgfxhTonemappingFilter.setExtraComponent (0, mBgfxhBloomFilter.getOutputTexture(), 1.0f, 0.f); // Configure the tonemapping filter to additively blend the bloom
+		mTonemappingFilter.submit (bgfx::getTexture(m_myFramebuffer, 0), mLumFilter.getOutputTexture()); // Does the tonemapping. Renders to backbuffer by default
 		
 		// Debug render the lum filter's output to see if it is calculating sensible lum values
 		const int OUTPUT_PASS_ID = 200;
 		bgfxh::initView2D (VIEW_ID_OUTPUT_PASS, "output pass", backbufferWidth, backbufferHeight, BGFX_INVALID_HANDLE, false, false);
 		bgfxh::debugDrawFramebuffer (VIEW_ID_OUTPUT_PASS, mLumFilter.getOutputFramebuffer(), 10, 10, 120, 120, backbufferWidth, backbufferHeight);
-		
 		}
 		
 		
