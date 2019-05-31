@@ -4,38 +4,38 @@ An extension library for [bgfx](https://github.com/bkaradzic/bgfx) to help you h
 
 Like bgfx, this is rendering library. Its not a game engine and does not aim to be. Rather it simply gives you the pieces to rapidly assemble a graphics pipeline in a cross platform, api agnostic manner. Bgfxh aims to bridge the gap between using a potentially large or bloated generalist graphics library or game engine for simple rendering jobs, and reinventing the wheel by creating an engine from scratch. By thinly relying on bgfx maintenance requirements are kept low. 
 
-Features:
-	* Header only library, inspired by [stb](https://github.com/nothings/stb), requires no changes to your build system. Simply use #define BGFXH_IMPL before #include to generate an implementation
-	* Only pay for what you use. Don't want texture loading? Then don't `#include <bgfxh/loadTexture.h>`
-	* SDL Window management with `initSdlWindow()`
-	* Texture Loading with `loadTexture()` - supports what [bimg](https://github.com/bkaradzic/bimg) supports (most of this is extracted from the bgfx examples and repackaged to be used here)
-	* Shader Loading with `loadShader()`
-	* Inspect textures/framebuffers with `debugDrawFramebuffer()` and `debugDrawFramebufferMono()` for monochromatic framebuffers (such as depth buffers). 
-	* Frustum culling utility
-	* A variety of rendering filters
-	* Thin layer ontop of bgfxh. Rather than hiding the underlying framework under a complex layer of abstraction, bgfxh just provides free functions that do some job. Filters are c++ classes, are optional
-	* Few dependencies - only on bgfx/bimg/bx and some standard c/c++ libraries (string, fstream and cstdio. string is optional and can be set to something else with the BGFXH_STRING macro, fstream is used in one place as is cstdio). Custom allocator friendly - no new/delete used.
-	* Permissive license
+## Features:
+* Header only library, inspired by [stb](https://github.com/nothings/stb), requires no changes to your build system. Simply use #define BGFXH_IMPL before #include to generate an implementation
+* Only pay for what you use. Don't want texture loading? Then don't `#include <bgfxh/loadTexture.h>`
+* SDL Window management with `initSdlWindow()`
+* Texture Loading with `loadTexture()` - supports what [bimg](https://github.com/bkaradzic/bimg) supports (most of this is extracted from the bgfx examples and repackaged to be used here)
+* Shader Loading with `loadShader()`
+* Inspect textures/framebuffers with `debugDrawFramebuffer()` and `debugDrawFramebufferMono()` for monochromatic framebuffers (such as depth buffers). 
+* Frustum culling utility
+* A variety of rendering filters
+* Thin layer ontop of bgfxh. Rather than hiding the underlying framework under a complex layer of abstraction, bgfxh just provides free functions that do some job. Filters are c++ classes, are optional
+* Few dependencies - only on bgfx/bimg/bx and some standard c/c++ libraries (string, fstream and cstdio. string is optional and can be set to something else with the BGFXH_STRING macro, fstream is used in one place as is cstdio). Custom allocator friendly - no new/delete used.
+* Permissive license
 
-##Filters:
+## Filters:
 Filters are basically C++ objects that wrap bgfx commands and resources do some graphical task. To use, simply:
-	* Include the relevant file (eg `#include <bgfxh/bloomFilter.h>`)
-	* Create an object `bgfxh::bloomFilter mBloomFilter;`
-	* Choose your settings for the filter, then call `mBloomFilter.init();` - this generates the uniforms, samplers and framebuffers for the filter and loads the relevant shaders
-	* In your rendering loop, call `mBloomFilter.submit(framebufferToBloom);` - this will set up the views
-	* On object destruction all resources created will be freed.
-	
+* Include the relevant file (eg `#include <bgfxh/bloomFilter.h>`)
+* Create an object `bgfxh::bloomFilter mBloomFilter;`
+* Choose your settings for the filter, then call `mBloomFilter.init();` - this generates the uniforms, samplers and framebuffers for the filter and loads the relevant shaders
+* In your rendering loop, call `mBloomFilter.submit(framebufferToBloom);` - this will set up the views
+* On object destruction all resources created will be freed.
+
 Shaders ''can'' be embedded in the filters. Use `#define BGFXH_EMBED_FILTER_SHADERS` to embed at compile time.
 
 Each filter has detailed use instructions in the top of their respective header file.
 
 Availiable Filters:
-	* `cascadingShadowMapFilter.h` - Cascading shadowmap generation (both regular and VSM, with frustum checking)
-	* `bloomFilter.h` - Bloom with a fixed gaussian kernal. Uses bilinear filtering for efficiency
-	* `lumFilter.h` - Time averaged luminance calculation
-	* `tonemappingFilter.h` - ACES Filmic Tonemapping + can combine the outputs of other filters
+* `cascadingShadowMapFilter.h` - Cascading shadowmap generation (both regular and VSM, with frustum checking)
+* `bloomFilter.h` - Bloom with a fixed gaussian kernal. Uses bilinear filtering for efficiency
+* `lumFilter.h` - Time averaged luminance calculation
+* `tonemappingFilter.h` - ACES Filmic Tonemapping + can combine the outputs of other filters
 
-##Shaders:
+## Shaders:
 Simply copy the filters you want and merge the folders together. So to add bloom and luminance shaders to your application copy the contents of `bgfxh/shaders/bloomFilter/` and `bgfx/shaders/lumFilter/` to `yourApp/<yourShaderPath>/`, and set `bgfxh::shaderSearchPath` to `"<yourShaderPath>/" + bgfxh::getShaderDirectoryFromRenderType() + "/"` to point the shader loader to the right shaders. For OpenGl this will be `"<yourShaderPath>/glsl/"`, for dx11 this will be `"<yourShaderPath>/dx11/"`, for Vulkan this will be `"<yourShaderPath>/spriv/"`
 
 Note that `bgfxh::shaderSearchPath` only effects the location of shaders loaded for bgfxh filters! Eg bgfxh::bloomFilter will load `bloom_brightpass` by invoking `bgfxh::loadShader(bgfxh::shaderSearchPath + "vs_bloom_brightpass.bin", bgfxh::shaderSearchPath + "fs_bloom_brightpass.bin")`
