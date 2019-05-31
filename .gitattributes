@@ -1,0 +1,6 @@
+tools/lua52 filter=lfs diff=lfs merge=lfs -text
+tools/lua52.exe filter=lfs diff=lfs merge=lfs -text
+tools/lzz filter=lfs diff=lfs merge=lfs -text
+tools/lzz.exe filter=lfs diff=lfs merge=lfs -text
+tools/shadercRelease filter=lfs diff=lfs merge=lfs -text
+tools/shadercRelease.exe filter=lfs diff=lfs merge=lfs -text

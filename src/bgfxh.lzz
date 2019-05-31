@@ -1,0 +1,603 @@
+#hdr
+
+///////////////////////////////////////////////////////////////////////
+// bgfxh header
+// 
+// How to use:
+// 0. Include! Use #include <bgfxh/bgfxh.h>. Be sure to use #define BGFXH_IMPL *once* to generate an implementation somewhere!
+// 1. Call bgfxh::init(width, height, shaderSearchPath) after creating a bgfx context in a window. You may use bgfxh::initSdlWindow() before bgfxh::init().
+//
+// Notes on shaderSearchPath - this is the path to where the binary bgfxh shaders are located at runtime. You must
+// set this path depending on the renderer type:
+// 		bgfx::RendererType::Enum type = bgfx::getRendererType();
+// 		if (type == bgfx::RendererType::OpenGl) shaderPath = path_to_shaders + "/glsl/";
+// 		if (type == bgfx::RendererType::Dx9) shaderPath = path_to_shaders + "/dx9/";
+// 		...etc
+// You can use bgfxh::getShaderDirectoryFromRenderType() to get this automatically:
+// 		shaderPath = path__to_shaders + "/" + bgfxh::getShaderDirectoryFromRenderType() + "/"; // Result: path_to_shaders/glsl/ if running OpenGl
+//
+// Note on embedding shaders: you can define the macro BGFXH_EMBED_FILTER_SHADERS to embed filter shaders at compile time. I don't recommend this
+// as its better to distribute the shader source + build scripts and load them at run time, so that you don't need to recompile your program
+// every time you modify a shader, and so then users can modify shaders if they choose to. If you choose to embed shaders then the
+// header "bgfxh_embedded_shader.h" must be present as well as the path to all shaders (eg, bgfxh/shaders/lum_filter/c/vs_lum.bin.h) at compile.
+//
+// The debug shaders (bgfxh/shaders/textured_passthrough) will be embedded by default, disable this with #define BGFXH_DONT_EMBED_DEBUG_SHADERS
+//
+// Note on distributing shaders: you can copy the shaders into the same directoy
+// Eg: shaders/bloom_filter/* and shaders/lum_filter/* can be merged into the same directory and shipped with your app
+// eg (after merging): 
+//		your_app.exe
+//		shaders/glsl/vs_bloom_filter.bin
+//		shaders/glsl/fs_bloom_filter.bin
+//		shaders/glsl/vs_lum_filter.bin
+//		shaders/glsl/fs_lum_filter.bin
+//		shaders/dx11/vs_bloom_filter.bin
+//		shaders/dx11/fs_bloom_filter.bin
+//		shaders/dx11/vs_lum_filter.bin
+//		shaders/dx11/fs_lum_filter.bin
+//		...etc
+//	And set shaderSearchPath to "shaders" + "/" + bgfxh::getShaderDirectoryFromRenderType() + "/";
+//
+// Note on compiling shaders:
+// You'll need shaderc (provided by bgfx, also in the tools folder for linux/windows) and lua (lua52 is also provided in the tools folder for linux/windows)
+// (to run lua52.exe on windows you will need the .dll too!)
+// Run compile_shaders.lua (read it for instructions/options)
+// By default this builds glsl (for desktop OpenGl), dx9, dx11, metal and spriv (Vulkan) shaders. It'll also make embedable c headers for the shaders
+// You must be on a windows maching to build dx9 and dx11 shaders! You can pass the "-d" option to compile_shaders.lua (or build_xxxx.lua) to just build OpenGl shaders
+// for debugging if you are developing on a non-windows machine, and then compile the dx9/dx11 shaders when you want to test/distribute on windows
+// If you want a different target (such as Anrdoid, PS4, Google NaCL), you'll have to edit compile_shaders
+// Alternatively run /shaders/<shader_to_compile>/build_<shader_to_compile>.lua - this will invoke compile_shaders.lua (with args) for shaders in that folder
+//
+// Note on file paths:
+// bgfxh internally uses posix paths "foward/slashes/for/directories". There is a helper function bgfxh::fixPath that'll automatically
+// convert any forward-slash-paths to backslash-paths on windows (#ifdef __WIN32), or backslash-paths to forward-slash-paths (other)
+//
+// Notes on editing the source:
+// This header was generated automatically from src/bgfxh.lzz using a program called lzz (lazy c++ - https://www.lazycplusplus.com/).
+// Edit that instead of this, and use the makefile to build. lzz is included in tools/
+//
+// Resources: This will create 1 sampler (s_texColor) and load 2 shaders (m_programTexturePassthrough, m_programTexturePassthroughMonochromatic)
+// These are for inspecting textures/framebuffers with debugDrawTexture/debugDrawTextureMono/debugDrawFramebuffer/debugDrawFramebufferMono
+// 
+
+#ifndef BGFXH_STRING
+	// If you are someone who hates std::strings (or are using something like tinystl::string), set BGFXH_STRING to that type
+	#define BGFXH_STRING std::string
+	#include <string>
+#endif
+
+#define BGFXH_UV_CLAMP       BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP
+#define BGFXH_RT_UV_CLAMP    BGFX_TEXTURE_RT | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP
+
+#ifndef BGFXH_DONT_EMBED_DEBUG_SHADERS
+	#define BGFXH_EMBED_DEBUG_SHADERS
+#endif // BGFXH_DONT_EMBED_DEBUG_SHADERS
+//#define BGFXH_EMBED_FILTER_SHADERS
+
+#include <bgfx/bgfx.h>
+
+#end
+
+
+// Defines
+// BGFXH_STRING
+// BGFXH_IMPL
+// BGFXH_GOOGLE_NACL
+// BGFXH_EMBED_DEBUG_SHADERS
+
+#src
+#include <fstream> // Todo - make fstream dependency optional
+
+#ifdef BGFXH_EMBED_DEBUG_SHADERS
+	#include "bgfxh_embedded_shader.h"
+#endif //BGFXH_EMBED_DEBUG_SHADERS
+
+#end
+
+// bgfxh.hpp
+namespace bgfxh {
+	static const unsigned int SAMPLER_COLOR = 0;
+	static const unsigned int SAMPLER_LUM   = 1;
+	static const unsigned int SAMPLER_TONEMAPING_EXTRA0   = 2;
+	static const unsigned int SAMPLER_TONEMAPING_EXTRA1   = 3;
+	static const unsigned int SAMPLER_TONEMAPING_EXTRA2   = 4;
+	static const unsigned int SAMPLER_TONEMAPING_EXTRA3   = 5;
+	
+	
+	
+	// User parameters
+	unsigned int screenWidth = 0;
+	unsigned int screenHeight = 0;	
+	BGFXH_STRING shaderSearchPath = "";
+	
+	// For debug drawing
+	bgfx::UniformHandle s_texColor = BGFX_INVALID_HANDLE;
+	bgfx::ProgramHandle m_programTexturePassthrough = BGFX_INVALID_HANDLE;
+	bgfx::ProgramHandle m_programTexturePassthroughMonochromatic = BGFX_INVALID_HANDLE;
+	
+	// bx allocator. If you are using your own set this to it
+	bx::AllocatorI * m_allocator = NULL;
+	
+	/// Returns a directory name for this render type
+	/// For example: will return "glsl" if using an OpenGl render
+	/// This directory name will match the directories in the /shaders/ folder
+	BGFXH_STRING getShaderDirectoryFromRenderType () {
+		bgfx::RendererType::Enum type = bgfx::getRendererType();
+			
+		switch (type) {
+			case bgfx::RendererType::Noop:
+			case bgfx::RendererType::Direct3D9:  return "dx9";   break;
+			case bgfx::RendererType::Direct3D11:
+			case bgfx::RendererType::Direct3D12: return "dx11";  break;
+			case bgfx::RendererType::Gnm:        return "pssl";  break;
+			case bgfx::RendererType::Metal:      return "metal"; break;
+			case bgfx::RendererType::Nvn:        return "nvn";   break;
+			case bgfx::RendererType::OpenGL:     return "glsl";  break;
+			#ifdef BGFXH_GOOGLE_NACL
+				case bgfx::RendererType::OpenGLES:   return "esslnacl";  break;
+			#else
+				case bgfx::RendererType::OpenGLES:   return "esslandroid";  break;
+			#endif
+			case bgfx::RendererType::Vulkan:     return "spirv"; break;
+			default: break;
+			}
+		BX_CHECK (false, "bgfxh::getShaderDirectoryFromRenderType() - Invalid render type!");
+		return "i am error";
+		}
+	
+	/// Should be called AFTER bgfx::init ()!
+	/// @param _shaderSearchPath: Where bgfxh shaders are located (if you are using them)
+	void init (const unsigned int _screenWidth, const unsigned int _screenHeight, const BGFXH_STRING & _shaderSearchPath) {
+		screenWidth  = _screenWidth;
+		screenHeight = _screenHeight;
+		shaderSearchPath = _shaderSearchPath;
+		PosTexCoord0Vertex::init();
+		if (!m_allocator)
+			m_allocator = bgfxh::internal_getDefaultAllocator();
+		
+		s_texColor  = bgfx::createUniform("s_texColor",  bgfx::UniformType::Sampler);
+		
+		#ifdef BGFXH_EMBED_DEBUG_SHADERS
+			{
+			#include "shaders/textured_passthrough/c/vs_textured_passthrough.bin.h"
+			#include "shaders/textured_passthrough/c/fs_textured_passthrough.bin.h"
+
+			static const bgfx::EmbeddedShader s_embeddedShaders[] = {
+				BGFXH_EMBEDDED_SHADER(vs_textured_passthrough_bin),
+				BGFXH_EMBEDDED_SHADER(fs_textured_passthrough_bin),
+				
+				BGFX_EMBEDDED_SHADER_END()
+				};
+			
+			bgfx::RendererType::Enum type = bgfx::getRendererType();
+			m_programTexturePassthrough = bgfx::createProgram(bgfx::createEmbeddedShader(s_embeddedShaders, type, "vs_textured_passthrough_bin")
+															, bgfx::createEmbeddedShader(s_embeddedShaders, type, "fs_textured_passthrough_bin")
+															, true
+															);
+			}
+			{
+			#include "shaders/textured_passthrough/c/vs_textured_passthrough_monochromatic.bin.h"
+			#include "shaders/textured_passthrough/c/fs_textured_passthrough_monochromatic.bin.h"
+
+			static const bgfx::EmbeddedShader s_embeddedShaders[] = {
+				BGFXH_EMBEDDED_SHADER(vs_textured_passthrough_monochromatic_bin),
+				BGFXH_EMBEDDED_SHADER(fs_textured_passthrough_monochromatic_bin),
+				
+				BGFX_EMBEDDED_SHADER_END()
+				};
+			
+			bgfx::RendererType::Enum type = bgfx::getRendererType();
+			m_programTexturePassthroughMonochromatic = bgfx::createProgram(bgfx::createEmbeddedShader(s_embeddedShaders, type, "vs_textured_passthrough_monochromatic_bin")
+															, bgfx::createEmbeddedShader(s_embeddedShaders, type, "fs_textured_passthrough_monochromatic_bin")
+															, true
+															);
+			}
+		#else
+			m_programTexturePassthrough = bgfxh::loadProgram (bgfxh::shaderSearchPath + "vs_textured_passthrough", bgfxh::shaderSearchPath + "fs_textured_passthrough");
+			m_programTexturePassthroughMonochromatic = bgfxh::loadProgram (bgfxh::shaderSearchPath + "vs_textured_passthrough_monochromatic", bgfxh::shaderSearchPath + "fs_textured_passthrough_monochromatic");
+		#endif // BGFXH_EMBED_DEBUG_SHADERS
+		}
+		
+	/// Returns a reference to a static bx::DefaultAllocator
+	bx::AllocatorI* internal_getDefaultAllocator() {
+		static bx::DefaultAllocator s_allocator;
+		return &s_allocator;
+		}
+	
+	/// Draws a texture at position (xOffset, yOffset -> xOffset + xSize, yOffset + ySize)
+	/// Useful for inspecting a texture, or the content of a framebuffer
+	/// The arguments using whatever projection matrix that viewId is using. If the view was set up with 
+	void debugDrawTexture (const bgfx::ViewId viewId, const bgfx::TextureHandle texture, const float xOffset, const float yOffset, const float xSize, const float ySize, const float _targetFrameBufferWidth = 0.0f, const float _targetFrameBufferHeight = 0.0f) {
+		bgfx::setTexture (SAMPLER_COLOR, s_texColor, texture);
+		bgfx::setState(BGFX_STATE_WRITE_RGB|BGFX_STATE_WRITE_A);
+		screenSpaceQuad (xOffset, yOffset, xSize, ySize, _targetFrameBufferWidth, _targetFrameBufferHeight);
+		bgfx::submit (viewId, m_programTexturePassthrough);
+		}
+		
+	/// Draws a framebuffer at position (xOffset, yOffset) -> (xOffset + xSize, yOffset + ySize).
+	/// Useful for inspecting a texture, or the content of a framebuffer
+	///
+	/// _framebufferWidth and _framebufferHeight are the width/height
+	/// of the buffer being drawn to - this is for DirectX9 2D half
+	/// pixel correction. If you don't care about that then you can ommit it.
+	void debugDrawFramebuffer (const bgfx::ViewId viewId, const bgfx::FrameBufferHandle framebuffer, const float xOffset, const float yOffset, const float xSize, const float ySize, const float _targetFrameBufferWidth = 0.0f, const float _targetFrameBufferHeight = 0.0f) {
+		debugDrawTexture (viewId, bgfx::getTexture(framebuffer, 0), xOffset, yOffset, xSize, ySize, _targetFrameBufferWidth, _targetFrameBufferHeight);
+		}
+	
+	/// Draws a texture at position (xOffset, yOffset -> xOffset + xSize, yOffset + ySize)
+	/// This draws it monochormatically - it takes the red channel value and renders it in grey scale
+	/// Useful for inspecting a texture, or the content of a framebuffer (especially depth buffers!)
+	/// The arguments using whatever projection matrix that viewId is using. If the view was set up with 
+	void debugDrawTextureMono (const bgfx::ViewId viewId, const bgfx::TextureHandle texture, const float xOffset, const float yOffset, const float xSize, const float ySize, const float _targetFrameBufferWidth = 0.0f, const float _targetFrameBufferHeight = 0.0f) {
+		bgfx::setTexture (SAMPLER_COLOR, s_texColor, texture);
+		bgfx::setState(BGFX_STATE_WRITE_RGB|BGFX_STATE_WRITE_A);
+		screenSpaceQuad (xOffset, yOffset, xSize, ySize, _targetFrameBufferWidth, _targetFrameBufferHeight);
+		bgfx::submit (viewId, m_programTexturePassthroughMonochromatic);
+		}
+		
+	/// Draws a framebuffer at position (xOffset, yOffset) -> (xOffset + xSize, yOffset + ySize).
+	/// This draws it monochormatically - it takes the red channel value and renders it in grey scale
+	/// Useful for inspecting a texture, or the content of a framebuffer (especially depth buffers!)
+	/// NOTE: this will pull the first texture from a framebuffer (with bgfx::getTexture(framebuffer, 0)),
+	/// so if you have a colour and depth buffer in the same frame buffer, this may render the colour buffer
+	/// instead!
+	/// _framebufferWidth and _framebufferHeight are the width/height
+	/// of the buffer being drawn to - this is for DirectX9 2D half
+	/// pixel correction. If you don't care about that then you can ommit it.
+	void debugDrawFramebufferMono (const bgfx::ViewId viewId, const bgfx::FrameBufferHandle framebuffer, const float xOffset, const float yOffset, const float xSize, const float ySize, const float _targetFrameBufferWidth = 0.0f, const float _targetFrameBufferHeight = 0.0f) {
+		debugDrawTextureMono (viewId, bgfx::getTexture(framebuffer, 0), xOffset, yOffset, xSize, ySize, _targetFrameBufferWidth, _targetFrameBufferHeight);
+		}
+		
+	void deInit () {
+		/// Should be called BEFORE bgfx::shutdown() !
+		destroyHandle (s_texColor);
+		destroyHandle (m_programTexturePassthrough);
+		}
+	
+	/// Filter interface
+	class filter {
+	public:
+		virtual void init () = 0;// must be called after setting the User Parameters for a filter to what you desire
+		virtual bgfx::FrameBufferHandle getOutputFrameBuffer () const = 0; // Returns the output framebuffer
+		virtual bgfx::TextureHandle getOutputTexture () const { /// Returns the output framebuffer as a texture handle. Use this to use the output of a filter as a sampler input to another
+			bgfx::FrameBufferHandle ofb = getOutputFrameBuffer();
+			if (!bgfx::isValid(ofb)) return BGFX_INVALID_HANDLE;
+			return bgfx::getTexture(getOutputFrameBuffer(), 0);
+			}
+		virtual int getViewIncrement () const = 0; // Returns the amount of bgfx::Views this filter requires
+		// Most filters will have some kind of submit() function
+		};
+	
+	
+	/// Fustrum class (for fustrum culling checks)
+	struct frustum {
+		/// Note that this only checks the top/bottom/left/right planes of the frustrum
+		/// Forward and back can be simply checked with a range check
+		bx::Plane planes[4];
+					
+		void setFromViewAndProjMatrix (float * mView, float * mProj) {
+			float res[4][4];
+			bx::mtxMul((float *) res, mView, mProj);
+			
+			bx::Plane & left =  planes[0];
+			bx::Plane & right = planes[1];
+			bx::Plane & top =   planes[2];
+			bx::Plane & bottom = planes[3];
+			left.normal   = bx::Vec3(res[0][3] + res[0][0], res[1][3] + res[1][0], res[2][3] + res[2][0]); left.dist   = (res[3][3] + res[3][0]);
+			right.normal  = bx::Vec3(res[0][3] - res[0][0], res[1][3] - res[1][0], res[2][3] - res[2][0]); right.dist  = (res[3][3] - res[3][0]);
+			top.normal    = bx::Vec3(res[0][3] - res[0][1], res[1][3] - res[1][1], res[2][3] - res[2][1]); top.dist    = (res[3][3] - res[3][1]);
+			bottom.normal = bx::Vec3(res[0][3] + res[0][1], res[1][3] + res[1][1], res[2][3] + res[2][1]); bottom.dist = (res[3][3] + res[3][1]);
+			
+			// Normalize the planes
+			for (unsigned int i = 0; i < 4; ++i) {
+				float invLen = 1.0/length(planes[i].normal);
+				planes[i].normal = bx::mul(planes[i].normal, invLen);
+				planes[i].dist   *= invLen;
+				}
+			}
+			
+		inline static float dotPV (const bx::Plane & p, const bx::Vec3 pos) {
+			return bx::dot(p.normal, pos) + p.dist;
+			}
+		
+		
+		inline bool frustumCheck (const bx::Vec3 & where, const float objectBoundingRadius) const {
+			/// To do: sse optimisation
+			return (dotPV(planes[0], where) + objectBoundingRadius> 0.0f) &&
+					(dotPV(planes[1], where) + objectBoundingRadius> 0.0f) &&
+					(dotPV(planes[2], where) + objectBoundingRadius> 0.0f) &&
+					(dotPV(planes[3], where) + objectBoundingRadius> 0.0f);
+			}
+			
+		inline bool frustumCheck (const float * bgfxModelMtx, const float objectBoundingRadius) const {
+			bx::Vec3 where(bgfxModelMtx[12], bgfxModelMtx[13], bgfxModelMtx[14]);
+			return (dotPV(planes[0], where) + objectBoundingRadius> 0.0f) &&
+					(dotPV(planes[1], where) + objectBoundingRadius> 0.0f) &&
+					(dotPV(planes[2], where) + objectBoundingRadius> 0.0f) &&
+					(dotPV(planes[3], where) + objectBoundingRadius> 0.0f);
+			}
+		};
+	
+	/// Vertex type for rendering textured fullscreen quads 
+	struct PosTexCoord0Vertex {
+		float m_x;
+		float m_y;
+		float m_z;
+		float m_u;
+		float m_v;
+
+		static void init() {
+			ms_decl.begin()
+				.add(bgfx::Attrib::Position,  3, bgfx::AttribType::Float)
+				.add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
+			.end();
+			}
+		static bgfx::VertexDecl ms_decl;
+		};
+	
+	/// Null checked bgfx::*Handle destruction
+	template<typename T>
+	static void destroyHandle (T & handle) {
+		/// Destroys a handle, sets the value of the handle to BGFX_INVALID_HANDLE. will do nothing if T is BGFX_INVALID_HANDLE 
+		if (!bgfx::isValid(handle)) return;
+		bgfx::destroy(handle);
+		handle = BGFX_INVALID_HANDLE;
+		}
+		
+	void initView (const bgfx::ViewId viewId, const char * tag, const uint vw, const uint vh, const float view[16], const float proj[16], const bgfx::FrameBufferHandle fh, const bool doClear = true, const bool forwardZ = true) {
+		/// Wraps a bunch of view initing stuff into one function
+		bgfx::setViewName(viewId, tag);
+		bgfx::setViewRect(viewId, 0, 0, vw, vh);
+		bgfx::setViewTransform(viewId, view, proj);
+		bgfx::setViewFrameBuffer(viewId, fh);
+		
+		const uint16_t clearFlags = doClear ? (BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH) : 0;
+		const float clearDepth = (forwardZ ? 1.0f : 0.0f);
+		const uint8_t clearStencil = 0;
+		const uint32_t clearColour = 0x00000000;
+		bgfx::setViewClear(viewId, clearFlags, clearColour, clearDepth, clearStencil);
+		}
+		
+	void initView2D (const bgfx::ViewId viewId, const char * tag, const uint vw, const uint vh, const bgfx::FrameBufferHandle fh, const bool doClear = true, const bool unitOrthoMatrix = true, const bool forwardZ = true) {
+		/// Inits a 2D view with a unit ortho matrix
+		float orthoProj[16];	// Ortho matrix for rendering screenspace quads
+		if (unitOrthoMatrix)
+			bx::mtxOrtho(orthoProj, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 100.0f, 0.0f, bgfx::getCaps()->homogeneousDepth); // flip bottom 0.0f and viewHeight if you don't like bottom left coordinates
+		else
+			bx::mtxOrtho(orthoProj, 0.0f, vw, 0.0f, vh, 0.0f, 100.0f, 0.0f, bgfx::getCaps()->homogeneousDepth);
+		
+		bgfx::setViewName(viewId, tag);
+		bgfx::setViewRect(viewId, 0, 0, vw, vh);
+		bgfx::setViewTransform(viewId, NULL, orthoProj);
+		bgfx::setViewFrameBuffer(viewId, fh);
+		
+		const uint16_t clearFlags = doClear ? (BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH) : 0;
+		const float clearDepth = (forwardZ ? 1.0f : 0.0f);
+		const uint8_t clearStencil = 0;
+		const uint32_t clearColour = 0x00000000;
+		bgfx::setViewClear(viewId, clearFlags, clearColour, clearDepth, clearStencil);
+		}
+	
+	void fullscreenQuad(const float _textureWidth, const float _textureHeight) {
+		/// Submits (renders) a screenspace quad. This actually just renders a single triangle with the pointy bits being out view
+		/// Width and height are pixels (for an 2D ortho projection), and are used for half texel calcualtions
+		/// Assumes a unit orthonormal projection matrix (initView2D() will make one)
+		/*
+		* From the BGFX Examples, the following license applies to only this function:
+		* Copyright 2011-2018 Branimir Karadzic. All rights reserved.
+		* License: https://github.com/bkaradzic/bgfx#license-bsd-2-clause
+		*/
+		const bgfx::RendererType::Enum renderer = bgfx::getRendererType();
+		const float _texelHalf = bgfx::RendererType::Direct3D9 == renderer ? 0.5f : 0.0f;
+		const bool _originBottomLeft = bgfx::getCaps()->originBottomLeft;
+		const float _width = 1.0f;
+		const float _height = 1.0f;
+		
+		if (3 == bgfx::getAvailTransientVertexBuffer(3, bgfxh::PosTexCoord0Vertex::ms_decl) ) {
+			bgfx::TransientVertexBuffer vb;
+			bgfx::allocTransientVertexBuffer(&vb, 3, bgfxh::PosTexCoord0Vertex::ms_decl);
+			bgfxh::PosTexCoord0Vertex* vertex = (bgfxh::PosTexCoord0Vertex*)vb.data;
+
+			const float minx = -_width;
+			const float maxx =  _width;
+			const float miny = 0.0f;
+			const float maxy = _height*2.0f;
+
+			const float texelHalfW = _texelHalf/_textureWidth;
+			const float texelHalfH = _texelHalf/_textureHeight;
+			const float minu = -1.0f + texelHalfW;
+			const float maxu =  1.0f + texelHalfH;
+
+			const float zz = 0.0f;
+
+			float minv = texelHalfH;
+			float maxv = 2.0f + texelHalfH;
+
+			if (!_originBottomLeft) {
+				float temp = minv;
+				minv = maxv;
+				maxv = temp;
+
+				minv -= 1.0f;
+				maxv -= 1.0f;
+				}
+
+			vertex[0].m_x = minx;
+			vertex[0].m_y = miny;
+			vertex[0].m_z = zz;
+			vertex[0].m_u = minu;
+			vertex[0].m_v = minv;
+
+			vertex[1].m_x = maxx;
+			vertex[1].m_y = miny;
+			vertex[1].m_z = zz;
+			vertex[1].m_u = maxu;
+			vertex[1].m_v = minv;
+
+			vertex[2].m_x = maxx;
+			vertex[2].m_y = maxy;
+			vertex[2].m_z = zz;
+			vertex[2].m_u = maxu;
+			vertex[2].m_v = maxv;
+
+			bgfx::setVertexBuffer(0, &vb);
+			}
+		}
+		
+	void screenSpaceQuad(const float xOffset, const float yOffset, const float xSize, const float ySize, const float _framebufferWidth = 0.f, const float _framebufferHeight = 0.f) {
+		/// Submits (renders) a screenspace quad. This is a true quad
+		/// Assumes a unit orthonormal projection matrix (initView2D() will
+		/// make one). Then all arguments vary from 0.0 to 1.0
+		///
+		/// _framebufferWidth and _framebufferHeight are the width/height
+		/// of the buffer being drawn to - this is for DirectX9 2D half
+		/// pixel correction. If you don't care about that then you can ommit it.
+		/*
+		* From the BGFX Examples, the following license applies to only this function:
+		* Copyright 2011-2018 Branimir Karadzic. All rights reserved.
+		* License: https://github.com/bkaradzic/bgfx#license-bsd-2-clause
+		*/
+		const bgfx::RendererType::Enum renderer = bgfx::getRendererType();
+		const float _texelHalf = bgfx::RendererType::Direct3D9 == renderer ? 0.5f : 0.0f;
+		const bool _originBottomLeft = bgfx::getCaps()->originBottomLeft;
+		
+		if (6 == bgfx::getAvailTransientVertexBuffer(6, bgfxh::PosTexCoord0Vertex::ms_decl) ) {
+			bgfx::TransientVertexBuffer vb;
+			bgfx::allocTransientVertexBuffer(&vb, 6, bgfxh::PosTexCoord0Vertex::ms_decl);
+			bgfxh::PosTexCoord0Vertex* vertex = (bgfxh::PosTexCoord0Vertex*)vb.data;
+
+			const float minx = xOffset;
+			const float maxx = (xOffset + xSize);
+			const float miny = yOffset;
+			const float maxy = (yOffset + ySize);
+
+			float texelHalfW = 0.f;
+			float texelHalfH = 0.f;
+			if (_framebufferWidth > 0.0f && _framebufferHeight > 0.0f) {
+				texelHalfW = _texelHalf/_framebufferWidth;
+				texelHalfH = _texelHalf/_framebufferHeight;
+				}
+			const float minu = 0.0f + texelHalfW;
+			const float maxu = 1.0f + texelHalfH;
+
+			const float zz = 0.0f;
+
+			float minv = texelHalfH;
+			float maxv = 1.0f + texelHalfH;
+
+			if (!_originBottomLeft) {
+				float temp = minv;
+				minv = maxv;
+				maxv = temp;
+				}
+
+			vertex[0].m_x = minx;
+			vertex[0].m_y = miny;
+			vertex[0].m_z = zz;
+			vertex[0].m_u = minu;
+			vertex[0].m_v = minv;
+
+			vertex[1].m_x = maxx;
+			vertex[1].m_y = miny;
+			vertex[1].m_z = zz;
+			vertex[1].m_u = maxu;
+			vertex[1].m_v = minv;
+
+			vertex[2].m_x = maxx;
+			vertex[2].m_y = maxy;
+			vertex[2].m_z = zz;
+			vertex[2].m_u = maxu;
+			vertex[2].m_v = maxv;
+			
+			vertex[3].m_x = minx;
+			vertex[3].m_y = miny;
+			vertex[3].m_z = zz;
+			vertex[3].m_u = minu;
+			vertex[3].m_v = minv;
+
+			vertex[4].m_x = maxx;
+			vertex[4].m_y = maxy;
+			vertex[4].m_z = zz;
+			vertex[4].m_u = maxu;
+			vertex[4].m_v = maxv;
+			
+			vertex[5].m_x = minx;
+			vertex[5].m_y = maxy;
+			vertex[5].m_z = zz;
+			vertex[5].m_u = minu;
+			vertex[5].m_v = maxv;
+
+
+			bgfx::setVertexBuffer(0, &vb);
+			}
+		}
+		
+	BGFXH_STRING fixPath (const BGFXH_STRING & in) {
+		/// Converts a POSIX path to a windows path and vice versa
+		#ifdef __WIN32
+			const char from = '/';
+			const char to = '\\';
+		#else
+			const char from = '\\';
+			const char to = '/';
+		#endif
+		BGFXH_STRING out = in;
+		for (unsigned int i = 0; i < out.size(); ++i) {
+			if (out[i] == from) out[i] = to;
+			}
+		return out;
+		}
+		
+	void readFileRawToString (const BGFXH_STRING & filename, BGFXH_STRING & buff) {
+		/// Opens a file and sets buff to its contents
+		std::ifstream fs(fixPath(filename).c_str(), std::ios::in | std::ios::binary);
+		if (!fs.is_open()) {
+			BX_WARN (false, "Could not open file ", filename );
+			return;
+			}
+		fs.seekg (0, std::ios::end);
+		const size_t LEN = fs.tellg();
+		fs.seekg (0, std::ios::beg);
+		
+		buff.resize(LEN);
+		fs.read((char *) &buff[0], LEN);
+		fs.close();
+		return;
+		}
+		
+	const bgfx::Memory * readFileRawToBgfxMemory (const BGFXH_STRING & filename) {
+		/// Opens a file and returns a bgfx::Memory of the raw data. The lifetime of the data is controlled by bgfx 
+		std::ifstream fs(fixPath(filename).c_str(), std::ios::in | std::ios::binary);
+		if (!fs.is_open()) {
+			BX_WARN (false, "Could not open file ", filename );
+			return NULL;
+			}
+		fs.seekg (0, std::ios::end);
+		const size_t LEN = fs.tellg();
+		fs.seekg (0, std::ios::beg);
+		
+		const bgfx::Memory * mem = bgfx::alloc(LEN);
+		fs.read((char *) mem->data, LEN);
+		fs.close();
+		return mem;
+		}
+	
+	bgfx::ProgramHandle loadProgram (const char * vertexShaderFile, const char * fragementShaderFile) {
+		/// Loads shaders files (.bin) to memory and then creates a shader handle
+		/// Be sure to check the result is successful with bgfx::isValid(returnedValue)
+		const bgfx::Memory * vsShaderFileMem = readFileRawToBgfxMemory(vertexShaderFile); //bgfx will auto-dealloc this when done
+		bgfx::ShaderHandle vsh = bgfx::createShader(vsShaderFileMem);
+		bgfx::ShaderHandle fsh = BGFX_INVALID_HANDLE;
+		if (fragementShaderFile) {
+			const bgfx::Memory * fsShaderFileMem = readFileRawToBgfxMemory(fragementShaderFile);
+			fsh = bgfx::createShader(fsShaderFileMem);
+			}
+
+		return bgfx::createProgram(vsh, fsh, true /* destroy shaders when program is destroyed */);
+		}
+		
+	bgfx::ProgramHandle loadProgram (const BGFXH_STRING & vertexShaderFile, const BGFXH_STRING & fragmentShaderFile) {
+		return loadProgram (vertexShaderFile.c_str(), fragmentShaderFile.c_str());
+		}
+	
+	}
