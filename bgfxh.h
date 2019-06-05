@@ -20,10 +20,10 @@
 // You can use bgfxh::getShaderDirectoryFromRenderType() to get this automatically:
 // 		shaderPath = path__to_shaders + "/" + bgfxh::getShaderDirectoryFromRenderType() + "/"; // Result: path_to_shaders/glsl/ if running OpenGl
 //
-// Note on embedding shaders: you can define the macro BGFXH_EMBED_FILTER_SHADERS to embed filter shaders at compile time. I don't recommend this
-// as its better to distribute the shader source + build scripts and load them at run time, so then users can modify shaders
-// if they choose to. If you choose to embed shaders then the header "bgfxh_embedded_shader.h" must be present as well as the path
-// to all shaders (eg, bgfxh/shaders/lum_filter/c/vs_lum.bin.h) 
+// Note on embedding shaders: you can define the macro BGFXH_EMBED_RENDER_JOB_SHADERS to embed filter shaders at compile time. I don't recommend this
+// as its better to distribute the shader source + build scripts and load them at run time, so that you don't need to recompile your program
+// every time you modify a shader, and so then users can modify shaders if they choose to. If you choose to embed shaders then the
+// header "bgfxh_embedded_shader.h" must be present as well as the path to all shaders (eg, bgfxh/shaders/lum_filter/c/vs_lum.bin.h) at compile.
 //
 // The debug shaders (bgfxh/shaders/textured_passthrough) will be embedded by default, disable this with #define BGFXH_DONT_EMBED_DEBUG_SHADERS
 //
@@ -76,9 +76,15 @@
 #ifndef BGFXH_DONT_EMBED_DEBUG_SHADERS
 	#define BGFXH_EMBED_DEBUG_SHADERS
 #endif // BGFXH_DONT_EMBED_DEBUG_SHADERS
-//#define BGFXH_EMBED_FILTER_SHADERS
+//#define BGFXH_EMBED_RENDER_JOB_SHADERS //<-- uncomment to embed shaders when compiling renderjobs
 
-#include <bgfx/bgfx.h>
+
+#ifndef BGFXH_CHECK
+	#define BGFXH_CHECK BX_CHECK
+#endif //BGFXH_CHECK
+#ifndef BGFXH_WARN
+	#define BGFXH_WARN BX_WARN
+#endif //BGFXH_WARN
 
 #define LZZ_INLINE inline
 namespace bgfxh
@@ -143,7 +149,7 @@ namespace bgfxh
 }
 namespace bgfxh
 {
-  class filter
+  class renderJob
   {
   public:
     virtual void init () = 0;
@@ -175,6 +181,22 @@ namespace bgfxh
     static void init ();
     static bgfx::VertexDecl ms_decl;
   };
+}
+namespace bgfxh
+{
+  struct PosVertex
+  {
+    float m_x;
+    float m_y;
+    float m_z;
+    static void init ();
+    static bgfx::VertexDecl ms_decl;
+  };
+}
+namespace bgfxh
+{
+  template <typename T>
+  void destroyHandle (T & handle);
 }
 namespace bgfxh
 {
@@ -241,6 +263,17 @@ namespace bgfxh
 					(dotPV(planes[3], where) + objectBoundingRadius> 0.0f);
 			}
 }
+namespace bgfxh
+{
+  template <typename T>
+  void destroyHandle (T & handle)
+                                        {
+		/// Destroys a handle, sets the value of the handle to BGFX_INVALID_HANDLE. will do nothing if T is BGFX_INVALID_HANDLE 
+		if (!bgfx::isValid(handle)) return;
+		bgfx::destroy(handle);
+		handle = BGFX_INVALID_HANDLE;
+		}
+}
 #undef LZZ_INLINE
 #endif
 
@@ -280,11 +313,6 @@ namespace bgfxh
 namespace bgfxh
 {
   static unsigned int const SAMPLER_TONEMAPING_EXTRA3 = 5;
-}
-namespace bgfxh
-{
-  template <typename T>
-  static void destroyHandle (T & handle);
 }
 namespace bgfxh
 {
@@ -337,7 +365,7 @@ namespace bgfxh
 			case bgfx::RendererType::Vulkan:     return "spirv"; break;
 			default: break;
 			}
-		BX_CHECK (false, "bgfxh::getShaderDirectoryFromRenderType() - Invalid render type!");
+		BGFXH_CHECK (false, "bgfxh::getShaderDirectoryFromRenderType() - Invalid render type!");
 		return "i am error";
 		}
 }
@@ -348,6 +376,7 @@ namespace bgfxh
 		screenWidth  = _screenWidth;
 		screenHeight = _screenHeight;
 		shaderSearchPath = _shaderSearchPath;
+		PosVertex::init();
 		PosTexCoord0Vertex::init();
 		if (!m_allocator)
 			m_allocator = bgfxh::internal_getDefaultAllocator();
@@ -441,14 +470,13 @@ namespace bgfxh
 {
   void deInit ()
                        {
-		/// Should be called BEFORE bgfx::shutdown() !
 		destroyHandle (s_texColor);
 		destroyHandle (m_programTexturePassthrough);
 		}
 }
 namespace bgfxh
 {
-  bgfx::TextureHandle filter::getOutputTexture () const
+  bgfx::TextureHandle renderJob::getOutputTexture () const
                                                                       { /// Returns the output framebuffer as a texture handle. Use this to use the output of a filter as a sampler input to another
 			bgfx::FrameBufferHandle ofb = getOutputFrameBuffer();
 			if (!bgfx::isValid(ofb)) return BGFX_INVALID_HANDLE;
@@ -495,20 +523,21 @@ namespace bgfxh
 }
 namespace bgfxh
 {
-  template <typename T>
-  static void destroyHandle (T & handle)
-                                               {
-		/// Destroys a handle, sets the value of the handle to BGFX_INVALID_HANDLE. will do nothing if T is BGFX_INVALID_HANDLE 
-		if (!bgfx::isValid(handle)) return;
-		bgfx::destroy(handle);
-		handle = BGFX_INVALID_HANDLE;
-		}
+  void PosVertex::init ()
+                                   {
+			ms_decl.begin()
+				.add(bgfx::Attrib::Position,  3, bgfx::AttribType::Float)
+			.end();
+			}
+}
+namespace bgfxh
+{
+  bgfx::VertexDecl PosVertex::ms_decl;
 }
 namespace bgfxh
 {
   void initView (bgfx::ViewId const viewId, char const * tag, uint const vw, uint const vh, float const (view) [16], float const (proj) [16], bgfx::FrameBufferHandle const fh, bool const doClear, bool const forwardZ)
                                                                                                                                                                                                                                        {
-		/// Wraps a bunch of view initing stuff into one function
 		bgfx::setViewName(viewId, tag);
 		bgfx::setViewRect(viewId, 0, 0, vw, vh);
 		bgfx::setViewTransform(viewId, view, proj);
@@ -525,12 +554,11 @@ namespace bgfxh
 {
   void initView2D (bgfx::ViewId const viewId, char const * tag, uint const vw, uint const vh, bgfx::FrameBufferHandle const fh, bool const doClear, bool const unitOrthoMatrix, bool const forwardZ)
                                                                                                                                                                                                                                 {
-		/// Inits a 2D view with a unit ortho matrix
 		float orthoProj[16];	// Ortho matrix for rendering screenspace quads
 		if (unitOrthoMatrix)
-			bx::mtxOrtho(orthoProj, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 100.0f, 0.0f, bgfx::getCaps()->homogeneousDepth); // flip bottom 0.0f and viewHeight if you don't like bottom left coordinates
+			bx::mtxOrtho(orthoProj, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 100.0f, 0.0f, bgfx::getCaps()->homogeneousDepth); // flip bottom 0.0f and viewHeight if you don't like bottom left coordinates
 		else
-			bx::mtxOrtho(orthoProj, 0.0f, vw, 0.0f, vh, 0.0f, 100.0f, 0.0f, bgfx::getCaps()->homogeneousDepth);
+			bx::mtxOrtho(orthoProj, 0.0f, vw, vh, 0.0f, 0.0f, 100.0f, 0.0f, bgfx::getCaps()->homogeneousDepth);
 		
 		bgfx::setViewName(viewId, tag);
 		bgfx::setViewRect(viewId, 0, 0, vw, vh);
@@ -548,9 +576,6 @@ namespace bgfxh
 {
   void fullscreenQuad (float const _textureWidth, float const _textureHeight)
                                                                                    {
-		/// Submits (renders) a screenspace quad. This actually just renders a single triangle with the pointy bits being out view
-		/// Width and height are pixels (for an 2D ortho projection), and are used for half texel calcualtions
-		/// Assumes a unit orthonormal projection matrix (initView2D() will make one)
 		/*
 		* From the BGFX Examples, the following license applies to only this function:
 		* Copyright 2011-2018 Branimir Karadzic. All rights reserved.
@@ -582,7 +607,7 @@ namespace bgfxh
 			float minv = texelHalfH;
 			float maxv = 2.0f + texelHalfH;
 
-			if (!_originBottomLeft) {
+			if (_originBottomLeft) {
 				float temp = minv;
 				minv = maxv;
 				maxv = temp;
@@ -617,13 +642,6 @@ namespace bgfxh
 {
   void screenSpaceQuad (float const xOffset, float const yOffset, float const xSize, float const ySize, float const _framebufferWidth, float const _framebufferHeight)
                                                                                                                                                                                         {
-		/// Submits (renders) a screenspace quad. This is a true quad
-		/// Assumes a unit orthonormal projection matrix (initView2D() will
-		/// make one). Then all arguments vary from 0.0 to 1.0
-		///
-		/// _framebufferWidth and _framebufferHeight are the width/height
-		/// of the buffer being drawn to - this is for DirectX9 2D half
-		/// pixel correction. If you don't care about that then you can ommit it.
 		/*
 		* From the BGFX Examples, the following license applies to only this function:
 		* Copyright 2011-2018 Branimir Karadzic. All rights reserved.
@@ -657,7 +675,7 @@ namespace bgfxh
 			float minv = texelHalfH;
 			float maxv = 1.0f + texelHalfH;
 
-			if (!_originBottomLeft) {
+			if (_originBottomLeft) {
 				float temp = minv;
 				minv = maxv;
 				maxv = temp;
@@ -727,10 +745,9 @@ namespace bgfxh
 {
   void readFileRawToString (BGFXH_STRING const & filename, BGFXH_STRING & buff)
                                                                                       {
-		/// Opens a file and sets buff to its contents
 		std::ifstream fs(fixPath(filename).c_str(), std::ios::in | std::ios::binary);
 		if (!fs.is_open()) {
-			BX_WARN (false, "Could not open file ", filename );
+			BGFXH_WARN (false, "Could not open file ", filename );
 			return;
 			}
 		fs.seekg (0, std::ios::end);
@@ -747,10 +764,10 @@ namespace bgfxh
 {
   bgfx::Memory const * readFileRawToBgfxMemory (BGFXH_STRING const & filename)
                                                                                      {
-		/// Opens a file and returns a bgfx::Memory of the raw data. The lifetime of the data is controlled by bgfx 
 		std::ifstream fs(fixPath(filename).c_str(), std::ios::in | std::ios::binary);
 		if (!fs.is_open()) {
-			BX_WARN (false, "Could not open file ", filename );
+			BGFXH_WARN (false, "Could not open file ", filename );
+			fmt::println("SADFASDFASDF");
 			return NULL;
 			}
 		fs.seekg (0, std::ios::end);
@@ -767,9 +784,13 @@ namespace bgfxh
 {
   bgfx::ProgramHandle loadProgram (char const * vertexShaderFile, char const * fragementShaderFile)
                                                                                                           {
-		/// Loads shaders files (.bin) to memory and then creates a shader handle
-		/// Be sure to check the result is successful with bgfx::isValid(returnedValue)
 		const bgfx::Memory * vsShaderFileMem = readFileRawToBgfxMemory(vertexShaderFile); //bgfx will auto-dealloc this when done
+		if (!vsShaderFileMem) {
+			BGFXH_WARN (false, "vertex shader buffer is NULL");
+			BGFXH_WARN (true, "vertex shader buffer is asdasd NULL");
+			exit(1);
+			return BGFX_INVALID_HANDLE;
+			}
 		bgfx::ShaderHandle vsh = bgfx::createShader(vsShaderFileMem);
 		bgfx::ShaderHandle fsh = BGFX_INVALID_HANDLE;
 		if (fragementShaderFile) {

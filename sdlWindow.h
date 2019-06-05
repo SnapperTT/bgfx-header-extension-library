@@ -7,7 +7,11 @@ struct SDL_Window;
 #define LZZ_INLINE inline
 namespace bgfxh
 {
-  bool initSdlWindow (SDL_Window * _window, bgfx::Init * _init = NULL, bool initBgfx = true);
+  bool initSdlWindow (SDL_Window * _window);
+}
+namespace bgfxh
+{
+  bool initSdlWindowAndBgfx (SDL_Window * _window, bgfx::Init * _init = NULL);
 }
 #undef LZZ_INLINE
 #endif
@@ -22,8 +26,8 @@ namespace bgfxh
 #define LZZ_INLINE inline
 namespace bgfxh
 {
-  bool initSdlWindow (SDL_Window * _window, bgfx::Init * _init, bool initBgfx)
-                                                                                                   {
+  bool initSdlWindow (SDL_Window * _window)
+                                                  {
 		SDL_SysWMinfo wmi;
 		SDL_VERSION(&wmi.version);
 		if (!SDL_GetWindowWMInfo(_window, &wmi) ) {
@@ -48,44 +52,51 @@ namespace bgfxh
 		pd.backBuffer   = NULL;
 		pd.backBufferDS = NULL;
 		bgfx::setPlatformData(pd);
+		return true;
+		}
+}
+namespace bgfxh
+{
+  bool initSdlWindowAndBgfx (SDL_Window * _window, bgfx::Init * _init)
+                                                                                    {
+		if (!initSdlWindow (_window))
+			return false;
+			
+		int ww;
+		int wh;
+		SDL_GetWindowSize(_window, &ww, &wh);
 		
-		if (initBgfx) {
-			int ww;
-			int wh;
-			SDL_GetWindowSize(_window, &ww, &wh);
-			
-			const uint32_t m_resetFlags = BGFX_RESET_VSYNC | BGFX_RESET_MAXANISOTROPY | BGFX_RESET_FLIP_AFTER_RENDER ;// | BGFX_RESET_MSAA_X4;
-			
-			bgfx::renderFrame();
-			
-			bool initSet = (_init);
-			if (!_init) {
-				bgfx::Init init;
-				init.type     = bgfx::RendererType::Count;
-				//init.type     = bgfx::RendererType::OpenGL;
-				init.vendorId = BGFX_PCI_ID_NONE;
-				init.debug  = true;
-				init.resolution.width  = ww;
-				init.resolution.height = wh;
-				init.resolution.reset  = m_resetFlags;
-				_init = &init;
-				}
-			
-			bgfx::init(*_init);
-			bgfx::reset(ww,wh, m_resetFlags);
-
-			// Enable debug text.
-			if (_init->debug)
-				bgfx::setDebug(BGFX_DEBUG_TEXT | BGFX_DEBUG_WIREFRAME);
-
-			// Set view 0 clear state.
-			bgfx::setViewClear(0
-				, BGFX_CLEAR_COLOR|BGFX_CLEAR_DEPTH
-				, 0x303030ff
-				, 1.0f
-				, 0
-				);
+		const uint32_t m_resetFlags = BGFX_RESET_VSYNC | BGFX_RESET_MAXANISOTROPY | BGFX_RESET_FLIP_AFTER_RENDER ;// | BGFX_RESET_MSAA_X4;
+		
+		bgfx::renderFrame();
+		
+		bool initSet = (_init);
+		if (!_init) {
+			bgfx::Init init;
+			init.type     = bgfx::RendererType::Count;
+			//init.type     = bgfx::RendererType::OpenGL;
+			init.vendorId = BGFX_PCI_ID_NONE;
+			init.debug  = true;
+			init.resolution.width  = ww;
+			init.resolution.height = wh;
+			init.resolution.reset  = m_resetFlags;
+			_init = &init;
 			}
+		
+		bgfx::init(*_init);
+		bgfx::reset(ww,wh, m_resetFlags);
+
+		// Enable debug text.
+		if (_init->debug)
+			bgfx::setDebug(BGFX_DEBUG_TEXT | BGFX_DEBUG_WIREFRAME);
+
+		// Set view 0 clear state.
+		bgfx::setViewClear(0
+			, BGFX_CLEAR_COLOR|BGFX_CLEAR_DEPTH
+			, 0x303030ff
+			, 1.0f
+			, 0
+			);
 			
 		return true;
 		}

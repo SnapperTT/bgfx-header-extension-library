@@ -1,6 +1,6 @@
 # This makefile creates the .h files in the parent directory from .lzz files here
 LAZY=../tools/lzz -hx hh
-RAWSOURCES=bgfxh.lzz bgfxh_embedded_shader.lzz bloomFilter.lzz cascadingShadowMapFilter.lzz loadTexture.lzz lumFilter.lzz sdlWindow.lzz tonemappingFilter.lzz
+RAWSOURCES=bgfxh.lzz bgfxh_embedded_shader.lzz loadTexture.lzz mesh.lzz sdlWindow.lzz renderJobs/atmosphere.lzz renderJobs/bloom.lzz renderJobs/cascadingShadowMap.lzz renderJobs/lum.lzz renderJobs/tonemapping.lzz
 OUTPUTDIR=../
 TEMPDIR=temp/
 SOURCES=$(addprefix $(TEMPDIR),$(RAWSOURCES:.lzz=.cpp))
@@ -13,8 +13,9 @@ all: $(SOURCES) $(SFI)
 
 # Convert .lzz to .cpp and .hh
 $(TEMPDIR)%.cpp $(TEMPDIR)%.hh: %.lzz
-	$(LAZY) -o $(TEMPDIR) $<
-	
+	mkdir -p $(TEMPDIR)$(dir $<)
+	$(LAZY) -o $(TEMPDIR)$(dir $<) $<
+		
 # Concatenate the .cpp and .hh files into a single header
 # and enable the BGFX_IMPL macro
 # then remove any instance of #include "filename.hh" that
@@ -28,4 +29,4 @@ $(OUTPUTDIR)%.h: $(TEMPDIR)%.cpp $(TEMPDIR)%.hh
 	cat $(TEMPDIR)$*.cpp >> $@
 	echo '#endif //BGFXH_IMPL' >> $@
 	sed -i '/#include ".*\.hh"/d' $@ 
-	
+
