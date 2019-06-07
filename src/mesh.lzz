@@ -1,0 +1,83 @@
+#hdr
+
+#include <vector>
+#end
+
+#src
+#end
+
+namespace bgfxh {
+	struct meshFace {
+		uint16_t a;
+		uint16_t b;
+		uint16_t c;
+		
+		inline meshFace () {}
+		inline meshFace (const uint16_t _a, const uint16_t _b, const uint16_t _c) : a(_a), b(_b), c(_c) {}
+		};
+		
+	/// A Simple Mesh class
+	//bgfxh::PosVertex::ms_decl
+	template<typename VERT_TYPE, typename DECL_TYPE>
+	struct mesh {
+		vector<VERT_TYPE> verts;
+		vector<uint16_t> indicies;
+		vector<meshFace> faces;
+		
+		bgfx::VertexBufferHandle m_vbh;
+		bgfx::IndexBufferHandle m_ibh;
+		
+		inline mesh() : m_vbh(BGFX_INVALID_HANDLE), m_ibh(BGFX_INVALID_HANDLE) {}
+		~mesh() { destroy(); }
+		
+		static void internal_freeVerts_cb(void* _ptr, void* _userData) {
+			BX_UNUSED(_ptr);
+			mesh<VERT_TYPE,DECL_TYPE>* sm = (mesh<VERT_TYPE,DECL_TYPE>* )_userData;
+			sm->verts.clear();
+			}
+			
+		static void internal_freeIndicies_cb(void* _ptr, void* _userData) {
+			BX_UNUSED(_ptr);
+			mesh<VERT_TYPE,DECL_TYPE>* sm = (mesh<VERT_TYPE,DECL_TYPE>* )_userData;
+			sm->indicies.clear();
+			}
+		
+		void upload (bool freeOnUploadComplete = true) {
+			// Static data can be passed with bgfx::makeRef
+			if (freeOnUploadComplete) {
+				faces.clear();
+				m_vbh = bgfx::createVertexBuffer(
+					bgfx::makeRef(verts.data(), sizeof(VERT_TYPE)*verts.size(), internal_freeVerts_cb, this )
+					, DECL_TYPE::ms_decl
+					);
+				m_ibh = bgfx::createIndexBuffer(
+					  bgfx::makeRef(indicies.data(), sizeof(uint16_t)*indicies.size(), internal_freeIndicies_cb, this )
+					 // , BGFX_BUFFER_INDEX32
+					);
+				}
+			else {
+				m_vbh = bgfx::createVertexBuffer(
+					bgfx::makeRef(verts.data(), sizeof(VERT_TYPE)*verts.size() )
+					, DECL_TYPE::ms_decl
+					);
+				m_ibh = bgfx::createIndexBuffer(
+					  bgfx::makeRef(indicies.data(), sizeof(uint16_t)*indicies.size() )
+					 // , BGFX_BUFFER_INDEX32
+					);
+				}
+			}
+			
+		void bind () {
+			bgfx::setVertexBuffer(0, m_vbh);
+			bgfx::setIndexBuffer(m_ibh);
+			}
+			
+		void destroy () {
+			bgfxh::destroyHandle (m_vbh);
+			bgfxh::destroyHandle (m_ibh);
+			}
+		}; 
+		
+	typedef mesh<bx::Vec3, PosVertex> simpleMesh;
+	//typedef mesh<VERT_TYPE, PosTexCoord0Vertex> simpleTexturedMesh;
+	}
