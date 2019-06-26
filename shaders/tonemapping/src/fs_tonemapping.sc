@@ -30,8 +30,8 @@ SAMPLER2D(s_texLum,  1);
 uniform vec4 u_weightsAdd;
 uniform vec4 u_weightsMul;
 
-float getExposure(float lum) {
-	return 0.3 + 0.7/clamp(lum + 0.2, 0.1, 1.0);
+float getExposure(vec3 rgb, float lum) {
+	return 0.3 + 0.7/clamp(lum + 0.5, 0.5, 1.0);
 	}
 
 void  main() {
@@ -83,7 +83,7 @@ void  main() {
 		}
 	#endif
 	
-	float exposure = getExposure(lum);
+	float exposure = getExposure(tex.rgb, lum);
 	tex.rgb = toGamma(toAcesFilmic(tex.rgb * exposure));
 	gl_FragColor = tex;
 	}

@@ -587,7 +587,6 @@ namespace bgfxh {
 		std::ifstream fs(fixPath(filename).c_str(), std::ios::in | std::ios::binary);
 		if (!fs.is_open()) {
 			BGFXH_WARN (false, "Could not open file ", filename );
-			fmt::println("SADFASDFASDF");
 			return NULL;
 			}
 		fs.seekg (0, std::ios::end);
@@ -606,8 +605,6 @@ namespace bgfxh {
 		const bgfx::Memory * vsShaderFileMem = readFileRawToBgfxMemory(vertexShaderFile); //bgfx will auto-dealloc this when done
 		if (!vsShaderFileMem) {
 			BGFXH_WARN (false, "vertex shader buffer is NULL");
-			BGFXH_WARN (true, "vertex shader buffer is asdasd NULL");
-			exit(1);
 			return BGFX_INVALID_HANDLE;
 			}
 		bgfx::ShaderHandle vsh = bgfx::createShader(vsShaderFileMem);

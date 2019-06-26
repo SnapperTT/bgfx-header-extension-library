@@ -28,13 +28,15 @@ RenderJobs are basically C++ objects that wrap bgfx commands and resources do so
 * In your rendering loop, call `mBloomRenderJob.submit(framebufferToBloom);` - this will set up the views
 * On object destruction all resources created will be freed.
 
-Shaders ''can'' be embedded in the RenderJobs. Use `#define BGFXH_EMBED_FILTER_SHADERS` to embed at compile time.
+Shaders ''can'' be embedded in the RenderJobs. Use `#define BGFXH_EMBED_RENDER_JOB_SHADERS` to embed at compile time.
 
 Each filter has detailed use instructions in the top of their respective header file.
 
 Availiable RenderJobs:
+* `atmosphere.h` - Implementation of Sean O'Niel's atmospheric shader from Gpu Gems 2. Works at all altitudes, can shade the atmosphere and the ground, can work either in the vertex or the fragment shader. Includes a utitlity to generate sky dome/sphere meshes
 * `cascadingShadowMap.h` - Cascading shadowmap generation (both regular and VSM, with frustum checking)
 * `bloom.h` - Bloom with a fixed gaussian kernal. Uses bilinear filtering for efficiency
+* `guassianBlur.h` - Guassian blur with setable kernal. Also has a function to generate a suitable sigma for a given kernal
 * `lum.h` - Time averaged luminance calculation
 * `tonemapping.h` - ACES Filmic Tonemapping + can combine the outputs of other RenderJobs
 
@@ -107,19 +109,19 @@ It is recommended that you use texturec (part of bgfx, see tools) to create a te
 
 ...
 
-initSdlWindow(mWindow);
+initSdlWindowAndBgfx(mWindow);
 bgfxh::init(backbufferWidth, backbufferHeight, "path/to/shaders"); //<-- shaders, uniforms and vertexDecl's for debug drawing are made here
 
 .... OR ....
 
 bgfx::Init mInit;
 // Set mInit's parameters here
-initSdlWindow(mWindow, mInit);
+initSdlWindowAndBgfx(mWindow, mInit);
 bgfxh::init(backbufferWidth, backbufferHeight, "path/to/shaders"); //<-- shaders, uniforms and vertexDecl's for debug drawing are made here
 
 .... OR ....
 
-initSdlWindow(mWindow, NULL, false); // Don't call bgfx::init() internally. Infact if you're not using SDL you can omit this line altogether
+initSdlWindow(mWindow); // Don't call bgfx::init() internally. Infact if you're not using SDL you can omit this line altogether
 bgfx::init();
 bgfxh::init(backbufferWidth, backbufferHeight, "path/to/shaders");
 ```

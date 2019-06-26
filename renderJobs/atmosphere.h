@@ -6,16 +6,20 @@
 // Non functioning WIP that should be used by noone
  
 ///////////////////////////////////////////////////////////////////////
-// Atmosphere Filter
+// Atmosphere RenderJob
 //
 // Renders a spherical atmosphere. Can be used when rendering from the ground or from space
-// Vertex shader based. If you want more accuracy use more verts
-// Contains a utility function to create a sky sphere, a sky dome (half iso-sphere)
+// Vertex OR fragment shader based. Set "mAtmosphere::doInFragShader = true" to enable fragment shader
+// Contains a utility function (bgfxh::generateIsoSphere) to create a sky sphere, a sky dome (half iso-sphere),
+// or a section of a sky sphere (with the minHeight argument)
+//
+// If you want to shade terrain, use the atmosphereGround() function in shaders/atmosphere/atmospheric_functions.shh
+// 
 // The sky sphere is an isosphere
 // The sky dome is also an isosphere, but only triangles containing verts.y >= 0.f are subdivided.
-// The sky-semi-dome is also an isosphere, but only triangles containing (verts.y >= 0.f && verts.z >= 0.f) are subdivided.
+// you can use the minHeight parameter to make sure that only verts.y > minHeight are subdivided
 //
-
+//
 // How to use:
 // 0. Include! Use #include <bgfxh/bgfxh.h>, #include <bgfxh/renderJobs/atmosphere.h> in a relevent file. Be sure to use #define BGFXH_IMPL *once* to generate an implementation somewhere!
 // 1. Create an instance of the atmosphereRenderJob object ( bgfxh::atmosphereRenderJob mAtmosphereRenderJob; )
@@ -25,7 +29,10 @@
 // 
 // To create a sky sphere:
 //	bgfxh::simpleMesh skyMesh;
-//	bgfxh::generateIsoSphere(skyMesh, 4, isHalfSphere, isQuaterSphere)
+//	bgfxh::generateIsoSphere(skyMesh, 4, useMinHeight = (false), minHeight = (0.f))
+//	bgfxh::generateIsoSphere(skyMesh, 4) // Sphere with 4 subdivisions
+//	bgfxh::generateIsoSphere(skyMesh, 4, true) // Sphere with 4 subdivisions, only y >= 0 verts are subdivided
+//	bgfxh::generateIsoSphere(skyMesh, 4, true, 0.8) // Sphere with 4 subdivisions, only y >= 0.8 verts are subdivided
 //
 // To draw:
 //	skyMesh.bind();
@@ -34,7 +41,7 @@
 //	mAtmosphereRenderJob.submit();
 //
 // Polygon Counts:
-//	IsoSpheres:
+//	IsoSpheres: (useMinHeight = fasle)
 //	SubDivisions: 0, nVerts: 12, nIndicies: 60, nTriangles: 20
 //	SubDivisions: 1, nVerts: 42, nIndicies: 240, nTriangles: 80
 //	SubDivisions: 2, nVerts: 162, nIndicies: 960, nTriangles: 320
@@ -43,7 +50,7 @@
 //	SubDivisions: 5, nVerts: 10242, nIndicies: 61440, nTriangles: 20480
 //	SubDivisions: 6, nVerts: 40962, nIndicies: 245760, nTriangles: 81920
 //	SubDivisions: 7, nVerts: 65730 !! Error -> vertex count is > 65355 and algo breaks
-// Semi-IsoSpheres:
+// Semi-IsoSpheres (useMinHeight = true, minHeight = 0.f)
 //	SubDivisions: 0, nVerts: 12, nIndicies: 60, nTriangles: 20
 //	SubDivisions: 1, nVerts: 41, nIndicies: 222, nTriangles: 74
 //	SubDivisions: 2, nVerts: 133, nIndicies: 744, nTriangles: 248
@@ -54,7 +61,7 @@
 //	SubDivisions: 7, nVerts: 84185 !! Error -> vertex count is > 65355 and algo breaks
 //
 //
-// VIEWS: This filter will consume nShadowLevels views
+// VIEWS: This renderJob will consume 0 views, but you need at least 1 view for it (you can use multiple atmospheres in 1 view)
 //
 ///////////////////////////////////////////////////////////////////////
 
@@ -62,7 +69,7 @@
 #define LZZ_INLINE inline
 namespace bgfxh
 {
-  void generateIsoSphere (bgfxh::simpleMesh & sm, unsigned int const nSubdivisions, bool isSemiIsoSphere = false, float minHeight = 0.f);
+  void generateIsoSphere (bgfxh::simpleMesh & sm, unsigned int const nSubdivisions, bool useMinHeight = false, float minHeight = 0.f);
 }
 namespace bgfxh
 {
@@ -70,13 +77,12 @@ namespace bgfxh
   {
   public:
     bgfx::UniformHandle u_sunDirection;
-    bgfx::UniformHandle u_eyePosition;
     bgfx::UniformHandle u_worldPosAndSize;
-    bgfx::UniformHandle u_cameraOffset;
+    bgfx::UniformHandle u_atmosphericParams;
     bgfx::ProgramHandle m_programAtmosphere;
     bool inited;
     bgfx::ViewId viewId;
-    bool shadowUseForwardZ;
+    bool doInFragShader;
     atmosphericRenderJob ();
     ~ atmosphericRenderJob ();
     bgfx::FrameBufferHandle getOutputFrameBuffer () const;
@@ -85,8 +91,7 @@ namespace bgfxh
     void initToZero ();
     void init ();
     void deInit ();
-    void setupViews (float * viewMtx, float * projMtx, bx::Vec3 const & lightDirection);
-    void setTransforms (float * modelMtx, float planetRadius, bx::Vec3 const & sunPosition);
+    void setTransforms (float const * modelMtx, float const planetRadius, bx::Vec3 const & sunPosition, float const & sunIntensity = 10.f, float const & g = -0.87, bx::Vec3 const & tintColor = bx::Vec3(1.f, 1.f, 1.f), bx::Vec3 const & rayleighTint = bx::Vec3(1.f, 1.f, 1.f));
     void submit ();
   };
 }
@@ -112,14 +117,11 @@ namespace bgfxh
 #define LZZ_INLINE inline
 namespace bgfxh
 {
-  void generateIsoSphere (bgfxh::simpleMesh & sm, unsigned int const nSubdivisions, bool isSemiIsoSphere, float minHeight)
-                                                                                                                                       {
+  void generateIsoSphere (bgfxh::simpleMesh & sm, unsigned int const nSubdivisions, bool useMinHeight, float minHeight)
+                                                                                                                                    {
 	// Adapted from:
 	// http://blog.andreaskahler.com/2009/06/creating-icosphere-mesh-in-code.html
 	// https://schneide.blog/2016/07/15/generating-an-icosphere-in-c/
-	//BGFXH_WARN(nSubdivisions <= 6, "bgfxh::generateIsoSphere - more than 6 subdivisions means more than 65k verts!");
-	//if (nSubdivisions > 6) return;
-	
 	const float gr = (1.0 + sqrt(5.0)) / 2.0;
 	const float gri = 1.0/gr;
 	
@@ -139,7 +141,7 @@ namespace bgfxh
 			const bx::Vec3 & edge0 = sm.verts[p1];
 			const bx::Vec3 & edge1 = sm.verts[p2];
 			
-			if (isSemiIsoSphere) {
+			if (useMinHeight) {
 				if (edge0.y < minHeight && edge1.y < minHeight) {
 					bx::Vec3 point = bx::lerp(edge0, edge1, 0.5f); // Average so that there are no gaps
 					sm.verts.push_back(point);
@@ -202,7 +204,7 @@ namespace bgfxh
 		for (uint16_t i = 0; i < smFacesSz; ++i) {
 			const meshFace & tri = sm.faces[i];
 			
-			if (isSemiIsoSphere) {
+			if (useMinHeight) {
 				// Don't subdivide any "underground" triangles
 				const float & y1 = sm.verts[tri.a].y;
 				const float & y2 = sm.verts[tri.b].y;
@@ -265,14 +267,13 @@ namespace bgfxh
   void atmosphericRenderJob::initToZero ()
                            {
 		u_sunDirection = BGFX_INVALID_HANDLE; 		// Sun vector in world. Normaised direction to it.
-		u_eyePosition = BGFX_INVALID_HANDLE;  		// Position of the camera relative to world
 		u_worldPosAndSize = BGFX_INVALID_HANDLE; 	// The position and size of the world being rendered. (x,y,z) = position of the world in model space, w = world radius
-		u_cameraOffset = BGFX_INVALID_HANDLE;		// == u_eyePosition.xyz - u_worldPosAndSize.xyz. Seperate uniform to prevent floating point resolution issues for very large planets
-
+		u_atmosphericParams = BGFX_INVALID_HANDLE;
+		
 		m_programAtmosphere = BGFX_INVALID_HANDLE;
 		
 		viewId = 0;
-		shadowUseForwardZ = true;
+		doInFragShader = true;
 		inited = false;
 		}
 }
@@ -281,30 +282,49 @@ namespace bgfxh
   void atmosphericRenderJob::init ()
                      {
 		u_sunDirection = bgfx::createUniform("u_sunDirection", bgfx::UniformType::Vec4); 
-		u_eyePosition = bgfx::createUniform("u_eyePosition", bgfx::UniformType::Vec4);
 		u_worldPosAndSize = bgfx::createUniform("u_worldPosAndSize", bgfx::UniformType::Vec4);
-		u_cameraOffset = bgfx::createUniform("u_cameraOffset", bgfx::UniformType::Vec4);
-				
+		u_atmosphericParams = bgfx::createUniform("u_atmosphericParams", bgfx::UniformType::Vec4, 2);
+		
 		#ifdef BGFXH_EMBED_RENDER_JOB_SHADERS
-			{
-			#include "../shaders/atmosphere/c/vs_atmosphere.bin.h"
-			#include "../shaders/atmosphere/c/fs_atmosphere.bin.h"
+			if (doInFragShader) {
+				#include "../shaders/atmosphere/c/vs_atmosphere.bin.h"
+				#include "../shaders/atmosphere/c/fs_atmosphere.bin.h"
 
-			static const bgfx::EmbeddedShader s_embeddedShaders[] = {
-				BGFXH_EMBEDDED_SHADER(vs_atmosphere_bin),
-				BGFXH_EMBEDDED_SHADER(fs_atmosphere_bin),
+				static const bgfx::EmbeddedShader s_embeddedShaders[] = {
+					BGFXH_EMBEDDED_SHADER(vs_atmosphere_bin),
+					BGFXH_EMBEDDED_SHADER(fs_atmosphere_bin),
+					
+					BGFX_EMBEDDED_SHADER_END()
+					};
 				
-				BGFX_EMBEDDED_SHADER_END()
-				};
-			
-			bgfx::RendererType::Enum type = bgfx::getRendererType();
-			m_programAtmosphere = bgfx::createProgram(bgfx::createEmbeddedShader(s_embeddedShaders, type, "vs_atmosphere_bin")
-													, bgfx::createEmbeddedShader(s_embeddedShaders, type, "fs_atmosphere_bin")
-													, true
-													);
-			}
+				bgfx::RendererType::Enum type = bgfx::getRendererType();
+				m_programAtmosphere = bgfx::createProgram(bgfx::createEmbeddedShader(s_embeddedShaders, type, "vs_atmosphere_bin")
+														, bgfx::createEmbeddedShader(s_embeddedShaders, type, "fs_atmosphere_bin")
+														, true
+														);
+				}
+			else {
+				#include "../shaders/atmosphere/c/vs_atmosphere_frag.bin.h"
+				#include "../shaders/atmosphere/c/fs_atmosphere_frag.bin.h"
+
+				static const bgfx::EmbeddedShader s_embeddedShaders[] = {
+					BGFXH_EMBEDDED_SHADER(vs_atmosphere_frag_bin),
+					BGFXH_EMBEDDED_SHADER(fs_atmosphere_frag_bin),
+					
+					BGFX_EMBEDDED_SHADER_END()
+					};
+				
+				bgfx::RendererType::Enum type = bgfx::getRendererType();
+				m_programAtmosphere = bgfx::createProgram(bgfx::createEmbeddedShader(s_embeddedShaders, type, "vs_atmosphere_frag_bin")
+														, bgfx::createEmbeddedShader(s_embeddedShaders, type, "fs_atmosphere_frag_bin")
+														, true
+														);
+				}
 		#else
-			m_programAtmosphere = bgfxh::loadProgram(bgfxh::shaderSearchPath + "vs_atmosphere.bin", bgfxh::shaderSearchPath + "vs_atmosphere.bin");
+			if (doInFragShader)
+				m_programAtmosphere = bgfxh::loadProgram(bgfxh::shaderSearchPath + "vs_atmosphere_frag.bin", bgfxh::shaderSearchPath + "fs_atmosphere_frag.bin");
+			else
+				m_programAtmosphere = bgfxh::loadProgram(bgfxh::shaderSearchPath + "vs_atmosphere.bin", bgfxh::shaderSearchPath + "fs_atmosphere.bin");
 		#endif
 		
 		BGFXH_CHECK(bgfx::isValid(m_programAtmosphere), "failed to load shader bgfxh::atmosphericRenderJob::m_programAtmosphere! Check your bgfxh::shaderSearchPath setting, path, and that the shader type matches the renderer type!");
@@ -316,9 +336,8 @@ namespace bgfxh
   void atmosphericRenderJob::deInit ()
                        {			
 		bgfxh::destroyHandle (u_sunDirection);
-		bgfxh::destroyHandle (u_eyePosition);
 		bgfxh::destroyHandle (u_worldPosAndSize);
-		bgfxh::destroyHandle (u_cameraOffset);
+		bgfxh::destroyHandle (u_atmosphericParams);
 			
 		bgfxh::destroyHandle (m_programAtmosphere);
 		inited = false;
@@ -326,33 +345,19 @@ namespace bgfxh
 }
 namespace bgfxh
 {
-  void atmosphericRenderJob::setupViews (float * viewMtx, float * projMtx, bx::Vec3 const & lightDirection)
-                                                                                            {
-		}
-}
-namespace bgfxh
-{
-  void atmosphericRenderJob::setTransforms (float * modelMtx, float planetRadius, bx::Vec3 const & sunPosition)
-                                                                                                {
-		/*
+  void atmosphericRenderJob::setTransforms (float const * modelMtx, float const planetRadius, bx::Vec3 const & sunPosition, float const & sunIntensity, float const & g, bx::Vec3 const & tintColor, bx::Vec3 const & rayleighTint)
+                                                                                                                                                                                                                                                                                       {
 		bx::Vec3 planetPosition (modelMtx[12], modelMtx[13],modelMtx[14]);
+		bx::Vec3 sunDirection = bx::normalize(bx::sub(sunPosition, planetPosition));
 		
-		float scaleMtx[16];
-		bx::mtxScale(scaleMtx, radius);
-		float drawModelMtx[16];
-		bx::mul(drawModelMtx, scaleMtx, modelMtx);
-		
-		bx::Vec3 sunDirv = bx::normalize(bx::sub(sunPosition, planetPosition));
-		float eyePosition[4] = { -planetPosition.x, -planetPosition.y, -planetPosition.z, 1.0f }; // Planet -> eye
-		float sunDirection[4] = { sunDirv.x, sunDirv.y, sunDirv.z, 0.0f }; // Planet -> sun
-		float worldPosAndSize[4] = { planetPosition.x, planetPosition.y, planetPosition.z, planetRadius };
-		float cameraOffset[4] = { -2.f*planetPosition.x, -2.f*planetPosition.y, -2.f*planetPosition.z, 1.0f };
-		
-		bgfx::setTransform(drawModelMtx);
-		bgfx::setUniform (u_eyePosition, eyePosition);
-		bgfx::setUniform (u_sunDirection, sunDirection);
-		bgfx::setUniform (u_worldPosAndSize, worldPosAndSize);
-		bgfx::setUniform (u_cameraOffset, cameraOffset);*/
+		float fa_sunDirection[4] = { sunDirection.x, sunDirection.y, sunDirection.z, 0.f };
+		float fa_worldPosAndSize[4] = { planetPosition.x, planetPosition.y, planetPosition.z, planetRadius };
+		float fa_atmosphericParams[8] = { tintColor.x, tintColor.y, tintColor.z, sunIntensity,
+										 rayleighTint.x, rayleighTint.y, rayleighTint.z, g };
+		bgfx::setUniform(u_sunDirection, fa_sunDirection);
+		bgfx::setUniform(u_worldPosAndSize, fa_worldPosAndSize);
+		bgfx::setUniform(u_atmosphericParams, fa_atmosphericParams, 2);
+		bgfx::setTransform(modelMtx);
 		}
 }
 #undef LZZ_INLINE

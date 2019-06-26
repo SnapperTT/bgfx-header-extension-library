@@ -82,7 +82,7 @@ namespace bgfxh
   bgfx::FrameBufferHandle lumRenderJob::getOutputFrameBuffer () const
                                                               {
 		/// Returns the output for the bloom filter
-		return frameTickTock ? m_lumFB[5] : m_lumFB[4];
+		return frameTickTock ? m_lumFB[4] : m_lumFB[5];
 		}
 }
 namespace bgfxh
@@ -98,7 +98,7 @@ namespace bgfxh
   void lumRenderJob::initToZero ()
                            {
 		// Sets default vaules for this filter. Used in constructor
-		framebufferTexFormat = bgfx::TextureFormat::RGBA8;
+		framebufferTexFormat = bgfx::TextureFormat::R16F;
 		for (int i = 0; i < 6; ++i)
 			m_lumFB[i] = BGFX_INVALID_HANDLE;
 		

@@ -107,7 +107,7 @@ namespace bgfxh
 		bloomWidth  = 512;
 		bloomHeight = 512;
 		nBloomBlurPasses = 1;
-		framebufferTexFormat = bgfx::TextureFormat::RGBA8;
+		framebufferTexFormat = bgfx::TextureFormat::RGBA16F;
 		m_bloomExtractProgram = BGFX_INVALID_HANDLE;
 		m_programBloomBlur[0] = BGFX_INVALID_HANDLE;
 		m_programBloomBlur[1] = BGFX_INVALID_HANDLE;

@@ -12,7 +12,7 @@ SAMPLER2D(s_texColor,  0);
 #ifdef MULTIFRAME_AVERAGED
 	SAMPLER2D(s_texLum,    1);
 	// Uniforms
-	uniform vec4 u_frametime;    // u_frametime.x = frametime, u_frametime.y = framecount
+	uniform vec4 u_frameTime;    // u_frametime.x = frametime, u_frametime.y = framecount
 #endif
 uniform vec4 u_offset[16];
 
@@ -44,7 +44,7 @@ void main() {
 
 	#ifdef MULTIFRAME_AVERAGED
 		float lum = texture2D(s_texLum, vec2(0.5,0.5)).r; // Already averaged Lum from previous frame
-		float d = u_frametime.x; // The frametime as reported by  
+		float d = u_frameTime.x; // The frametime as reported by bgfx (in seconds)
 		gl_FragColor = vec4(avg*d + lum*(1.0-d), 0.0, 0.0, 1.0);
 	#else
 		gl_FragColor = vec4(avg, 0.0, 0.0, 1.0);
