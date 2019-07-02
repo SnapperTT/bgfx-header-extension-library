@@ -91,7 +91,7 @@ namespace bgfxh
     void initToZero ();
     void init ();
     void deInit ();
-    void setTransforms (float const * modelMtx, float const planetRadius, bx::Vec3 const & sunPosition, float const & sunIntensity = 10.f, float const & g = -0.87, bx::Vec3 const & tintColor = bx::Vec3(1.f, 1.f, 1.f), bx::Vec3 const & rayleighTint = bx::Vec3(1.f, 1.f, 1.f));
+    void setTransforms (float const * modelMtx, float const planetRadius, bx::Vec3 const & sunPosition, float const & sunIntensity = 10.f, float const & g = -0.87, bx::Vec3 const & mieTint = bx::Vec3(1.f, 1.f, 1.f), bx::Vec3 const & rayleighTint = bx::Vec3(1.f, 1.f, 1.f));
     void submit ();
   };
 }
@@ -345,14 +345,14 @@ namespace bgfxh
 }
 namespace bgfxh
 {
-  void atmosphericRenderJob::setTransforms (float const * modelMtx, float const planetRadius, bx::Vec3 const & sunPosition, float const & sunIntensity, float const & g, bx::Vec3 const & tintColor, bx::Vec3 const & rayleighTint)
-                                                                                                                                                                                                                                                                                       {
+  void atmosphericRenderJob::setTransforms (float const * modelMtx, float const planetRadius, bx::Vec3 const & sunPosition, float const & sunIntensity, float const & g, bx::Vec3 const & mieTint, bx::Vec3 const & rayleighTint)
+                                                                                                                                                                                                                                                                                     {
 		bx::Vec3 planetPosition (modelMtx[12], modelMtx[13],modelMtx[14]);
 		bx::Vec3 sunDirection = bx::normalize(bx::sub(sunPosition, planetPosition));
 		
 		float fa_sunDirection[4] = { sunDirection.x, sunDirection.y, sunDirection.z, 0.f };
 		float fa_worldPosAndSize[4] = { planetPosition.x, planetPosition.y, planetPosition.z, planetRadius };
-		float fa_atmosphericParams[8] = { tintColor.x, tintColor.y, tintColor.z, sunIntensity,
+		float fa_atmosphericParams[8] = { mieTint.x, mieTint.y, mieTint.z, sunIntensity,
 										 rayleighTint.x, rayleighTint.y, rayleighTint.z, g };
 		bgfx::setUniform(u_sunDirection, fa_sunDirection);
 		bgfx::setUniform(u_worldPosAndSize, fa_worldPosAndSize);

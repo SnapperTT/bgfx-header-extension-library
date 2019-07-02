@@ -168,7 +168,7 @@ namespace bgfxh
                                                                                  { ///Returns the output framebuffer as a texture handle. Use this to use the output of a filter as a sampler input to another
 		bgfx::FrameBufferHandle ofb = getOutputFrameBuffer(csmLevel);
 		if (!bgfx::isValid(ofb)) return BGFX_INVALID_HANDLE;
-		return bgfx::getTexture(getOutputFrameBuffer(), 0);
+		return bgfx::getTexture(ofb, 0);
 		}
 }
 namespace bgfxh
