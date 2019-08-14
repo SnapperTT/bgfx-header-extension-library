@@ -179,7 +179,7 @@ namespace bgfxh
     float m_u;
     float m_v;
     static void init ();
-    static bgfx::VertexDecl ms_decl;
+    static bgfx::VertexLayout ms_decl;
   };
 }
 namespace bgfxh
@@ -190,7 +190,7 @@ namespace bgfxh
     float m_y;
     float m_z;
     static void init ();
-    static bgfx::VertexDecl ms_decl;
+    static bgfx::VertexLayout ms_decl;
   };
 }
 namespace bgfxh
@@ -519,7 +519,7 @@ namespace bgfxh
 }
 namespace bgfxh
 {
-  bgfx::VertexDecl PosTexCoord0Vertex::ms_decl;
+  bgfx::VertexLayout PosTexCoord0Vertex::ms_decl;
 }
 namespace bgfxh
 {
@@ -532,7 +532,7 @@ namespace bgfxh
 }
 namespace bgfxh
 {
-  bgfx::VertexDecl PosVertex::ms_decl;
+  bgfx::VertexLayout PosVertex::ms_decl;
 }
 namespace bgfxh
 {

@@ -82,6 +82,8 @@
 //		}
 //
 
+// TODO: Use bounding spheres to calculate bounding volumes: https://lxjk.github.io/2017/04/15/Calculate-Minimal-Bounding-Sphere-of-Frustum.html
+// TODO: Investigate automatic instancing of submission objects and rendering to a single target
 
 #ifndef BGFXH_MAX_SHADOW_LEVELS
 	#define BGFXH_MAX_SHADOW_LEVELS 4
@@ -103,6 +105,7 @@ namespace bgfxh
     bgfx::ProgramHandle m_programDepthWrite;
     bool inited;
     float (depthGates) [BGFXH_MAX_SHADOW_LEVELS];
+    float zMargin;
     bgfx::ViewId viewId;
     uint32_t nShadowLevels;
     uint32_t shadowMapSz;
@@ -208,6 +211,7 @@ namespace bgfxh
 		m_programDepthWrite = BGFX_INVALID_HANDLE;
 		
 		viewId = 0;
+		zMargin = 50;
 		nShadowLevels = BGFXH_MAX_SHADOW_LEVELS;
 		shadowMapSz = 512; 
 		submitState = 0;
@@ -335,12 +339,12 @@ namespace bgfxh
 			bx::Vec3 coords[8];
 			coords[0] = bx::Vec3( x1, y1,z1);
 			coords[1] = bx::Vec3(-x1,-y1,z1);
-			coords[2] = bx::Vec3( x2, y2,z1);
-			coords[3] = bx::Vec3(-x2,-y2,z1);
-			coords[4] = bx::Vec3( x1, y1,z2);
-			coords[5] = bx::Vec3(-x1,-y1,z2);
-			coords[6] = bx::Vec3( x2, y2,z2);
-			coords[7] = bx::Vec3(-x2,-y2,z2);
+			coords[2] = bx::Vec3( x2, y2,z2);
+			coords[3] = bx::Vec3(-x2,-y2,z2);
+			coords[4] = bx::Vec3( x1,-y1,z1);
+			coords[5] = bx::Vec3(-x1, y1,z1);
+			coords[6] = bx::Vec3( x2,-y2,z2);
+			coords[7] = bx::Vec3(-x2, y2,z2);
 			
 			for (unsigned int j = 0; j < 8; ++j)
 				coords[j] = bx::mul(coords[j], shadowLightView[i]);
@@ -364,8 +368,8 @@ namespace bgfxh
 			const float safetyFactor = 1.25; //Padding so that objects don't get clipped
 			float zSz = maxZ - minZ;
 			float zAvg = (maxZ + minZ)/2;
-			minZ = zAvg - zSz*safetyFactor/2.0;
-			maxZ = zAvg + zSz*safetyFactor/2.0;
+			minZ = zAvg - zSz*safetyFactor/2.0 - zMargin;
+			maxZ = zAvg + zSz*safetyFactor/2.0 + zMargin;
 			
 			shadowAabbMin[i] = bx::Vec3(minX, minY, minZ);
 			shadowAabbMax[i] = bx::Vec3(maxX, maxY, maxZ);

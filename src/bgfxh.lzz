@@ -337,7 +337,7 @@ namespace bgfxh {
 				.add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
 			.end();
 			}
-		static bgfx::VertexDecl ms_decl;
+		static bgfx::VertexLayout ms_decl;
 		};
 	struct PosVertex {
 		float m_x;
@@ -349,7 +349,7 @@ namespace bgfxh {
 				.add(bgfx::Attrib::Position,  3, bgfx::AttribType::Float)
 			.end();
 			}
-		static bgfx::VertexDecl ms_decl;
+		static bgfx::VertexLayout ms_decl;
 		};
 		
 	/// Null checked bgfx::*Handle destruction

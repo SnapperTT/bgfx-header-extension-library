@@ -72,32 +72,41 @@ for i=1,#arg do
 		OUTPUT_FILE = arg[i+1];
 		i=i+1;
 	elseif (arg[i] == "-C_DO") then
-		GLOBAL_C_DO = isOnOrOff(arg[i+1]);
-		i=i+1;
+		GLOBAL_C_DO = true;
 	elseif (arg[i] == "-DX9_DO") then
-		GLOBAL_DX9_DO = isOnOrOff(arg[i+1]);
-		i=i+1;
+		GLOBAL_DX9_DO = true;
 	elseif (arg[i] == "-DX11_DO") then
-		GLOBAL_DX11_DO = isOnOrOff(arg[i+1]);
-		i=i+1;
+		GLOBAL_DX11_DO = true;
 	elseif (arg[i] == "-NACL_DO") then
-		GLOBAL_NACL_DO = isOnOrOff(arg[i+1]);
-		i=i+1;
+		GLOBAL_NACL_DO = true;
 	elseif (arg[i] == "-ANDROID_DO") then
-		GLOBAL_ANDROID_DO = isOnOrOff(arg[i+1]);
-		i=i+1;
+		GLOBAL_ANDROID_DO = true;
 	elseif (arg[i] == "-GLSL_DO") then
-		GLOBAL_GLSL_DO = isOnOrOff(arg[i+1]);
-		i=i+1;
+		GLOBAL_GLSL_DO = true;
 	elseif (arg[i] == "-METAL_DO") then
-		GLOBAL_METAL_DO = isOnOrOff(arg[i+1]);
-		i=i+1;
+		GLOBAL_METAL_DO = true;
 	elseif (arg[i] == "-ORBIS_DO") then
-		GLOBAL_ORBIS_DO = isOnOrOff(arg[i+1]);
-		i=i+1;
+		GLOBAL_ORBIS_DO = true;
 	elseif (arg[i] == "-SPRIV_DO") then
-		GLOBAL_SPRIV_DO = isOnOrOff(arg[i+1]);
-		i=i+1;
+		GLOBAL_SPRIV_DO = true;
+	elseif (arg[i] == "-C_DONT") then
+		GLOBAL_C_DO = false;
+	elseif (arg[i] == "-DX9_DONT") then
+		GLOBAL_DX9_DO = false;
+	elseif (arg[i] == "-DX11_DONT") then
+		GLOBAL_DX11_DO = false;
+	elseif (arg[i] == "-NACL_DONT") then
+		GLOBAL_NACL_DO = false;
+	elseif (arg[i] == "-ANDROID_DONT") then
+		GLOBAL_ANDROID_DO = false;
+	elseif (arg[i] == "-GLSL_DONT") then
+		GLOBAL_GLSL_DO = false;
+	elseif (arg[i] == "-METAL_DONT") then
+		GLOBAL_METAL_DO = false;
+	elseif (arg[i] == "-ORBIS_DONT") then
+		GLOBAL_ORBIS_DO = false;
+	elseif (arg[i] == "-SPRIV_DONT") then
+		GLOBAL_SPRIV_DO = false;
 	end
 end
 
