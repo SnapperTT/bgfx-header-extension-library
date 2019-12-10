@@ -1,11 +1,11 @@
-Bgfx Header Utils Extension Library
+Bgfx Header Utils And Effects Library
 ===================================
-An extension library for [bgfx](https://github.com/bkaradzic/bgfx) to help you hit the ground running by wrapping common tasks in simple header files. It also provides a number of RenderJobs to provide an off-the-shelf solution to common rendering demands, such as post processing filters, shadow mapping and more.
+An extension library for [bgfx](https://github.com/bkaradzic/bgfx) to help you hit the ground running by wrapping common tasks in simple header files. It also provides a number of Effects to provide an off-the-shelf solution to common rendering demands, such as post processing filters, shadow mapping and more.
 
 Like bgfx, this is rendering library. Its not a game engine and does not aim to be. Rather it simply gives you the pieces to rapidly assemble a graphics pipeline in a cross platform, api agnostic manner. Bgfxh aims to bridge the gap between using a potentially large or bloated generalist graphics library or game engine for simple rendering jobs, and reinventing the wheel by creating an engine from scratch. By thinly relying on bgfx maintenance requirements are kept low. 
 
 ## Contact:
-@SnapperTheTwig
+Liam Twigger - @SnapperTheTwig
 
 ## Features:
 * Header only library, inspired by [stb](https://github.com/nothings/stb), requires no changes to your build system. Simply use #define BGFXH_IMPL before #include to generate an implementation
@@ -15,35 +15,35 @@ Like bgfx, this is rendering library. Its not a game engine and does not aim to 
 * Shader Loading with `loadShader()`
 * Inspect textures/framebuffers with `debugDrawFramebuffer()` and `debugDrawFramebufferMono()` for monochromatic framebuffers (such as depth buffers). 
 * Frustum culling utility
-* A variety of RenderJobs, see below for more info
-* Thin layer ontop of bgfxh. Rather than hiding the underlying framework under a complex layer of abstraction, bgfxh just provides free functions that do some job. RenderJobs are c++ classes, are optional
+* A variety of Effects, see below for more info
+* Thin layer ontop of bgfxh. Rather than hiding the underlying framework under a complex layer of abstraction, bgfxh just provides free functions that do some job. Effects are c++ classes, are optional
 * Few dependencies - only on bgfx/bimg/bx and some standard c/c++ libraries
 * Permissive license
 
-## RenderJobs:
-RenderJobs are basically C++ objects that wrap bgfx commands and resources do some graphical task. To use, simply:
-* Include the relevant file (eg `#include <bgfxh/renderJobs/bloom.h>`)
-* Create an object `bgfxh::bloomRenderJob mBloomRenderJob;`
-* Choose your settings for the filter, then call `mBloomRenderJob.init();` - this generates the uniforms, samplers and framebuffers for the filter and loads the relevant shaders
-* In your rendering loop, call `mBloomRenderJob.submit(framebufferToBloom);` - this will set up the views
+## Effects:
+Effects are basically C++ objects that wrap bgfx commands and resources do some graphical task. To use, simply:
+* Include the relevant file (eg `#include <bgfxh/effects/bloom.h>`)
+* Create an object `bgfxh::bloomEffect mBloomEffect;`
+* Choose your settings for the filter, then call `mBloomEffect.init();` - this generates the uniforms, samplers and framebuffers for the filter and loads the relevant shaders
+* In your rendering loop, call `mBloomEffect.submit(framebufferToBloom);` - this will set up the views
 * On object destruction all resources created will be freed.
 
-Shaders ''can'' be embedded in the RenderJobs. Use `#define BGFXH_EMBED_RENDER_JOB_SHADERS` to embed at compile time.
+Shaders ''can'' be embedded in the Effects. Use `#define BGFXH_EMBED_EFFECT_SHADERS` to embed at compile time.
 
 Each filter has detailed use instructions in the top of their respective header file.
 
-Availiable RenderJobs:
+Availiable Effects:
 * `atmosphere.h` - Implementation of Sean O'Niel's atmospheric shader from Gpu Gems 2. Works at all altitudes, can shade the atmosphere and the ground, can work either in the vertex or the fragment shader. Includes a utitlity to generate sky dome/sphere meshes
 * `cascadingShadowMap.h` - Cascading shadowmap generation (both regular and VSM, with frustum checking)
 * `bloom.h` - Bloom with a fixed gaussian kernal. Uses bilinear filtering for efficiency
 * `guassianBlur.h` - Guassian blur with setable kernal. Also has a function to generate a suitable sigma for a given kernal
 * `lum.h` - Time averaged luminance calculation
-* `tonemapping.h` - ACES Filmic Tonemapping + can combine the outputs of other RenderJobs
+* `tonemapping.h` - ACES Filmic Tonemapping + can combine the outputs of other Effects
 
 ## Shaders:
 Simply copy the shaders you want and merge the folders together. So to add bloom and luminance shaders to your application copy the contents of `bgfxh/shaders/bloom/` and `bgfx/shaders/lum/` to `yourApp/<yourShaderPath>/`, and set `bgfxh::shaderSearchPath` to `"<yourShaderPath>/" + bgfxh::getShaderDirectoryFromRenderType() + "/"` to point the shader loader to the right shaders. For OpenGl this will be `"<yourShaderPath>/glsl/"`, for dx11 this will be `"<yourShaderPath>/dx11/"`, for Vulkan this will be `"<yourShaderPath>/spriv/"`
 
-Note that `bgfxh::shaderSearchPath` only effects the location of shaders loaded for bgfxh filters! Eg bgfxh::bloomRenderJob will load `bloom_brightpass` by invoking `bgfxh::loadShader(bgfxh::shaderSearchPath + "vs_bloom_brightpass.bin", bgfxh::shaderSearchPath + "fs_bloom_brightpass.bin")`
+Note that `bgfxh::shaderSearchPath` only effects the location of shaders loaded for bgfxh filters! Eg bgfxh::bloomEffect will load `bloom_brightpass` by invoking `bgfxh::loadShader(bgfxh::shaderSearchPath + "vs_bloom_brightpass.bin", bgfxh::shaderSearchPath + "fs_bloom_brightpass.bin")`
 
 loadShader will handle Windows or POSIX file paths (it internally invokes `bgfxh::fixPath(path)`)
 
@@ -148,29 +148,29 @@ bgfxh::debugDrawTexture (VIEW_ID_OUTPUT_PASS, textureHandleToView, 10, 10, 120, 
 // Viewing a framebuffer
 bgfxh::debugDrawFramebuffer (VIEW_ID_OUTPUT_PASS, framebufferToInspect, 10+130, 10, 120, 120, backbufferWidth, backbufferHeight);
 
-// Viewing the output of a bgfxh::renderJob
-bgfxh::debugDrawFramebuffer (VIEW_ID_OUTPUT_PASS, mBgfxhLumRenderJob.getOutputFramebuffer(), 10+130*2, 10, 120, 120, backbufferWidth, backbufferHeight);
+// Viewing the output of a bgfxh::effect
+bgfxh::debugDrawFramebuffer (VIEW_ID_OUTPUT_PASS, mBgfxhLumEffect.getOutputFramebuffer(), 10+130*2, 10, 120, 120, backbufferWidth, backbufferHeight);
 
-// Inspecting a cascading shadow map (eg, cascadingShadowMapRenderJob.h)
-for (unsigned int i = 0; i < mBgfxhCsmRenderJob.nShadowLevels; ++i)
-	bgfxh::debugDrawFramebuffer (VIEW_ID_OUTPUT_PASS, mBgfxhCsmRenderJob.getOutputFramebuffer(i), 10 + 130*i, 130, 120, 120, backbufferWidth, backbufferHeight);
+// Inspecting a cascading shadow map (eg, cascadingShadowMapEffect.h)
+for (unsigned int i = 0; i < mBgfxhCsmEffect.nShadowLevels; ++i)
+	bgfxh::debugDrawFramebuffer (VIEW_ID_OUTPUT_PASS, mBgfxhCsmEffect.getOutputFramebuffer(i), 10 + 130*i, 130, 120, 120, backbufferWidth, backbufferHeight);
 		
 ```
 
-## Create a Rendering Pipeline With The Provided RenderJobs and My Stuff?
+## Create a Rendering Pipeline With The Provided Effects and My Stuff?
 ```c++
 #define BGFXH_IMPL
 #include <bfgxh/bgfxh.h>
-// Optionally #define BGFXH_EMBED_RENDER_JOB_SHADERS if you want shaders embedded at compile time
-#include <bfgxh/renderJobs/bloom.h>
-#include <bfgxh/renderJobs/lum.h>
+// Optionally #define BGFXH_EMBED_EFFECT_SHADERS if you want shaders embedded at compile time
+#include <bfgxh/effects/bloom.h>
+#include <bfgxh/effects/lum.h>
 
 class GfxPipeline {
 public:
-	// RenderJob objects
-	bgfxh::bloomRenderJob mBloomRenderJob; // Each "job" or is a class! 
-	bgfxh::lumRenderJob mLumRenderJob;
-	bgfxh::tonemappingRenderJob mTonemappingRenderJob;
+	// Effect objects
+	bgfxh::bloomEffect mBloomEffect; // Each "job" or is a class! 
+	bgfxh::lumEffect mLumEffect;
+	bgfxh::tonemappingEffect mTonemappingEffect;
 	// Your resources
 	bgfx::ProgramHandle m_myProgram;
 	bgfx::FrameBufferHandle m_myFramebuffer;
@@ -180,14 +180,14 @@ public:
 
 	void init () {
 		// Set parameters
-		mBloomRenderJob.setSize (600, 360);
-		mBloomRenderJob.nBloomBlurPasses = 2;
-		mBloomRenderJob.init(); // Resources are created here!
-		mLumRenderJob.init();
+		mBloomEffect.setSize (600, 360);
+		mBloomEffect.nBloomBlurPasses = 2;
+		mBloomEffect.init(); // Resources are created here!
+		mLumEffect.init();
 		
-		mTonemappingRenderJob.setSize (1200, 720);
-		mTonemappingRenderJob.maxAdditonalSamplerSlots = 1; // Configure the tonemapping filter to accept a blended attachement
-		mTonemappingRenderJob.init ();
+		mTonemappingEffect.setSize (1200, 720);
+		mTonemappingEffect.maxAdditonalSamplerSlots = 1; // Configure the tonemapping filter to accept a blended attachement
+		mTonemappingEffect.init ();
 		
 		// Your stuff
 		m_myProgram = bgfxh::loadProgram("path/vs_forwardRenderer.bin", "fs_forwardRenderer.bin");
@@ -196,9 +196,9 @@ public:
 		}
 		
 	void submitScene (YourScene) {
-		mLumRenderJob.viewId = 1; // A lum filter will take up 5 views
-		mBloomRenderJob.viewId = 1 + mLumRenderJob.getViewIncrement();  // A bloom filter will take a number of views depending on how many blur passes you are doing
-		mTonemappingRenderJob.viewId = mBloomRenderJob.viewId + mBloomRenderJob.getViewIncrement();
+		mLumEffect.viewId = 1; // A lum filter will take up 5 views
+		mBloomEffect.viewId = 1 + mLumEffect.getViewIncrement();  // A bloom filter will take a number of views depending on how many blur passes you are doing
+		mTonemappingEffect.viewId = mBloomEffect.viewId + mBloomEffect.getViewIncrement();
 		
 		...
 		// Render your scene to a framebuffer (m_myFramebuffer)
@@ -207,18 +207,18 @@ public:
 		
 		...
 		// Apply Post Processing using the filters!
-		mLumRenderJob.submit (bgfx::getTexture(m_myFramebuffer, 0));
-		// Get the output of a renderJob as a texture that you can use in another renderJob!
-		mBloomRenderJob.submit (mLumRenderJob.getOutputTexture(), bgfx::getTexture(m_myFramebuffer, 0)); 
+		mLumEffect.submit (bgfx::getTexture(m_myFramebuffer, 0));
+		// Get the output of a effect as a texture that you can use in another effect!
+		mBloomEffect.submit (mLumEffect.getOutputTexture(), bgfx::getTexture(m_myFramebuffer, 0)); 
 		// Configure the tonemapping filter to additively blend the bloom
-		mBgfxhTonemappingRenderJob.setExtraComponent (0, mBgfxhBloomRenderJob.getOutputTexture(), 1.0f, 0.f);
+		mBgfxhTonemappingEffect.setExtraComponent (0, mBgfxhBloomEffect.getOutputTexture(), 1.0f, 0.f);
 		// Does the tonemapping. Renders to backbuffer by default
-		mTonemappingRenderJob.submit (bgfx::getTexture(m_myFramebuffer, 0), mLumRenderJob.getOutputTexture()); 
+		mTonemappingEffect.submit (bgfx::getTexture(m_myFramebuffer, 0), mLumEffect.getOutputTexture()); 
 		
 		// Debug render the lum filter's output to see if it is calculating sensible lum values
 		const int OUTPUT_PASS_ID = 200;
 		bgfxh::initView2D (VIEW_ID_OUTPUT_PASS, "output pass", backbufferWidth, backbufferHeight, BGFX_INVALID_HANDLE, false, false);
-		bgfxh::debugDrawFramebuffer (VIEW_ID_OUTPUT_PASS, mLumRenderJob.getOutputFramebuffer(), 10, 10, 120, 120, backbufferWidth, backbufferHeight);
+		bgfxh::debugDrawFramebuffer (VIEW_ID_OUTPUT_PASS, mLumEffect.getOutputFramebuffer(), 10, 10, 120, 120, backbufferWidth, backbufferHeight);
 		}
 		
 		

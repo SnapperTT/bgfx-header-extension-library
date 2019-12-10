@@ -16,18 +16,18 @@
 #define BGFXH_EMBEDDED_SHADER_METAL BGFX_EMBEDDED_SHADER_METAL
 
 #if BGFX_PLATFORM_SUPPORTS_DX9BC
-#	undef  BGFX_EMBEDDED_SHADER_DX9BC
-#	define BGFX_EMBEDDED_SHADER_DX9BC(_renderer, _name) 		{ _renderer, BX_CONCATENATE(_name, _dx9 ), BX_CONCATENATE(_name, _dx9_size) },
+#	undef  BGFXH_EMBEDDED_SHADER_DX9BC
+#	define BGFXH_EMBEDDED_SHADER_DX9BC(_renderer, _name) 		{ _renderer, BX_CONCATENATE(_name, _dx9 ), BX_CONCATENATE(_name, _dx9_size) },
 #endif // BGFX_PLATFORM_SUPPORTS_DX9BC
 
 #if BGFX_PLATFORM_SUPPORTS_DXBC
-#	undef  BGFX_EMBEDDED_SHADER_DXBC
-#	define BGFX_EMBEDDED_SHADER_DXBC(_renderer, _name) 		{ _renderer, BX_CONCATENATE(_name, _dx11), BX_CONCATENATE(_name, _dx11_size) },
+#	undef  BGFXH_EMBEDDED_SHADER_DXBC
+#	define BGFXH_EMBEDDED_SHADER_DXBC(_renderer, _name) 		{ _renderer, BX_CONCATENATE(_name, _dx11), BX_CONCATENATE(_name, _dx11_size) },
 #endif // BGFX_PLATFORM_SUPPORTS_DXBC
 
 #if BGFX_PLATFORM_SUPPORTS_PSSL
-#	undef  BGFX_EMBEDDED_SHADER_PSSL
-#	define BGFX_EMBEDDED_SHADER_PSSL(_renderer, _name) 		{ _renderer, BX_CONCATENATE(_name, _pssl), BX_CONCATENATE(_name, _pssl_size) },
+#	undef  BGFXH_EMBEDDED_SHADER_PSSL
+#	define BGFXH_EMBEDDED_SHADER_PSSL(_renderer, _name) 		{ _renderer, BX_CONCATENATE(_name, _pssl), BX_CONCATENATE(_name, _pssl_size) },
 #endif // BGFX_PLATFORM_SUPPORTS_PSSL
 
 #if BGFX_PLATFORM_SUPPORTS_ESSL
@@ -40,8 +40,8 @@
 #endif // BGFX_PLATFORM_SUPPORTS_ESSL
 
 #if BGFX_PLATFORM_SUPPORTS_GLSL
-#	undef  BGFX_EMBEDDED_SHADER_GLSL
-#	define BGFX_EMBEDDED_SHADER_GLSL(_renderer, _name) 		{ _renderer, BX_CONCATENATE(_name, _glsl), BX_CONCATENATE(_name, _glsl_size)  },
+#	undef  BGFXH_EMBEDDED_SHADER_GLSL
+#	define BGFXH_EMBEDDED_SHADER_GLSL(_renderer, _name) 		{ _renderer, BX_CONCATENATE(_name, _glsl), BX_CONCATENATE(_name, _glsl_size)  },
 #endif // BGFX_PLATFORM_SUPPORTS_GLSL
 
 #if BGFX_PLATFORM_SUPPORTS_SPIRV
@@ -63,10 +63,13 @@
 ////////////////////////////////////////////////////////////////////////
 
 #ifdef BGFXH_IMPL
+#ifndef BGFXH_DOUBLE_GUARD_bgfxh_embedded_shader
+#define BGFXH_DOUBLE_GUARD_bgfxh_embedded_shader
 // bgfxh_embedded_shader.cpp
 //
 
 // No impl
 #define LZZ_INLINE inline
 #undef LZZ_INLINE
+#endif //BGFXH_DOUBLE_GUARD_bgfxh_embedded_shader
 #endif //BGFXH_IMPL

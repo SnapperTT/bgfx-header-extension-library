@@ -1,6 +1,6 @@
 # This makefile creates the .h files in the parent directory from .lzz files here
 LAZY=../tools/lzz -hx hh
-RAWSOURCES=bgfxh.lzz bgfxh_embedded_shader.lzz loadTexture.lzz mesh.lzz sdlWindow.lzz renderJobs/atmosphere.lzz renderJobs/bloom.lzz renderJobs/cascadingShadowMap.lzz renderJobs/guassianBlur.lzz renderJobs/lum.lzz renderJobs/tonemapping.lzz
+RAWSOURCES=bgfxh.lzz bgfxh_embedded_shader.lzz loadTexture.lzz mesh.lzz sdlWindow.lzz effects/atmosphere.lzz effects/bloom.lzz effects/cascadingShadowMap.lzz effects/guassianBlur.lzz effects/lum.lzz effects/tonemapping.lzz
 OUTPUTDIR=../
 TEMPDIR=temp/
 SOURCES=$(addprefix $(TEMPDIR),$(RAWSOURCES:.lzz=.cpp))
@@ -26,7 +26,10 @@ $(OUTPUTDIR)%.h: $(TEMPDIR)%.cpp $(TEMPDIR)%.hh
 	echo '////////////////////////////////////////////////////////////////////////' >> $@
 	echo '' >> $@
 	echo '#ifdef BGFXH_IMPL' >> $@
+	echo '#ifndef BGFXH_DOUBLE_GUARD_$(subst /,_,$(subst \\,_,$*))' >> $@
+	echo '#define BGFXH_DOUBLE_GUARD_$(subst /,_,$(subst \\,_,$*))' >> $@
 	cat $(TEMPDIR)$*.cpp >> $@
+	echo '#endif //BGFXH_DOUBLE_GUARD_$(subst /,_,$(subst \\,_,$*))' >> $@
 	echo '#endif //BGFXH_IMPL' >> $@
 	sed -i '/#include ".*\.hh"/d' $@ 
 

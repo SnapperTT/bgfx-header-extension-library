@@ -1,0 +1,19 @@
+// Useful functions for debugging
+
+bool isNan(float f) {
+	bool bisnan = (f <= 0.0 || 0.0 <= f) ? false : true;
+	bool bisinf = false;
+	if (f != 0.0)
+		bisinf = (1.0/f == 0.0);
+	return bisnan || bisinf;
+	}
+bool isNan(vec2 v) {
+	return isNan(v.x) || isNan(v.y);
+	}
+bool isNan(vec3 v) {
+	return isNan(v.x) || isNan(v.y) || isNan(v.z);
+	}
+bool isNan(vec4 v) {
+	return isNan(v.x) || isNan(v.y) || isNan(v.z) || isNan(v.w);
+	}
+

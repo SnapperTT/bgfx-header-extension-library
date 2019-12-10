@@ -137,9 +137,12 @@ namespace bgfxh
 ////////////////////////////////////////////////////////////////////////
 
 #ifdef BGFXH_IMPL
+#ifndef BGFXH_DOUBLE_GUARD_mesh
+#define BGFXH_DOUBLE_GUARD_mesh
 // mesh.cpp
 //
 
 #define LZZ_INLINE inline
 #undef LZZ_INLINE
+#endif //BGFXH_DOUBLE_GUARD_mesh
 #endif //BGFXH_IMPL

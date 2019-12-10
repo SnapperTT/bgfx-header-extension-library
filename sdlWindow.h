@@ -19,6 +19,8 @@ namespace bgfxh
 ////////////////////////////////////////////////////////////////////////
 
 #ifdef BGFXH_IMPL
+#ifndef BGFXH_DOUBLE_GUARD_sdlWindow
+#define BGFXH_DOUBLE_GUARD_sdlWindow
 // sdlWindow.cpp
 //
 
@@ -102,4 +104,5 @@ namespace bgfxh
 		}
 }
 #undef LZZ_INLINE
+#endif //BGFXH_DOUBLE_GUARD_sdlWindow
 #endif //BGFXH_IMPL

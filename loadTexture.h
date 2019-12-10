@@ -24,6 +24,8 @@ namespace bgfxh
 ////////////////////////////////////////////////////////////////////////
 
 #ifdef BGFXH_IMPL
+#ifndef BGFXH_DOUBLE_GUARD_loadTexture
+#define BGFXH_DOUBLE_GUARD_loadTexture
 // loadTexture.cpp
 //
 
@@ -115,4 +117,5 @@ namespace bgfxh
 		}
 }
 #undef LZZ_INLINE
+#endif //BGFXH_DOUBLE_GUARD_loadTexture
 #endif //BGFXH_IMPL

@@ -20,7 +20,7 @@
 // You can use bgfxh::getShaderDirectoryFromRenderType() to get this automatically:
 // 		shaderPath = path__to_shaders + "/" + bgfxh::getShaderDirectoryFromRenderType() + "/"; // Result: path_to_shaders/glsl/ if running OpenGl
 //
-// Note on embedding shaders: you can define the macro BGFXH_EMBED_RENDER_JOB_SHADERS to embed filter shaders at compile time. I don't recommend this
+// Note on embedding shaders: you can define the macro BGFXH_EMBED_EFFECT_SHADERS to embed filter shaders at compile time. I don't recommend this
 // as its better to distribute the shader source + build scripts and load them at run time, so that you don't need to recompile your program
 // every time you modify a shader, and so then users can modify shaders if they choose to. If you choose to embed shaders then the
 // header "bgfxh_embedded_shader.h" must be present as well as the path to all shaders (eg, bgfxh/shaders/lum_filter/c/vs_lum.bin.h) at compile.
@@ -76,7 +76,7 @@
 #ifndef BGFXH_DONT_EMBED_DEBUG_SHADERS
 	#define BGFXH_EMBED_DEBUG_SHADERS
 #endif // BGFXH_DONT_EMBED_DEBUG_SHADERS
-//#define BGFXH_EMBED_RENDER_JOB_SHADERS //<-- uncomment to embed shaders when compiling renderjobs
+//#define BGFXH_EMBED_EFFECT_SHADERS //<-- uncomment to embed shaders when compiling effects
 
 
 #ifndef BGFXH_CHECK
@@ -280,6 +280,8 @@ namespace bgfxh
 ////////////////////////////////////////////////////////////////////////
 
 #ifdef BGFXH_IMPL
+#ifndef BGFXH_DOUBLE_GUARD_bgfxh
+#define BGFXH_DOUBLE_GUARD_bgfxh
 // bgfxh.cpp
 //
 
@@ -806,4 +808,5 @@ namespace bgfxh
 		}
 }
 #undef LZZ_INLINE
+#endif //BGFXH_DOUBLE_GUARD_bgfxh
 #endif //BGFXH_IMPL

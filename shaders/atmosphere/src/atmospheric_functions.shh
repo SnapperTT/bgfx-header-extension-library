@@ -1,0 +1,277 @@
+// An implementation of Sean O'Neil's atmospheric shader from GPU Gems vol 2
+// Chapter 16. Accurate Atmospheric Scattering
+// https://developer.nvidia.com/gpugems/GPUGems2/gpugems2_chapter16.html
+// License: Public Domain
+//
+// This has 2 functions
+//		- atmosphereSky (which renders the sky at any altitude)
+//		- atmosphereGround (which renders objects on the ground at any altitude)
+//
+// You can use this in a vertex shader, or a fragment shader, provided that
+// you have sensible inputs. All coordinates are in ModelView space
+// (this also means the camera is at the origin)
+// For the sky, render a sphere at the centre of the planet with *reverse* face culling
+// For the ground, pass geometry as normal
+// 
+// Arguments:
+//	float fInnerRadius - the radius of the planet
+//	float fOuterRadius - the radius of the atmosphere
+//	vec3 v3Pos - Position of the vertex/fragment relative to the planet in modelViewSpace
+//				For an object on the planet, use objectModelViewMtx * planetModelViewMtx * a_positionIn
+//	vec3 v3Origin - Position of the origin of the planet
+//	vec3 v3LightDir - Normalized direction of sun -> planet (in modelViewSpace). You 
+//				can set a uniform u_v3LightDir = planetModelViewMatrix * (v3SunPos - v3PlanetPos) 
+//
+//	Outputs:
+//	vec3 v3RayleighColor - color due to rayleigh scattering
+//	vec3 v3MieColor - color due to mie scattering (dust, water, etc)
+//	vec3 v3PosOut (sky) - the out position to be passed to a fragment shader (for rendering the sun's mie scattering)
+// 	vec3 v3Attenuate (ground) - how much light reflected from a distant object is absorbed by the atmosphere
+
+#ifndef PI
+	#define PI 3.14159265359
+#endif 
+
+#define SCALE_DEPTH 0.25
+#define DRADIUS 0.975
+#define ATMOS_CONSTANTS \
+	const float fBetaMieMultiplier = 0.25e-2;		\
+	const float fBetaRayleighMultiplier = 0.2e-2;	\
+	const float wavelengthRed = 0.650;				\
+	const float wavelengthGreen = 0.570;			\
+	const float wavelengthBlue = 0.475;				\
+	const vec3 v3InvWavelength = vec3(1.0 / pow(wavelengthRed, 4), 1.0 / pow(wavelengthGreen, 4), 1.0 / pow(wavelengthBlue, 4));\
+	const float fKrESun = fBetaRayleighMultiplier;	\
+	const float fKmESun = fBetaMieMultiplier;		\
+	const float fKr4PI = fBetaRayleighMultiplier * 4 * PI;	\
+	const float fKm4PI = fBetaMieMultiplier * 4 * PI;		\
+	const int nSamples = 4;							\
+
+float atmosphereScale(float fCos) {
+// One significant drawback to this implementation is that the scale function is dependent on the scale height and the ratio between the atmosphere's thickness and the planet's radius. If either value changes, you need to calculate a new scale function. In the demo included on this book's CD, the atmosphere's thickness (the distance from the ground to the top of the atmosphere) is 2.5 percent of the planet's radius, and the scale height is 25 percent of the atmosphere's thickness. The radius of the planet doesn't matter as long as those two values stay the same.
+	float x = 1.0 - fCos;
+	return SCALE_DEPTH * exp(-0.00287 + x*(0.459 + x*(3.83 + x*(-6.80 + x*5.25))));
+	}
+
+float getNearIntersection(vec3 pos, vec3 ray, float distance2, float radius2) {
+	// Also works for far intersections
+	float B = 2.0 * dot(pos, ray);
+	float C = distance2 - radius2;
+	float det = max(0.0, B*B - 4.0 * C);
+	return 0.5 * (-B - sqrt(det));
+	}
+	
+float getMiePhase(float fCos, float fCos2, float g, float g2) {
+	return 1.5 * ((1.0 - g2) / (2.0 + g2)) * (1.0 + fCos2) / pow(1.0 + g2 - 2.0*g*fCos, 1.5);
+	}
+ 
+float getRayleighPhase(float fCos2) {
+	return 0.75 * (2.0 + 0.5 * fCos2);
+	}
+
+void atmosphereSky (float fInnerRadius, float fOuterRadius, vec3 v3Pos, vec3 v3Origin, vec3 v3LightDir, vec3 v3RayleighMod, vec3 v3TintColor, inout vec3 v3RayleighColor, inout vec3 v3MieColor, inout vec3 v3PosOut) {
+	// To use:
+	// Draw a sphere of size fInnerRadius
+	// A good value of fOuterRadisus is fInnerRatius/0.975
+	// v3Pos is modelView position
+	// v3Origin is the modelView origin of the planet
+	ATMOS_CONSTANTS
+	const float fSamples = nSamples;
+	const float fInvSamples = 1.0/fSamples;
+	const float fInvScaleDepth = 1.0 / SCALE_DEPTH;
+	
+	float fScale = 1.0 / (fOuterRadius - fInnerRadius);           // 1 / (fOuterRadius - fInnerRadius)
+	float fScaleOverScaleDepth = fScale / SCALE_DEPTH; // fScale / fScaleDepth
+	float fOuterRadius2 = fOuterRadius*fOuterRadius;    // fOuterRadius^2
+	float fInnerRadius2 = fInnerRadius*fInnerRadius;    // fInnerRadius^2
+
+	float fCameraHeight = max(length(v3Origin), fInnerRadius);    // The camera's current height. In MV Space the camera is at the origin -> fCameraHeight = the position of the origin
+	float fCameraHeight2 = fCameraHeight*fCameraHeight;   // fCameraHeight^2
+	vec3 v3Ray = -v3Pos;
+	float fFar = length(v3Ray);
+	v3Ray /= fFar;
+
+	vec3 v3FrontColor = vec3(0.0, 0.0, 0.0);
+
+	bool isSkyFromSpace = (fCameraHeight > fOuterRadius);
+	float fudge1 = 1.0;
+	float fudge2 = 1.0;	
+	vec3 v3Rayleigh = v3RayleighMod * v3InvWavelength * fKr4PI;
+	if (isSkyFromSpace) {
+		// Calculate the closest intersection of the ray with
+		// the outer atmosphere (point A in Figure 16-3)
+		float fNear = getNearIntersection(v3Origin, v3Ray, fCameraHeight2,
+				                        fOuterRadius2);
+
+		// Calculate the ray's start and end positions in the atmosphere,
+		// then calculate its scattering offset
+		// Note that the start point is outside of the sphere - this is because the atmosphere extends past fouterRadius and we want a smooth transition from outside the atmosphere to inside 
+		vec3 v3Start = v3Origin + v3Ray * fNear;
+		fFar -= fNear;
+		float fStartAngle = dot(v3Ray, v3Start) / fOuterRadius;
+		float fStartDepth = exp(-fInvScaleDepth);
+		float fStartOffset = fStartDepth * atmosphereScale(fStartAngle);
+
+		// Initialize the scattering loop variables
+		float fSampleLength = fFar * fInvSamples;
+		float fScaledLength = fSampleLength * fScale;
+		vec3 v3SampleRay = v3Ray * fSampleLength;
+		vec3 v3SamplePoint = v3Start + v3SampleRay * 0.5;
+
+		// Now loop through the sample rays
+		for (int i=0; i<nSamples; i++) {
+			float fHeight = length(v3SamplePoint);
+			float fDepth = exp(fScaleOverScaleDepth * (fInnerRadius - fHeight));
+			float fLightAngle = dot(v3LightDir, v3SamplePoint) / fHeight;
+			float fCameraAngle = dot(v3Ray, v3SamplePoint) / fHeight;
+			float fScatter = (fStartOffset + fDepth * (atmosphereScale(fLightAngle) - atmosphereScale(fCameraAngle)));
+			vec3 v3Attenuate = exp(-fScatter *
+						             (v3Rayleigh + v3TintColor * fKm4PI));
+			v3FrontColor += v3Attenuate * (fDepth * fScaledLength);
+			v3SamplePoint += v3SampleRay;
+			}
+		}
+	else {
+		// Calculate the ray's starting position, then calculate its scattering offset
+		vec3 v3Start = v3Origin;
+		float fHeight = length(v3Start);
+		float fDepth = exp(fScaleOverScaleDepth * (fInnerRadius - fCameraHeight));
+		float fStartAngle = dot(v3Ray, v3Start) / fHeight;
+		float fStartOffset = fDepth*atmosphereScale(fStartAngle);
+
+		// Initialize the scattering loop variables
+		float fSampleLength = fFar * fInvSamples;	
+		float fScaledLength = fSampleLength * fScale;
+		vec3 v3SampleRay = v3Ray * fSampleLength;
+		vec3 v3SamplePoint = v3Start + v3SampleRay * 0.5;
+
+		// Fudge factor - increase rayleigh parameter if near the ground at sunrise/sunset
+		float fCameraAngle2 = 1.0 - (dot(normalize(v3Origin), v3LightDir));
+		fCameraAngle2=fCameraAngle2*fCameraAngle2;
+		fudge1 = 3.5*(fCameraAngle2)*(1.0 - (fCameraHeight - fInnerRadius) / (fOuterRadius - fInnerRadius)) + 1.0;
+		fudge2 = fudge1;
+		
+		// Now loop through the sample rays
+		for (int i=0; i<nSamples; i++) {
+			fHeight = length(v3SamplePoint);
+			fDepth = exp(fScaleOverScaleDepth * (fInnerRadius - fHeight));
+			float fLightAngle = dot(v3LightDir, v3SamplePoint) / fHeight;
+			float fCameraAngle = dot(v3Ray, v3SamplePoint) / fHeight;
+			float fScatter = (fStartOffset + fDepth*(atmosphereScale(fLightAngle) - atmosphereScale(fCameraAngle)));
+			vec3 v3Attenuate = exp(-fScatter *
+									(v3Rayleigh * fudge1 + v3TintColor * fKm4PI * fudge2));
+			v3FrontColor += v3Attenuate * (fDepth * fScaledLength);
+			v3SamplePoint += v3SampleRay;
+			}
+		}
+ 
+	v3FrontColor = max(v3FrontColor, vec3_splat(0.0));
+	
+	v3RayleighColor = fudge1 * v3FrontColor * (v3RayleighMod * v3InvWavelength * fKrESun);
+	v3MieColor = v3TintColor * v3FrontColor * fKmESun;
+	v3PosOut = -v3Pos;
+	}
+
+void atmosphereGround (float fInnerRadius, float fOuterRadius, vec3 v3Pos, vec3 v3Origin, vec3 v3LightDir, vec3 v3RayleighMod, vec3 v3TintColor, inout vec3 v3RayleighColor, inout vec3 v3MieColor, inout vec3 v3Attenuate) {
+	ATMOS_CONSTANTS
+	const float fSamples = nSamples;
+	const float fInvSamples = 1.0/fSamples;
+	const float fInvScaleDepth = 1.0 / SCALE_DEPTH;
+	
+	float fScale = 1.0 / (fOuterRadius - fInnerRadius);           // 1 / (fOuterRadius - fInnerRadius)
+	float fScaleOverScaleDepth = fScale / SCALE_DEPTH; // fScale / fScaleDepth
+	float fOuterRadius2 = fOuterRadius*fOuterRadius;    // fOuterRadius^2
+	float fInnerRadius2 = fInnerRadius*fInnerRadius;    // fInnerRadius^2
+
+
+	// Get the ray from the camera to the vertex and its length (which
+	// is the far point of the ray passing through the atmosphere)
+	float fCameraHeight = max(length(v3Origin), fInnerRadius);    // The camera's current height. In MV space the camera is at the origin, so cameraHeight = |originPos|
+	float fCameraHeight2 = fCameraHeight*fCameraHeight;   // fCameraHeight^2
+
+	vec3 v3Ray = (v3Pos);
+	float fFar = length(v3Ray);
+	v3Ray /= fFar;
+	
+	vec3 v3FrontColor = vec3(0.0, 0.0, 0.0);
+	v3Attenuate = vec3(0.0, 0.0, 0.0);
+
+	bool isGroundFromSpace = (fCameraHeight > fOuterRadius);
+	float fudge1 = 1.0;
+	float fudge2 = 1.0;
+	vec3 v3Rayleigh = 0.5*v3RayleighMod * v3InvWavelength * fKr4PI;
+	if (isGroundFromSpace) {
+		// Calculate the closest intersection of the ray with the outer atmosphere (which is the near point of the ray passing through the atmosphere)	
+		float fNear = getNearIntersection(-v3Origin, v3Ray, fCameraHeight2,
+				                        fOuterRadius2);//v3Origin
+				                        
+		// Calculate the ray's starting position, then calculate its scattering offset	
+		vec3 v3Start = v3Ray * fNear;	
+		fFar -= fNear;
+		float fDepth = exp((fInnerRadius - fOuterRadius) / SCALE_DEPTH); //exp(-scaleHeights)
+		vec3 normal = normalize(v3Pos - v3Origin);	
+		float fCameraAngle = dot(-v3Ray, normal);	
+		float fLightAngle = dot(-v3LightDir, normal);	
+		float fCameraScale = atmosphereScale(fCameraAngle);	
+		float fLightScale = atmosphereScale(fLightAngle);	
+		float fCameraOffset = fDepth*fCameraScale;	
+		float fTemp = (fLightScale + fCameraScale);	
+		
+		// Initialize the scattering loop variables	
+		float fSampleLength = fFar * fInvSamples;	
+		float fScaledLength = fSampleLength * fScale;	
+		vec3 v3SampleRay = v3Ray * fSampleLength;	
+		vec3 v3SamplePoint = v3Start + v3SampleRay * 0.5;	
+		
+		// Now loop through the sample rays	
+		for(int i=0; i<nSamples; i++)	{	
+			float fHeight = length(v3SamplePoint - v3Origin);	
+			float fDepth = exp(fScaleOverScaleDepth * (fInnerRadius - fHeight));	
+			float fScatter = fDepth*fTemp - fCameraOffset;	
+			v3Attenuate = exp(-fScatter * (v3Rayleigh + v3TintColor * fKm4PI));	
+			v3FrontColor += v3Attenuate * (fDepth * fScaledLength);	
+			v3SamplePoint += v3SampleRay;	
+			}
+		}
+	else {
+		// Calculate the ray's starting position, then calculate its scattering offset
+		float fDepth = exp((fInnerRadius - fCameraHeight) / SCALE_DEPTH);
+		vec3 normal = normalize(v3Pos - v3Origin);
+		float fCameraAngle = dot(-v3Ray, normal );
+		float fLightAngle = dot(-v3LightDir, normal );
+		float fCameraScale = atmosphereScale(fCameraAngle);
+		float fLightScale = atmosphereScale(fLightAngle);
+		float fCameraOffset = fDepth*fCameraScale;
+		float fTemp = (fLightScale + fCameraScale); // Amount of scale heights we're transmitting through
+
+		// Initialize the scattering loop variables
+		float fSampleLength = fFar * fInvSamples;
+		float fScaledLength = fSampleLength * fScale;
+		vec3 v3SampleRay = v3Ray * fSampleLength;
+		vec3 v3SamplePoint = v3SampleRay * 0.5;
+		
+		// Fudge factor - increase rayleigh parameter if near the ground at sunrise/sunset
+		float fCameraAngle2 = 1.0 - (dot(normalize(v3Origin), v3LightDir));
+		fCameraAngle2=fCameraAngle2*fCameraAngle2;
+		fudge1 = 3.5 * (fCameraAngle2)*(1.0 - (fCameraHeight - fInnerRadius) / (fOuterRadius - fInnerRadius)) + 1.0;
+		fudge2 = fudge1;
+
+		// Now loop through the sample rays
+		for(int i=0; i<nSamples; i++) {
+			float fHeight = length(v3SamplePoint - v3Origin);
+			fDepth = exp(fScaleOverScaleDepth * (fInnerRadius - fHeight));
+			float fScatter = fDepth*fTemp - fCameraOffset;
+			v3Attenuate = exp(-fScatter * (v3Rayleigh * fudge1 + v3TintColor * fKm4PI * fudge2));
+			v3FrontColor += v3Attenuate * (fDepth * fScaledLength);
+			v3SamplePoint += v3SampleRay;
+			}
+		}
+
+	v3FrontColor = max(v3FrontColor, vec3_splat(0.0));
+	
+	// Finally, scale the Mie and Rayleigh colors
+	v3RayleighColor = fudge1 * v3FrontColor * (v3RayleighMod * v3InvWavelength * fKrESun);
+	v3MieColor = v3TintColor * v3FrontColor * fKmESun;
+	//v3Attenuate = v3Attenuate;
+	}
+
