@@ -294,7 +294,7 @@ namespace bgfxh
 				m_programDepthWrite = bgfxh::loadProgram(bgfxh::shaderSearchPath + "vs_cascading_shadow_map.bin", bgfxh::shaderSearchPath + "fs_cascading_shadow_map.bin");
 		#endif
 		
-		BGFXH_CHECK(bgfx::isValid(m_programDepthWrite), "failed to load shader bgfxh::cascadingShadowMapEffect::m_programDepthWrite! Check your bgfxh::shaderSearchPath setting, path, and that the shader type matches the renderer type!");
+		BGFXH_ASSERT(bgfx::isValid(m_programDepthWrite), "failed to load shader bgfxh::cascadingShadowMapEffect::m_programDepthWrite! Check your bgfxh::shaderSearchPath setting, path, and that the shader type matches the renderer type!");
 		inited = true;
 		}
 }

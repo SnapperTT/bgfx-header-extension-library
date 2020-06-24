@@ -180,9 +180,9 @@ public:
 			m_programBloomBlur[1] = bgfxh::loadProgram(bgfxh::shaderSearchPath + "vs_bloom_blur_vt.bin", bgfxh::shaderSearchPath + "fs_bloom_blur_vt.bin");
 		#endif
 			
-		BGFXH_CHECK(bgfx::isValid(m_bloomExtractProgram), "failed to load shader bgfxh::bloomEffect::m_bloomExtractProgram! Check your bgfxh::shaderSearchPath setting, path, and that the shader type matches the renderer type!");
-		BGFXH_CHECK(bgfx::isValid(m_programBloomBlur[0]), "failed to load shader bgfxh::bloomEffect::m_programBloomBlur[0]! Check your bgfxh::shaderSearchPath setting, path, and that the shader type matches the renderer type!");
-		BGFXH_CHECK(bgfx::isValid(m_programBloomBlur[1]), "failed to load shader bgfxh::bloomEffect::m_programBloomBlur[1]! Check your bgfxh::shaderSearchPath setting, path, and that the shader type matches the renderer type!");
+		BGFXH_ASSERT(bgfx::isValid(m_bloomExtractProgram), "failed to load shader bgfxh::bloomEffect::m_bloomExtractProgram! Check your bgfxh::shaderSearchPath setting, path, and that the shader type matches the renderer type!");
+		BGFXH_ASSERT(bgfx::isValid(m_programBloomBlur[0]), "failed to load shader bgfxh::bloomEffect::m_programBloomBlur[0]! Check your bgfxh::shaderSearchPath setting, path, and that the shader type matches the renderer type!");
+		BGFXH_ASSERT(bgfx::isValid(m_programBloomBlur[1]), "failed to load shader bgfxh::bloomEffect::m_programBloomBlur[1]! Check your bgfxh::shaderSearchPath setting, path, and that the shader type matches the renderer type!");
 		
 		//fmt::println ("init! {} {} {} ", bgfx::isValid(m_bloomExtractProgram), bgfx::isValid(m_programBloomBlur[0]), bgfx::isValid(m_programBloomBlur[1]));
 		//abort ();
@@ -241,8 +241,8 @@ protected:
 	
 public:
 	void submit (const bgfx::TextureHandle & colourBufferIn, const bgfx::TextureHandle & lumBufferIn) {
-		BGFXH_CHECK(useLum, "bgfxh::bloomEffect: submiting with lum buffer when configured to not use one! Set useLum to true before init()!");
-		BGFXH_CHECK(inited, "using a bgfxh::bloomEffect without calling init()!");
+		BGFXH_ASSERT(useLum, "bgfxh::bloomEffect: submiting with lum buffer when configured to not use one! Set useLum to true before init()!");
+		BGFXH_ASSERT(inited, "using a bgfxh::bloomEffect without calling init()!");
 		
 		// Bloom with lum
 		submit_common (colourBufferIn, lumBufferIn);
@@ -250,8 +250,8 @@ public:
 		
 		
 	void submit (const bgfx::TextureHandle & colourBufferIn) {
-		BGFXH_CHECK(!useLum, "bgfxh::bloomEffect: submiting without a lum buffer!");
-		BGFXH_CHECK(inited, "using a bgfxh::bloomEffect without calling init()!");
+		BGFXH_ASSERT(!useLum, "bgfxh::bloomEffect: submiting without a lum buffer!");
+		BGFXH_ASSERT(inited, "using a bgfxh::bloomEffect without calling init()!");
 		
 		// Bloom without lum
 		submit_common (colourBufferIn, BGFX_INVALID_HANDLE);

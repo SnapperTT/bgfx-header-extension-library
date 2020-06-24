@@ -329,7 +329,7 @@ namespace bgfxh
 				m_programAtmosphere = bgfxh::loadProgram(bgfxh::shaderSearchPath + "vs_atmosphere.bin", bgfxh::shaderSearchPath + "fs_atmosphere.bin");
 		#endif
 		
-		BGFXH_CHECK(bgfx::isValid(m_programAtmosphere), "failed to load shader bgfxh::atmosphericEffect::m_programAtmosphere! Check your bgfxh::shaderSearchPath setting, path, and that the shader type matches the renderer type!");
+		BGFXH_ASSERT(bgfx::isValid(m_programAtmosphere), "failed to load shader bgfxh::atmosphericEffect::m_programAtmosphere! Check your bgfxh::shaderSearchPath setting, path, and that the shader type matches the renderer type!");
 		inited = true;
 		}
 }

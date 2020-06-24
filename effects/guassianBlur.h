@@ -225,7 +225,7 @@ namespace bgfxh
 		if (sigma < 1e-6) sigma = bgfxh::getGuassianSigmaFromKernalSize(kernalSize);
 		u_blurParameters = bgfx::createUniform("u_blurParameters", bgfx::UniformType::Vec4, MAX_SAMPLES);
 		
-		BGFXH_CHECK((int(kernalSize)/2+1-2 <= MAX_SAMPLES), "bgfxh::guassianBlurEffect: kernal size is too large! You'll have to change MAX_SAMPLES in bgfxh/effects/guassianBlur.h AND the size of u_blurParameters[] in bgfxh/shaders/guassian_blur/src/fs_guassian_blur.sc to match. MAX_SAMPLES = kernalSize/2-1");
+		BGFXH_ASSERT((int(kernalSize)/2+1-2 <= MAX_SAMPLES), "bgfxh::guassianBlurEffect: kernal size is too large! You'll have to change MAX_SAMPLES in bgfxh/effects/guassianBlur.h AND the size of u_blurParameters[] in bgfxh/shaders/guassian_blur/src/fs_guassian_blur.sc to match. MAX_SAMPLES = kernalSize/2-1");
 		
 		#ifdef BGFXH_EMBED_EFFECT_SHADERS
 			{
@@ -267,8 +267,8 @@ namespace bgfxh
 			m_programBlur[1] = bgfxh::loadProgram(bgfxh::shaderSearchPath + "vs_guassian_blur_vt.bin", bgfxh::shaderSearchPath + "fs_guassian_blur_vt.bin");
 		#endif
 			
-		BGFXH_CHECK(bgfx::isValid(m_programBlur[0]), "failed to load shader bgfxh::guassianBlurEffect::m_programBlur[0]! Check your bgfxh::shaderSearchPath setting, path, and that the shader type matches the renderer type!");
-		BGFXH_CHECK(bgfx::isValid(m_programBlur[1]), "failed to load shader bgfxh::guassianBlurEffect::m_programBlur[1]! Check your bgfxh::shaderSearchPath setting, path, and that the shader type matches the renderer type!");
+		BGFXH_ASSERT(bgfx::isValid(m_programBlur[0]), "failed to load shader bgfxh::guassianBlurEffect::m_programBlur[0]! Check your bgfxh::shaderSearchPath setting, path, and that the shader type matches the renderer type!");
+		BGFXH_ASSERT(bgfx::isValid(m_programBlur[1]), "failed to load shader bgfxh::guassianBlurEffect::m_programBlur[1]! Check your bgfxh::shaderSearchPath setting, path, and that the shader type matches the renderer type!");
 		
 		//fmt::println ("init! {} {} {} ", bgfx::isValid(m_bloomExtractProgram), bgfx::isValid(m_programBlur[0]), bgfx::isValid(m_programBlur[1]));
 		//abort ();
@@ -344,7 +344,7 @@ namespace bgfxh
 {
   void guassianBlurEffect::submit (bgfx::TextureHandle const & colourBufferIn)
                                                                  {
-		BGFXH_CHECK(inited, "using a bgfxh::guassianBlurEffect without calling init()!");
+		BGFXH_ASSERT(inited, "using a bgfxh::guassianBlurEffect without calling init()!");
 		
 		// Bloom without lum
 		submit_common (colourBufferIn);

@@ -119,8 +119,8 @@ namespace bgfxh
 {
   void tonemappingEffect::setExtraComponent (uint32_t slot, bgfx::TextureHandle const texture, float additiveWeight, float multiplicitveWeight)
                                                                                                                                    {
-		BGFXH_CHECK (slot < 4, "Only 4 tonemapping attachments are supported!");
-		BGFXH_CHECK (slot < maxAdditonalSamplerSlots, "tonemapping: maxAdditonalSamplerSlots must be set to the maximum number of channels you wish to use before you call init()!");
+		BGFXH_ASSERT (slot < 4, "Only 4 tonemapping attachments are supported!");
+		BGFXH_ASSERT (slot < maxAdditonalSamplerSlots, "tonemapping: maxAdditonalSamplerSlots must be set to the maximum number of channels you wish to use before you call init()!");
 		
 		textureToCombine[slot] = texture;
 		additiveWeights[slot] = additiveWeight;
@@ -270,7 +270,7 @@ namespace bgfxh
 		else
 			m_tonemappingProgram = bgfxh::loadProgram(bgfxh::shaderSearchPath + "vs_tonemapping.bin", bgfxh::shaderSearchPath + "fs_tonemapping.bin");
 		#endif
-		BGFXH_CHECK(bgfx::isValid(m_tonemappingProgram), "failed to load shader bgfxh::tonemappingEffect::m_tonemappingProgram! Check your bgfxh::shaderSearchPath setting, path, and that the shader type matches the renderer type!");
+		BGFXH_ASSERT(bgfx::isValid(m_tonemappingProgram), "failed to load shader bgfxh::tonemappingEffect::m_tonemappingProgram! Check your bgfxh::shaderSearchPath setting, path, and that the shader type matches the renderer type!");
 		inited = true;
 		}
 }

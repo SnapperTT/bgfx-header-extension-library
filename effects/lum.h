@@ -254,9 +254,9 @@ namespace bgfxh
 			m_lumAvgOutputProgram = bgfxh::loadProgram(bgfxh::shaderSearchPath + "vs_lum_avg_output.bin", bgfxh::shaderSearchPath + "fs_lum_avg_output.bin");
 		#endif
 		
-		BGFXH_CHECK(bgfx::isValid(m_lumProgram), "failed to load shader bgfxh::lumEffect::m_lumProgram! Check your bgfxh::shaderSearchPath setting, path, and that the shader type matches the renderer type!");
-		BGFXH_CHECK(bgfx::isValid(m_lumAvgProgram), "failed to load shader bgfxh::lumEffect::m_lumAvgProgram! Check your bgfxh::shaderSearchPath setting, path, and that the shader type matches the renderer type!");
-		BGFXH_CHECK(bgfx::isValid(m_lumAvgOutputProgram), "failed to load shader bgfxh::lumEffect::m_lumAvgOutputProgram! Check your bgfxh::shaderSearchPath setting, path, and that the shader type matches the renderer type!");
+		BGFXH_ASSERT(bgfx::isValid(m_lumProgram), "failed to load shader bgfxh::lumEffect::m_lumProgram! Check your bgfxh::shaderSearchPath setting, path, and that the shader type matches the renderer type!");
+		BGFXH_ASSERT(bgfx::isValid(m_lumAvgProgram), "failed to load shader bgfxh::lumEffect::m_lumAvgProgram! Check your bgfxh::shaderSearchPath setting, path, and that the shader type matches the renderer type!");
+		BGFXH_ASSERT(bgfx::isValid(m_lumAvgOutputProgram), "failed to load shader bgfxh::lumEffect::m_lumAvgOutputProgram! Check your bgfxh::shaderSearchPath setting, path, and that the shader type matches the renderer type!");
 		
 		inited = true;
 		}
@@ -284,7 +284,7 @@ namespace bgfxh
   void lumEffect::submit (bgfx::TextureHandle const & colourBufferIn, float const frameTime)
                                                                                                      {
 		frameTickTock = !frameTickTock;
-		BGFXH_CHECK(inited, "using a bgfxh::lumEffect without calling init()!");
+		BGFXH_ASSERT(inited, "using a bgfxh::lumEffect without calling init()!");
 		
 		bgfxh::initView2D (viewId + 0, "Luminance", 128, 128, m_lumFB[0]);
 		bgfxh::initView2D (viewId + 1, "Downscale Luminance 0", 64, 64, m_lumFB[1]);

@@ -75,9 +75,9 @@
 //#define BGFXH_EMBED_EFFECT_SHADERS //<-- uncomment to embed shaders when compiling effects
 
 
-#ifndef BGFXH_CHECK
-	#define BGFXH_CHECK BX_CHECK
-#endif //BGFXH_CHECK
+#ifndef BGFXH_ASSERT
+	#define BGFXH_ASSERT BX_ASSERT
+#endif //BGFXH_ASSERT
 #ifndef BGFXH_WARN
 	#define BGFXH_WARN BX_WARN
 #endif //BGFXH_WARN
@@ -145,7 +145,7 @@ namespace bgfxh {
 			case bgfx::RendererType::Vulkan:     return "spirv"; break;
 			default: break;
 			}
-		BGFXH_CHECK (false, "bgfxh::getShaderDirectoryFromRenderType() - Invalid render type!");
+		BGFXH_ASSERT (false, "bgfxh::getShaderDirectoryFromRenderType() - Invalid render type!");
 		return "i am error";
 		}
 	
