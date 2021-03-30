@@ -86,6 +86,7 @@ void atmosphereSky (float fInnerRadius, float fOuterRadius, vec3 v3Pos, vec3 v3O
 	float fInnerRadius2 = fInnerRadius*fInnerRadius;    // fInnerRadius^2
 
 	float fCameraHeight = max(length(v3Origin), fInnerRadius);    // The camera's current height. In MV Space the camera is at the origin -> fCameraHeight = the position of the origin
+	vec3 v3Origin2 = v3Origin*0.0 + 1.0*(normalize(v3Origin) * fCameraHeight);	// Position of camera, snapped to surface if underground
 	float fCameraHeight2 = fCameraHeight*fCameraHeight;   // fCameraHeight^2
 	vec3 v3Ray = -v3Pos;
 	float fFar = length(v3Ray);
@@ -133,7 +134,7 @@ void atmosphereSky (float fInnerRadius, float fOuterRadius, vec3 v3Pos, vec3 v3O
 		}
 	else {
 		// Calculate the ray's starting position, then calculate its scattering offset
-		vec3 v3Start = v3Origin;
+		vec3 v3Start = v3Origin2;
 		float fHeight = length(v3Start);
 		float fDepth = exp(fScaleOverScaleDepth * (fInnerRadius - fCameraHeight));
 		float fStartAngle = dot(v3Ray, v3Start) / fHeight;

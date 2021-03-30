@@ -1,5 +1,6 @@
 #hdr
 // This is just a bunch of macros so that bgfxh can internally embed the c-header shaders
+#ifndef BGFXH_EMBEDDED_SHADER
 
 #include <bgfx/embedded_shader.h>
 #define BGFXH_EMBEDDED_SHADER_DX9BC BGFX_EMBEDDED_SHADER_DX9BC
@@ -76,6 +77,7 @@
 				}                                                                                  \
 			}
 
+#endif //#ifndef BGFXH_EMBEDDED_SHADER
 #end
 
 #src

@@ -86,7 +86,7 @@ namespace bgfxh
 			}
 		
 		bgfx::init(*_init);
-		bgfx::reset(ww,wh, m_resetFlags);
+		bgfx::reset(ww,wh, _init->resolution.reset);
 
 		// Enable debug text.
 		if (_init->debug)

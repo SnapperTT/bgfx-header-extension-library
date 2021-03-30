@@ -85,6 +85,7 @@
 // TODO: Use bounding spheres to calculate bounding volumes: https://lxjk.github.io/2017/04/15/Calculate-Minimal-Bounding-Sphere-of-Frustum.html
 // TODO: Investigate automatic instancing of submission objects and rendering to a single target
 
+
 #ifndef BGFXH_MAX_SHADOW_LEVELS
 	#define BGFXH_MAX_SHADOW_LEVELS 4
 #endif

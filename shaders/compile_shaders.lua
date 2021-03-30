@@ -154,9 +154,11 @@ for i=1,5 do
 	CC=fixPath("../"..CC)
 	if (file_exists(CC)) then goto found_cc end
 end
+
 print ("Failed to find tools/shadercRelease!");
 os.exit(false);
 ::found_cc::
+--CC="wine "..CC..".exe";
 print ("Found shaderc: "..CC)
 
 CFLAGS=fixPath(" -i . -i include/ -i ../include/ ")

@@ -4,6 +4,7 @@
 #ifndef LZZ_bgfxh_embedded_shader_hh
 #define LZZ_bgfxh_embedded_shader_hh
 // This is just a bunch of macros so that bgfxh can internally embed the c-header shaders
+#ifndef BGFXH_EMBEDDED_SHADER
 
 #include <bgfx/embedded_shader.h>
 #define BGFXH_EMBEDDED_SHADER_DX9BC BGFX_EMBEDDED_SHADER_DX9BC
@@ -56,6 +57,7 @@
 
 #define BGFXH_EMBEDDED_SHADER(_name)                                                               			{                                                                                      				#_name,                                                                            				{                                                                                  					BGFXH_EMBEDDED_SHADER_DX9BC(bgfx::RendererType::Direct3D9,  _name)             					BGFXH_EMBEDDED_SHADER_DXBC (bgfx::RendererType::Direct3D11, _name)             					BGFXH_EMBEDDED_SHADER_DXBC (bgfx::RendererType::Direct3D12, _name)             					BGFXH_EMBEDDED_SHADER_PSSL (bgfx::RendererType::Gnm,        _name)             					BGFXH_EMBEDDED_SHADER_METAL(bgfx::RendererType::Metal,      _name)             					BGFXH_EMBEDDED_SHADER_NVN  (bgfx::RendererType::Nvn,        _name)             					BGFXH_EMBEDDED_SHADER_ESSL (bgfx::RendererType::OpenGLES,   _name)             					BGFXH_EMBEDDED_SHADER_GLSL (bgfx::RendererType::OpenGL,     _name)             					BGFXH_EMBEDDED_SHADER_SPIRV(bgfx::RendererType::Vulkan,     _name)             					{ bgfx::RendererType::Noop,  (const uint8_t*)"VSH\x5\x0\x0\x0\x0\x0\x0", 10 }, 					{ bgfx::RendererType::Count, NULL, 0 }                                         				}                                                                                  			}
 
+#endif //#ifndef BGFXH_EMBEDDED_SHADER
 #define LZZ_INLINE inline
 #undef LZZ_INLINE
 #endif
