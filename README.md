@@ -61,7 +61,15 @@ Be sure to create/edit the `.lzz` files, not the generated `.h` files. The tools
 
 How Do I?
 =========
-
+  * [Create a SDL Window?](#create-a-sdl-window-)
+  * [Load a Texture? (.dds/.ktx) Or an Image as a Texture (.jpg, .png, .tga, etc).](#load-a-texture---dds-ktx--or-an-image-as-a-texture--jpg--png--tga--etc-)
+  * [Initialise BGFX and BGFXH?](#initialise-bgfx-and-bgfxh-)
+  * [View the Contents of a Framebuffer?](#view-the-contents-of-a-framebuffer-)
+  * [Create a Rendering Pipeline With The Provided Effects and My Stuff?](#create-a-rendering-pipeline-with-the-provided-effects-and-my-stuff-)
+  * [Speed Up Compile Times By Making A Seperate Compilation Unit?](#speed-up-compile-times-by-making-a-seperate-compilation-unit-)
+  * [Frustum Cull?](#frustum-cull-)
+  * [Use the Built-In Shaders?](#use-the-built-in-shaders-)
+  
 ## Create a SDL Window?
 ```c++
 #include <SDL>
@@ -262,6 +270,13 @@ for (each object in scene) {
 
 
 ```
+
+## Use the Built-In Shaders?
+Submit using one of:
+`bgfxh::m_programUntexturedPassthrough` - Renders geometry without any texture or any fancy stuff. Handy for wireframe rendering
+`bgfxh::m_programTexturePassthrough` - Renders a texture. Handy for GUI stuff
+`bgfxh::m_programTexturePassthroughMonochromatic` - Renders a texture in greyscale. Handy for inspecting a framebuffer
+	
 
 Thanks
 ======

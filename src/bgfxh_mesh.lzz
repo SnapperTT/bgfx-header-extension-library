@@ -18,10 +18,11 @@ namespace bgfxh {
 		
 	/// A Simple Mesh class
 	//bgfxh::PosVertex::ms_decl
-	template<typename VERT_TYPE, typename DECL_TYPE>
+	/// Index type should be uint16_t or uint32_t
+	template<typename VERT_TYPE, typename DECL_TYPE, typename INDEX_TYPE>
 	struct mesh {
 		vector<VERT_TYPE> verts;
-		vector<uint16_t> indicies;
+		vector<INDEX_TYPE> indicies;
 		vector<meshFace> faces;
 		
 		bgfx::VertexBufferHandle m_vbh;
@@ -32,13 +33,13 @@ namespace bgfxh {
 		
 		static void internal_freeVerts_cb(void* _ptr, void* _userData) {
 			BX_UNUSED(_ptr);
-			mesh<VERT_TYPE,DECL_TYPE>* sm = (mesh<VERT_TYPE,DECL_TYPE>* )_userData;
+			mesh<VERT_TYPE,DECL_TYPE,INDEX_TYPE>* sm = (mesh<VERT_TYPE,DECL_TYPE,INDEX_TYPE>* )_userData;
 			sm->verts.clear();
 			}
 			
 		static void internal_freeIndicies_cb(void* _ptr, void* _userData) {
 			BX_UNUSED(_ptr);
-			mesh<VERT_TYPE,DECL_TYPE>* sm = (mesh<VERT_TYPE,DECL_TYPE>* )_userData;
+			mesh<VERT_TYPE,DECL_TYPE,INDEX_TYPE>* sm = (mesh<VERT_TYPE,DECL_TYPE,INDEX_TYPE>* )_userData;
 			sm->indicies.clear();
 			}
 		
@@ -50,20 +51,20 @@ namespace bgfxh {
 					bgfx::makeRef(verts.data(), sizeof(VERT_TYPE)*verts.size(), internal_freeVerts_cb, this )
 					, DECL_TYPE::ms_decl
 					);
-				m_ibh = bgfx::createIndexBuffer(
-					  bgfx::makeRef(indicies.data(), sizeof(uint16_t)*indicies.size(), internal_freeIndicies_cb, this )
-					 // , BGFX_BUFFER_INDEX32
-					);
+				if (sizeof(INDEX_TYPE) == sizeof(uint32_t))
+					m_ibh = bgfx::createIndexBuffer( bgfx::makeRef(indicies.data(), sizeof(INDEX_TYPE)*indicies.size(), internal_freeIndicies_cb, this ), BGFX_BUFFER_INDEX32);
+				else
+					m_ibh = bgfx::createIndexBuffer( bgfx::makeRef(indicies.data(), sizeof(INDEX_TYPE)*indicies.size(), internal_freeIndicies_cb, this ));
 				}
 			else {
 				m_vbh = bgfx::createVertexBuffer(
 					bgfx::makeRef(verts.data(), sizeof(VERT_TYPE)*verts.size() )
 					, DECL_TYPE::ms_decl
 					);
-				m_ibh = bgfx::createIndexBuffer(
-					  bgfx::makeRef(indicies.data(), sizeof(uint16_t)*indicies.size() )
-					 // , BGFX_BUFFER_INDEX32
-					);
+				if (sizeof(INDEX_TYPE) == sizeof(uint32_t))
+					m_ibh = bgfx::createIndexBuffer( bgfx::makeRef(indicies.data(), sizeof(INDEX_TYPE)*indicies.size() ), BGFX_BUFFER_INDEX32 );
+				else
+					m_ibh = bgfx::createIndexBuffer( bgfx::makeRef(indicies.data(), sizeof(INDEX_TYPE)*indicies.size() ));
 				}
 			}
 			
@@ -78,6 +79,6 @@ namespace bgfxh {
 			}
 		}; 
 		
-	typedef mesh<bx::Vec3, PosVertex> simpleMesh;
+	typedef mesh<bx::Vec3, PosVertex, uint16_t> simpleMesh;
 	//typedef mesh<VERT_TYPE, PosTexCoord0Vertex> simpleTexturedMesh;
 	}

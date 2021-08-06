@@ -105,6 +105,10 @@ namespace bgfxh
 }
 namespace bgfxh
 {
+  extern bgfx::ProgramHandle m_programUntexturedPassthrough;
+}
+namespace bgfxh
+{
   extern bgfx::ProgramHandle m_programTexturePassthrough;
 }
 namespace bgfxh
@@ -334,6 +338,10 @@ namespace bgfxh
 }
 namespace bgfxh
 {
+  bgfx::ProgramHandle m_programUntexturedPassthrough = BGFX_INVALID_HANDLE;
+}
+namespace bgfxh
+{
   bgfx::ProgramHandle m_programTexturePassthrough = BGFX_INVALID_HANDLE;
 }
 namespace bgfxh
@@ -420,10 +428,37 @@ namespace bgfxh
 															, true
 															);
 			}
+			
+			{
+			#include "shaders/textured_passthrough/c/vs_untextured_passthrough.bin.h"
+			#include "shaders/textured_passthrough/c/fs_untextured_passthrough.bin.h"
+
+			static const bgfx::EmbeddedShader s_embeddedShaders[] = {
+				BGFXH_EMBEDDED_SHADER(vs_untextured_passthrough_bin),
+				BGFXH_EMBEDDED_SHADER(fs_untextured_passthrough_bin),
+				
+				BGFX_EMBEDDED_SHADER_END()
+				};
+			
+			bgfx::RendererType::Enum type = bgfx::getRendererType();
+			m_programUntexturedPassthrough = bgfx::createProgram(bgfx::createEmbeddedShader(s_embeddedShaders, type, "vs_untextured_passthrough_bin")
+															, bgfx::createEmbeddedShader(s_embeddedShaders, type, "fs_untextured_passthrough_bin")
+															, true
+															);
+			}
+			
 		#else
 			m_programTexturePassthrough = bgfxh::loadProgram (bgfxh::shaderSearchPath + "vs_textured_passthrough", bgfxh::shaderSearchPath + "fs_textured_passthrough");
 			m_programTexturePassthroughMonochromatic = bgfxh::loadProgram (bgfxh::shaderSearchPath + "vs_textured_passthrough_monochromatic", bgfxh::shaderSearchPath + "fs_textured_passthrough_monochromatic");
+			m_programUntexturedPassthrough = bgfxh::loadProgram (bgfxh::shaderSearchPath + "vs_untextured_passthrough", bgfxh::shaderSearchPath + "fs_untextured_passthrough");
 		#endif // BGFXH_EMBED_DEBUG_SHADERS
+		
+		BGFXH_ASSERT(bgfx::isValid(m_programTexturePassthrough));
+		BGFXH_ASSERT(bgfx::isValid(m_programTexturePassthroughMonochromatic));
+		BGFXH_ASSERT(bgfx::isValid(m_programUntexturedPassthrough));
+		
+		//std::cout << "Is valid? " << bgfx::isValid(m_programTexturePassthrough) << " " << bgfx::isValid(m_programTexturePassthroughMonochromatic) << " " << bgfx::isValid(m_programUntexturedPassthrough) << std::endl;
+		//exit(1);
 		}
 }
 namespace bgfxh
@@ -791,10 +826,13 @@ namespace bgfxh
 			return BGFX_INVALID_HANDLE;
 			}
 		bgfx::ShaderHandle vsh = bgfx::createShader(vsShaderFileMem);
+		bgfx::setName(vsh, vertexShaderFile);
+		
 		bgfx::ShaderHandle fsh = BGFX_INVALID_HANDLE;
 		if (fragementShaderFile) {
 			const bgfx::Memory * fsShaderFileMem = readFileRawToBgfxMemory(fragementShaderFile);
 			fsh = bgfx::createShader(fsShaderFileMem);
+			bgfx::setName(fsh, fragementShaderFile);
 			}
 
 		return bgfx::createProgram(vsh, fsh, true /* destroy shaders when program is destroyed */);

@@ -1,6 +1,6 @@
 # This makefile creates the .h files in the parent directory from .lzz files here
 LAZY=../tools/lzz -hx hh
-RAWSOURCES=bgfxh.lzz bgfxh_embedded_shader.lzz loadTexture.lzz mesh.lzz sdlWindow.lzz effects/atmosphere.lzz effects/bloom.lzz effects/cascadingShadowMap.lzz effects/guassianBlur.lzz effects/lum.lzz effects/tonemapping.lzz
+RAWSOURCES=bgfxh.lzz bgfxh_embedded_shader.lzz loadTexture.lzz bgfxh_mesh.lzz sdlWindow.lzz effects/atmosphere.lzz effects/bloom.lzz effects/cascadingShadowMap.lzz effects/guassianBlur.lzz effects/lum.lzz effects/tonemapping.lzz
 OUTPUTDIR=../
 TEMPDIR=temp/
 SOURCES=$(addprefix $(TEMPDIR),$(RAWSOURCES:.lzz=.cpp))

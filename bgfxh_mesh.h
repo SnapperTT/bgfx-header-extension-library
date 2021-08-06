@@ -1,8 +1,8 @@
-// mesh.hh
+// bgfxh_mesh.hh
 //
 
-#ifndef LZZ_mesh_hh
-#define LZZ_mesh_hh
+#ifndef LZZ_bgfxh_mesh_hh
+#define LZZ_bgfxh_mesh_hh
 
 #include <vector>
 #define LZZ_INLINE inline
@@ -137,12 +137,12 @@ namespace bgfxh
 ////////////////////////////////////////////////////////////////////////
 
 #ifdef BGFXH_IMPL
-#ifndef BGFXH_DOUBLE_GUARD_mesh
-#define BGFXH_DOUBLE_GUARD_mesh
-// mesh.cpp
+#ifndef BGFXH_DOUBLE_GUARD_bgfxh_mesh
+#define BGFXH_DOUBLE_GUARD_bgfxh_mesh
+// bgfxh_mesh.cpp
 //
 
 #define LZZ_INLINE inline
 #undef LZZ_INLINE
-#endif //BGFXH_DOUBLE_GUARD_mesh
+#endif //BGFXH_DOUBLE_GUARD_bgfxh_mesh
 #endif //BGFXH_IMPL

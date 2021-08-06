@@ -65,7 +65,7 @@
 //
 ///////////////////////////////////////////////////////////////////////
 
-#include "../mesh.h"
+#include "../bgfxh_mesh.h"
 #define LZZ_INLINE inline
 namespace bgfxh
 {
