@@ -223,9 +223,9 @@ namespace bgfxh {
 			m_programUntexturedPassthrough = bgfxh::loadProgram (bgfxh::shaderSearchPath + "vs_untextured_passthrough", bgfxh::shaderSearchPath + "fs_untextured_passthrough");
 		#endif // BGFXH_EMBED_DEBUG_SHADERS
 		
-		BGFXH_ASSERT(bgfx::isValid(m_programTexturePassthrough));
-		BGFXH_ASSERT(bgfx::isValid(m_programTexturePassthroughMonochromatic));
-		BGFXH_ASSERT(bgfx::isValid(m_programUntexturedPassthrough));
+		BGFXH_ASSERT(bgfx::isValid(m_programTexturePassthrough), "m_programTexturePassthrough");
+		BGFXH_ASSERT(bgfx::isValid(m_programTexturePassthroughMonochromatic), "m_programTexturePassthroughMonochromatic");
+		BGFXH_ASSERT(bgfx::isValid(m_programUntexturedPassthrough), "m_programUntexturedPassthrough");
 		
 		//std::cout << "Is valid? " << bgfx::isValid(m_programTexturePassthrough) << " " << bgfx::isValid(m_programTexturePassthroughMonochromatic) << " " << bgfx::isValid(m_programUntexturedPassthrough) << std::endl;
 		//exit(1);
@@ -301,13 +301,28 @@ namespace bgfxh {
 		// Most filters will have some kind of submit() function
 		};
 	
+	/// Wrapper as bx has removed default constructors
+	template <typename T> 
+	struct bxMathWrap {
+		T v;
+		inline bxMathWrap() : v(bx::init::NoneType()) {}
+		inline T& operator = (const T & p) { v = p; return v; }
+		inline operator T& () { return v; }
+		inline operator const T& () const { return v; }
+		};
+	
+	typedef bxMathWrap<bx::Vec3> Vec3Wrap;
+	typedef bxMathWrap<bx::Plane> PlaneWrap;
+	typedef bxMathWrap<bx::Quaternion> QuaternionWrap;
 	
 	/// Fustrum class (for fustrum culling checks)
 	struct frustum {
 		/// Note that this only checks the top/bottom/left/right planes of the frustrum
 		/// Forward and back can be simply checked with a range check
-		bx::Plane planes[4];
-					
+		PlaneWrap planes[4];
+		
+		inline frustum() : planes() {}
+									
 		void setFromViewAndProjMatrix (float * mView, float * mProj) {
 			float res[4][4];
 			bx::mtxMul((float *) res, mView, mProj);
@@ -323,9 +338,9 @@ namespace bgfxh {
 			
 			// Normalize the planes
 			for (unsigned int i = 0; i < 4; ++i) {
-				float invLen = 1.0/length(planes[i].normal);
-				planes[i].normal = bx::mul(planes[i].normal, invLen);
-				planes[i].dist   *= invLen;
+				float invLen = 1.0/length(planes[i].v.normal);
+				planes[i].v.normal = bx::mul(planes[i].v.normal, invLen);
+				planes[i].v.dist   *= invLen;
 				}
 			}
 			

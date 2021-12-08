@@ -22,7 +22,7 @@ void main() {
 		         
 	color = vec3_splat(1.0) - exp(-color);
 	color = toGamma(toAcesFilmic(color));
-	gl_FragColor = vec4(color.rgb, max(color.b, color.r));
+	gl_FragColor = vec4(color.rgb, 1.0);
 	}
 
 

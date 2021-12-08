@@ -164,9 +164,34 @@ namespace bgfxh
 }
 namespace bgfxh
 {
+  template <typename T>
+  struct bxMathWrap
+  {
+    T v;
+    bxMathWrap ();
+    T & operator = (T const & p);
+    operator T & ();
+    operator T const & () const;
+  };
+}
+namespace bgfxh
+{
+  typedef bxMathWrap <bx::Vec3> Vec3Wrap;
+}
+namespace bgfxh
+{
+  typedef bxMathWrap <bx::Plane> PlaneWrap;
+}
+namespace bgfxh
+{
+  typedef bxMathWrap <bx::Quaternion> QuaternionWrap;
+}
+namespace bgfxh
+{
   struct frustum
   {
-    bx::Plane (planes) [4];
+    PlaneWrap (planes) [4];
+    frustum ();
     void setFromViewAndProjMatrix (float * mView, float * mProj);
     static float dotPV (bx::Plane const & p, bx::Vec3 const pos);
     bool frustumCheck (bx::Vec3 const & where, float const objectBoundingRadius) const;
@@ -237,6 +262,37 @@ namespace bgfxh
 namespace bgfxh
 {
   bgfx::ProgramHandle loadProgram (BGFXH_STRING const & vertexShaderFile, BGFXH_STRING const & fragmentShaderFile);
+}
+namespace bgfxh
+{
+  template <typename T>
+  LZZ_INLINE bxMathWrap <T>::bxMathWrap ()
+    : v (bx::init::NoneType())
+                                                              {}
+}
+namespace bgfxh
+{
+  template <typename T>
+  LZZ_INLINE T & bxMathWrap <T>::operator = (T const & p)
+                                                   { v = p; return v; }
+}
+namespace bgfxh
+{
+  template <typename T>
+  LZZ_INLINE bxMathWrap <T>::operator T & ()
+                                      { return v; }
+}
+namespace bgfxh
+{
+  template <typename T>
+  LZZ_INLINE bxMathWrap <T>::operator T const & () const
+                                                  { return v; }
+}
+namespace bgfxh
+{
+  LZZ_INLINE frustum::frustum ()
+    : planes ()
+                                            {}
 }
 namespace bgfxh
 {
@@ -453,9 +509,9 @@ namespace bgfxh
 			m_programUntexturedPassthrough = bgfxh::loadProgram (bgfxh::shaderSearchPath + "vs_untextured_passthrough", bgfxh::shaderSearchPath + "fs_untextured_passthrough");
 		#endif // BGFXH_EMBED_DEBUG_SHADERS
 		
-		BGFXH_ASSERT(bgfx::isValid(m_programTexturePassthrough));
-		BGFXH_ASSERT(bgfx::isValid(m_programTexturePassthroughMonochromatic));
-		BGFXH_ASSERT(bgfx::isValid(m_programUntexturedPassthrough));
+		BGFXH_ASSERT(bgfx::isValid(m_programTexturePassthrough), "m_programTexturePassthrough");
+		BGFXH_ASSERT(bgfx::isValid(m_programTexturePassthroughMonochromatic), "m_programTexturePassthroughMonochromatic");
+		BGFXH_ASSERT(bgfx::isValid(m_programUntexturedPassthrough), "m_programUntexturedPassthrough");
 		
 		//std::cout << "Is valid? " << bgfx::isValid(m_programTexturePassthrough) << " " << bgfx::isValid(m_programTexturePassthroughMonochromatic) << " " << bgfx::isValid(m_programUntexturedPassthrough) << std::endl;
 		//exit(1);
@@ -538,9 +594,9 @@ namespace bgfxh
 			
 			// Normalize the planes
 			for (unsigned int i = 0; i < 4; ++i) {
-				float invLen = 1.0/length(planes[i].normal);
-				planes[i].normal = bx::mul(planes[i].normal, invLen);
-				planes[i].dist   *= invLen;
+				float invLen = 1.0/length(planes[i].v.normal);
+				planes[i].v.normal = bx::mul(planes[i].v.normal, invLen);
+				planes[i].v.dist   *= invLen;
 				}
 			}
 }

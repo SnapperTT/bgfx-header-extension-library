@@ -36,7 +36,7 @@
 #define DRADIUS 0.975
 #define ATMOS_CONSTANTS \
 	const float fBetaMieMultiplier = 0.25e-2;		\
-	const float fBetaRayleighMultiplier = 0.2e-2;	\
+	const float fBetaRayleighMultiplier = 0.1e-2;	\
 	const float wavelengthRed = 0.650;				\
 	const float wavelengthGreen = 0.570;			\
 	const float wavelengthBlue = 0.475;				\
@@ -119,12 +119,14 @@ void atmosphereSky (float fInnerRadius, float fOuterRadius, vec3 v3Pos, vec3 v3O
 		vec3 v3SampleRay = v3Ray * fSampleLength;
 		vec3 v3SamplePoint = v3Start + v3SampleRay * 0.5;
 
+		float fHeight = length(v3SamplePoint);
+		float fLightAngle = dot(v3LightDir, v3SamplePoint) / fHeight;
+		float fCameraAngle = dot(v3Ray, v3SamplePoint) / fHeight;
+		
 		// Now loop through the sample rays
 		for (int i=0; i<nSamples; i++) {
-			float fHeight = length(v3SamplePoint);
+			fHeight = length(v3SamplePoint);
 			float fDepth = exp(fScaleOverScaleDepth * (fInnerRadius - fHeight));
-			float fLightAngle = dot(v3LightDir, v3SamplePoint) / fHeight;
-			float fCameraAngle = dot(v3Ray, v3SamplePoint) / fHeight;
 			float fScatter = (fStartOffset + fDepth * (atmosphereScale(fLightAngle) - atmosphereScale(fCameraAngle)));
 			vec3 v3Attenuate = exp(-fScatter *
 						             (v3Rayleigh + v3TintColor * fKm4PI));
@@ -152,12 +154,14 @@ void atmosphereSky (float fInnerRadius, float fOuterRadius, vec3 v3Pos, vec3 v3O
 		fudge1 = 3.5*(fCameraAngle2)*(1.0 - (fCameraHeight - fInnerRadius) / (fOuterRadius - fInnerRadius)) + 1.0;
 		fudge2 = fudge1;
 		
+			fHeight = length(v3SamplePoint);
+			float fLightAngle = dot(v3LightDir, v3SamplePoint) / fHeight;
+			float fCameraAngle = dot(v3Ray, v3SamplePoint) / fHeight;
+			
 		// Now loop through the sample rays
 		for (int i=0; i<nSamples; i++) {
 			fHeight = length(v3SamplePoint);
 			fDepth = exp(fScaleOverScaleDepth * (fInnerRadius - fHeight));
-			float fLightAngle = dot(v3LightDir, v3SamplePoint) / fHeight;
-			float fCameraAngle = dot(v3Ray, v3SamplePoint) / fHeight;
 			float fScatter = (fStartOffset + fDepth*(atmosphereScale(fLightAngle) - atmosphereScale(fCameraAngle)));
 			vec3 v3Attenuate = exp(-fScatter *
 									(v3Rayleigh * fudge1 + v3TintColor * fKm4PI * fudge2));
@@ -167,6 +171,7 @@ void atmosphereSky (float fInnerRadius, float fOuterRadius, vec3 v3Pos, vec3 v3O
 		}
  
 	v3FrontColor = max(v3FrontColor, vec3_splat(0.0));
+	v3FrontColor = min(v3FrontColor, vec3_splat(1e30));
 	
 	v3RayleighColor = fudge1 * v3FrontColor * (v3RayleighMod * v3InvWavelength * fKrESun);
 	v3MieColor = v3TintColor * v3FrontColor * fKmESun;

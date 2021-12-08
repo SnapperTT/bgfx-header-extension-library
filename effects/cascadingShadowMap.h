@@ -101,8 +101,8 @@ namespace bgfxh
     float ((shadowLightView) [BGFXH_MAX_SHADOW_LEVELS]) [16];
     float ((shadowLightProj) [BGFXH_MAX_SHADOW_LEVELS]) [16];
     float ((shadowLightViewProj) [BGFXH_MAX_SHADOW_LEVELS]) [16];
-    bx::Vec3 (shadowAabbMin) [BGFXH_MAX_SHADOW_LEVELS];
-    bx::Vec3 (shadowAabbMax) [BGFXH_MAX_SHADOW_LEVELS];
+    Vec3Wrap (shadowAabbMin) [BGFXH_MAX_SHADOW_LEVELS];
+    Vec3Wrap (shadowAabbMax) [BGFXH_MAX_SHADOW_LEVELS];
     bgfx::ProgramHandle m_programDepthWrite;
     bool inited;
     float (depthGates) [BGFXH_MAX_SHADOW_LEVELS];
@@ -339,7 +339,7 @@ namespace bgfxh
 			float y1 = z1 * tan(bx::toRad(FOV_V_DEG)/2.0f);
 			float y2 = z2 * tan(bx::toRad(FOV_V_DEG)/2.0f);
 			
-			bx::Vec3 coords[8];
+			Vec3Wrap coords[8];
 			coords[0] = bx::Vec3( x1, y1,z1);
 			coords[1] = bx::Vec3(-x1,-y1,z1);
 			coords[2] = bx::Vec3( x2, y2,z2);
@@ -360,12 +360,12 @@ namespace bgfxh
 			float maxZ = -HUGE_VAL;
 			
 			for (unsigned int j = 0; j < 8; ++j) {
-				minX = min(minX, coords[j].x);
-				minY = min(minY, coords[j].y);
-				minZ = min(minZ, coords[j].z);
-				maxX = max(maxX, coords[j].x);
-				maxY = max(maxY, coords[j].y);
-				maxZ = max(maxZ, coords[j].z);
+				minX = min(minX, coords[j].v.x);
+				minY = min(minY, coords[j].v.y);
+				minZ = min(minZ, coords[j].v.z);
+				maxX = max(maxX, coords[j].v.x);
+				maxY = max(maxY, coords[j].v.y);
+				maxZ = max(maxZ, coords[j].v.z);
 				}
 			
 			const float safetyFactor = 1.25; //Padding so that objects don't get clipped

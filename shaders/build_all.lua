@@ -50,7 +50,7 @@ function doBuild(path, file)
 	print ("build_all.lua building: ", path..SLASH..file);
 	local bf = loadfile(path..SLASH..file);
 	INPUT_PREFIX = path..SLASH;
-	bf(arg[1], arg[2], arg[3]);
+	bf(table.unpack(arg));
 end
 
 function processDirectory(dir)
