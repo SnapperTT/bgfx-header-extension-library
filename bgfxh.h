@@ -113,7 +113,15 @@ namespace bgfxh
 }
 namespace bgfxh
 {
+  extern bgfx::ProgramHandle m_programTexturePassthroughArray;
+}
+namespace bgfxh
+{
   extern bgfx::ProgramHandle m_programTexturePassthroughMonochromatic;
+}
+namespace bgfxh
+{
+  extern bgfx::UniformHandle u_bgfxhUtilUniform;
 }
 namespace bgfxh
 {
@@ -134,6 +142,10 @@ namespace bgfxh
 namespace bgfxh
 {
   void debugDrawTexture (bgfx::ViewId const viewId, bgfx::TextureHandle const texture, float const xOffset, float const yOffset, float const xSize, float const ySize, float const _targetFrameBufferWidth = 0.0f, float const _targetFrameBufferHeight = 0.0f);
+}
+namespace bgfxh
+{
+  void debugDrawTextureArray (bgfx::ViewId const viewId, bgfx::TextureHandle const texture, unsigned int const layer, float const xOffset, float const yOffset, float const xSize, float const ySize, float const _targetFrameBufferWidth = 0.0f, float const _targetFrameBufferHeight = 0.0f);
 }
 namespace bgfxh
 {
@@ -402,7 +414,15 @@ namespace bgfxh
 }
 namespace bgfxh
 {
+  bgfx::ProgramHandle m_programTexturePassthroughArray = BGFX_INVALID_HANDLE;
+}
+namespace bgfxh
+{
   bgfx::ProgramHandle m_programTexturePassthroughMonochromatic = BGFX_INVALID_HANDLE;
+}
+namespace bgfxh
+{
+  bgfx::UniformHandle u_bgfxhUtilUniform = BGFX_INVALID_HANDLE;
 }
 namespace bgfxh
 {
@@ -448,6 +468,7 @@ namespace bgfxh
 			m_allocator = bgfxh::internal_getDefaultAllocator();
 		
 		s_texColor  = bgfx::createUniform("s_texColor",  bgfx::UniformType::Sampler);
+		u_bgfxhUtilUniform = bgfx::createUniform("u_bgfxhUtilUniform",  bgfx::UniformType::Vec4);
 		
 		#ifdef BGFXH_EMBED_DEBUG_SHADERS
 			{
@@ -503,15 +524,34 @@ namespace bgfxh
 															);
 			}
 			
+			{
+			#include "shaders/textured_passthrough/c/vs_textured_passthrough_array.bin.h"
+			#include "shaders/textured_passthrough/c/fs_textured_passthrough_array.bin.h"
+
+			static const bgfx::EmbeddedShader s_embeddedShaders[] = {
+				BGFXH_EMBEDDED_SHADER(vs_textured_passthrough_array_bin),
+				BGFXH_EMBEDDED_SHADER(fs_textured_passthrough_array_bin),
+				
+				BGFX_EMBEDDED_SHADER_END()
+				};
+			
+			bgfx::RendererType::Enum type = bgfx::getRendererType();
+			m_programTexturePassthroughArray = bgfx::createProgram(bgfx::createEmbeddedShader(s_embeddedShaders, type, "vs_textured_passthrough_array_bin")
+															, bgfx::createEmbeddedShader(s_embeddedShaders, type, "fs_textured_passthrough_array_bin")
+															, true
+															);
+			}
 		#else
 			m_programTexturePassthrough = bgfxh::loadProgram (bgfxh::shaderSearchPath + "vs_textured_passthrough", bgfxh::shaderSearchPath + "fs_textured_passthrough");
 			m_programTexturePassthroughMonochromatic = bgfxh::loadProgram (bgfxh::shaderSearchPath + "vs_textured_passthrough_monochromatic", bgfxh::shaderSearchPath + "fs_textured_passthrough_monochromatic");
 			m_programUntexturedPassthrough = bgfxh::loadProgram (bgfxh::shaderSearchPath + "vs_untextured_passthrough", bgfxh::shaderSearchPath + "fs_untextured_passthrough");
+			m_programTexturePassthroughArray = bgfxh::loadProgram (bgfxh::shaderSearchPath + "vs_textured_passthrough_array", bgfxh::shaderSearchPath + "fs_textured_passthrough_array");
 		#endif // BGFXH_EMBED_DEBUG_SHADERS
 		
 		BGFXH_ASSERT(bgfx::isValid(m_programTexturePassthrough), "m_programTexturePassthrough");
 		BGFXH_ASSERT(bgfx::isValid(m_programTexturePassthroughMonochromatic), "m_programTexturePassthroughMonochromatic");
 		BGFXH_ASSERT(bgfx::isValid(m_programUntexturedPassthrough), "m_programUntexturedPassthrough");
+		BGFXH_ASSERT(bgfx::isValid(m_programTexturePassthroughArray), "m_programTexturePassthroughArray");
 		
 		//std::cout << "Is valid? " << bgfx::isValid(m_programTexturePassthrough) << " " << bgfx::isValid(m_programTexturePassthroughMonochromatic) << " " << bgfx::isValid(m_programUntexturedPassthrough) << std::endl;
 		//exit(1);
@@ -529,10 +569,24 @@ namespace bgfxh
 {
   void debugDrawTexture (bgfx::ViewId const viewId, bgfx::TextureHandle const texture, float const xOffset, float const yOffset, float const xSize, float const ySize, float const _targetFrameBufferWidth, float const _targetFrameBufferHeight)
                                                                                                                                                                                                                                                                       {
+		if (!bgfx::isValid(texture)) return;
 		bgfx::setTexture (SAMPLER_COLOR, s_texColor, texture);
 		bgfx::setState(BGFX_STATE_WRITE_RGB|BGFX_STATE_WRITE_A);
 		screenSpaceQuad (xOffset, yOffset, xSize, ySize, _targetFrameBufferWidth, _targetFrameBufferHeight);
 		bgfx::submit (viewId, m_programTexturePassthrough);
+		}
+}
+namespace bgfxh
+{
+  void debugDrawTextureArray (bgfx::ViewId const viewId, bgfx::TextureHandle const texture, unsigned int const layer, float const xOffset, float const yOffset, float const xSize, float const ySize, float const _targetFrameBufferWidth, float const _targetFrameBufferHeight)
+                                                                                                                                                                                                                                                                                                     {
+		if (!bgfx::isValid(texture)) return;
+		bgfx::setTexture (SAMPLER_COLOR, s_texColor, texture);
+		bgfx::setState(BGFX_STATE_WRITE_RGB|BGFX_STATE_WRITE_A);
+		float v[4] = { float(layer), 0.f, 0.f, 0.f };
+		bgfx::setUniform(u_bgfxhUtilUniform, v);
+		screenSpaceQuad (xOffset, yOffset, xSize, ySize, _targetFrameBufferWidth, _targetFrameBufferHeight);
+		bgfx::submit (viewId, m_programTexturePassthroughArray);
 		}
 }
 namespace bgfxh
@@ -546,6 +600,7 @@ namespace bgfxh
 {
   void debugDrawTextureMono (bgfx::ViewId const viewId, bgfx::TextureHandle const texture, float const xOffset, float const yOffset, float const xSize, float const ySize, float const _targetFrameBufferWidth, float const _targetFrameBufferHeight)
                                                                                                                                                                                                                                                                           {
+		if (!bgfx::isValid(texture)) return;
 		bgfx::setTexture (SAMPLER_COLOR, s_texColor, texture);
 		bgfx::setState(BGFX_STATE_WRITE_RGB|BGFX_STATE_WRITE_A);
 		screenSpaceQuad (xOffset, yOffset, xSize, ySize, _targetFrameBufferWidth, _targetFrameBufferHeight);

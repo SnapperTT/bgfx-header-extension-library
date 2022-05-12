@@ -78,7 +78,12 @@ void generateIsoSphere (bgfxh::simpleMesh & sm, const unsigned int nSubdivisions
 	const float gr = (1.0 + sqrt(5.0)) / 2.0;
 	const float gri = 1.0/gr;
 	
-	std::unordered_map<uint32_t,uint16_t> dictionary;
+	#ifdef TSL_ROBIN_MAP_H
+		// use a better-performing robin map if <tsl/robin_map.h> has been included
+		tsl::robin_map<uint32_t,uint16_t> dictionary;
+	#else
+		std::unordered_map<uint32_t,uint16_t> dictionary;
+	#endif
 	
 	auto getGenMiddlePoint = [&](const uint16_t p1, const uint16_t p2) -> uint16_t {
 		/// Returns or inserts a index
@@ -179,14 +184,14 @@ void generateIsoSphere (bgfxh::simpleMesh & sm, const unsigned int nSubdivisions
 		sm.faces.swap(newFaces);
 		}
 	
-	// Get indicies from faces
+	// Get indices from faces
 	const uint32_t smFacesSz = sm.faces.size();
-	sm.indicies.reserve(smFacesSz*3);
+	sm.indices.reserve(smFacesSz*3);
 	for (uint32_t i = 0; i < smFacesSz; ++i) {
 		const meshFace & tri = sm.faces[i];
-		sm.indicies.push_back(tri.a);
-		sm.indicies.push_back(tri.b);
-		sm.indicies.push_back(tri.c);
+		sm.indices.push_back(tri.a);
+		sm.indices.push_back(tri.b);
+		sm.indices.push_back(tri.c);
 		}
 	}
 		

@@ -23,7 +23,7 @@ namespace bgfxh
   struct mesh
   {
     vector <VERT_TYPE> verts;
-    vector <INDEX_TYPE> indicies;
+    vector <INDEX_TYPE> indices;
     vector <meshFace> faces;
     bgfx::VertexBufferHandle m_vbh;
     bgfx::IndexBufferHandle m_ibh;
@@ -70,8 +70,8 @@ namespace bgfxh
   void mesh <VERT_TYPE, DECL_TYPE, INDEX_TYPE>::internal_freeVerts_cb (void * _ptr, void * _userData)
                                                                                {
 			BX_UNUSED(_ptr);
-			mesh<VERT_TYPE,DECL_TYPE,INDEX_TYPE>* sm = (mesh<VERT_TYPE,DECL_TYPE,INDEX_TYPE>* )_userData;
-			sm->verts.clear();
+			vector<VERT_TYPE>* vertsHeap = (vector<VERT_TYPE>*)_userData;
+			delete vertsHeap;
 			}
 }
 namespace bgfxh
@@ -80,8 +80,8 @@ namespace bgfxh
   void mesh <VERT_TYPE, DECL_TYPE, INDEX_TYPE>::internal_freeIndicies_cb (void * _ptr, void * _userData)
                                                                                   {
 			BX_UNUSED(_ptr);
-			mesh<VERT_TYPE,DECL_TYPE,INDEX_TYPE>* sm = (mesh<VERT_TYPE,DECL_TYPE,INDEX_TYPE>* )_userData;
-			sm->indicies.clear();
+			vector<INDEX_TYPE>* indicesHeap = (vector<INDEX_TYPE>*)_userData;
+			delete indicesHeap;
 			}
 }
 namespace bgfxh
@@ -92,14 +92,20 @@ namespace bgfxh
 			// Static data can be passed with bgfx::makeRef
 			if (freeOnUploadComplete) {
 				faces.clear();
+				
+				vector<VERT_TYPE>* vertsHeap = new vector<VERT_TYPE>;
+				vector<INDEX_TYPE>* indicesHeap = new vector<INDEX_TYPE>;
+				vertsHeap->swap(verts);
+				indicesHeap->swap(indices);
+				
 				m_vbh = bgfx::createVertexBuffer(
-					bgfx::makeRef(verts.data(), sizeof(VERT_TYPE)*verts.size(), internal_freeVerts_cb, this )
+					bgfx::makeRef(vertsHeap->data(), sizeof(VERT_TYPE)*vertsHeap->size(), internal_freeVerts_cb, vertsHeap )
 					, DECL_TYPE::ms_decl
 					);
 				if (sizeof(INDEX_TYPE) == sizeof(uint32_t))
-					m_ibh = bgfx::createIndexBuffer( bgfx::makeRef(indicies.data(), sizeof(INDEX_TYPE)*indicies.size(), internal_freeIndicies_cb, this ), BGFX_BUFFER_INDEX32);
+					m_ibh = bgfx::createIndexBuffer( bgfx::makeRef(indicesHeap->data(), sizeof(INDEX_TYPE)*indicesHeap->size(), internal_freeIndicies_cb, indicesHeap ), BGFX_BUFFER_INDEX32);
 				else
-					m_ibh = bgfx::createIndexBuffer( bgfx::makeRef(indicies.data(), sizeof(INDEX_TYPE)*indicies.size(), internal_freeIndicies_cb, this ));
+					m_ibh = bgfx::createIndexBuffer( bgfx::makeRef(indicesHeap->data(), sizeof(INDEX_TYPE)*indicesHeap->size(), internal_freeIndicies_cb, indicesHeap ));
 				}
 			else {
 				m_vbh = bgfx::createVertexBuffer(
@@ -107,9 +113,9 @@ namespace bgfxh
 					, DECL_TYPE::ms_decl
 					);
 				if (sizeof(INDEX_TYPE) == sizeof(uint32_t))
-					m_ibh = bgfx::createIndexBuffer( bgfx::makeRef(indicies.data(), sizeof(INDEX_TYPE)*indicies.size() ), BGFX_BUFFER_INDEX32 );
+					m_ibh = bgfx::createIndexBuffer( bgfx::makeRef(indices.data(), sizeof(INDEX_TYPE)*indices.size() ), BGFX_BUFFER_INDEX32 );
 				else
-					m_ibh = bgfx::createIndexBuffer( bgfx::makeRef(indicies.data(), sizeof(INDEX_TYPE)*indicies.size() ));
+					m_ibh = bgfx::createIndexBuffer( bgfx::makeRef(indices.data(), sizeof(INDEX_TYPE)*indices.size() ));
 				}
 			}
 }
