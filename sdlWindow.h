@@ -4,10 +4,19 @@
 #ifndef LZZ_sdlWindow_hh
 #define LZZ_sdlWindow_hh
 struct SDL_Window;
+// Be sure to set macro BGFXH_USE_WAYLAND if using wayland on linux
 #define LZZ_INLINE inline
 namespace bgfxh
 {
-  bool initSdlWindow (SDL_Window * _window);
+  void * getSdlNativeWindowHandle (SDL_Window * _window);
+}
+namespace bgfxh
+{
+  void * getNativeDisplayHandle (SDL_Window * _window);
+}
+namespace bgfxh
+{
+  bool initSdlWindow (SDL_Window * _window, bgfx::PlatformData & pdOut);
 }
 namespace bgfxh
 {
@@ -28,32 +37,79 @@ namespace bgfxh
 #define LZZ_INLINE inline
 namespace bgfxh
 {
-  bool initSdlWindow (SDL_Window * _window)
-                                                  {
+  void * getSdlNativeWindowHandle (SDL_Window * _window)
+                                                            {
+		// From bgfx/examples/common/entry_sdl.cpp
+		SDL_SysWMinfo wmi;
+		SDL_VERSION(&wmi.version);
+		if (!SDL_GetWindowWMInfo(_window, &wmi) ) {
+			return NULL;
+			}
+
+		#	if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
+		#		if BGFXH_USE_WAYLAND
+				wl_egl_window *win_impl = (wl_egl_window*)SDL_GetWindowData(_window, "wl_egl_window");
+				if(!win_impl)
+				{
+					int width, height;
+					SDL_GetWindowSize(_window, &width, &height);
+					struct wl_surface* surface = wmi.info.wl.surface;
+					if(!surface)
+						return nullptr;
+					win_impl = wl_egl_window_create(surface, width, height);
+					SDL_SetWindowData(_window, "wl_egl_window", win_impl);
+				}
+				return (void*)(uintptr_t)win_impl;
+		#		else
+				return (void*)wmi.info.x11.window;
+		#		endif
+		#	elif BX_PLATFORM_OSX || BX_PLATFORM_IOS
+				return wmi.info.cocoa.window;
+		#	elif BX_PLATFORM_WINDOWS
+				return wmi.info.win.window;
+		#   elif BX_PLATFORM_ANDROID
+				return wmi.info.android.window;
+		#	endif // BX_PLATFORM_
+		}
+}
+namespace bgfxh
+{
+  void * getNativeDisplayHandle (SDL_Window * _window)
+                                                          {
+		// From bgfx/examples/common/entry_sdl.cpp
+		SDL_SysWMinfo wmi;
+		SDL_VERSION(&wmi.version);
+		if (!SDL_GetWindowWMInfo(_window, &wmi) ) {
+			return NULL;
+			}
+
+		#	if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
+		#		if BGFXH_USE_WAYLAND
+				return wmi.info.wl.display;
+		#		else
+				return wmi.info.x11.display;
+		#		endif // ENTRY_CONFIG_USE_WAYLAND
+		#	else
+				return NULL;
+		#	endif // BX_PLATFORM_*
+		}
+}
+namespace bgfxh
+{
+  bool initSdlWindow (SDL_Window * _window, bgfx::PlatformData & pdOut)
+                                                                              {
 		SDL_SysWMinfo wmi;
 		SDL_VERSION(&wmi.version);
 		if (!SDL_GetWindowWMInfo(_window, &wmi) ) {
 			return false;
 			}
-
-		bgfx::PlatformData pd;
-		#if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
-			pd.ndt          = wmi.info.x11.display;
-			pd.nwh          = (void*)(uintptr_t)wmi.info.x11.window;
-		#elif BX_PLATFORM_OSX
-			pd.ndt          = NULL;
-			pd.nwh          = wmi.info.cocoa.window;
-		#elif BX_PLATFORM_WINDOWS
-			pd.ndt          = NULL;
-			pd.nwh          = wmi.info.win.window;
-		#elif BX_PLATFORM_STEAMLINK
-			pd.ndt          = wmi.info.vivante.display;
-			pd.nwh          = wmi.info.vivante.window;
-		#endif // BX_PLATFORM_
-		pd.context      = NULL;
-		pd.backBuffer   = NULL;
-		pd.backBufferDS = NULL;
-		bgfx::setPlatformData(pd);
+			
+		pdOut.nwh = bgfxh::getSdlNativeWindowHandle(_window);
+		pdOut.ndt = bgfxh::getNativeDisplayHandle(_window);
+		
+		pdOut.context      = NULL;
+		pdOut.backBuffer   = NULL;
+		pdOut.backBufferDS = NULL;
 		return true;
 		}
 }
@@ -61,7 +117,8 @@ namespace bgfxh
 {
   bool initSdlWindowAndBgfx (SDL_Window * _window, bgfx::Init * _init)
                                                                                     {
-		if (!initSdlWindow (_window))
+		bgfx::PlatformData pd;
+		if (!initSdlWindow (_window, pd))
 			return false;
 			
 		int ww;
@@ -84,6 +141,8 @@ namespace bgfxh
 			init.resolution.reset  = m_resetFlags;
 			_init = &init;
 			}
+			
+		_init->platformData = pd;
 		
 		bgfx::init(*_init);
 		bgfx::reset(ww,wh, _init->resolution.reset);
