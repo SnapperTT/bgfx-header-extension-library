@@ -340,9 +340,9 @@ namespace bgfxh
   template <typename T>
   void destroyHandle (T & handle)
                                         {
-		/// Destroys a handle, sets the value of the handle to BGFX_INVALID_HANDLE. will do nothing if T is BGFX_INVALID_HANDLE 
-		if (!bgfx::isValid(handle)) return;
-		bgfx::destroy(handle);
+		/// Destroys a handle (if valid), sets the value of the handle to BGFX_INVALID_HANDLE
+		if (bgfx::isValid(handle))
+			bgfx::destroy(handle);
 		handle = BGFX_INVALID_HANDLE;
 		}
 }
@@ -553,6 +553,12 @@ namespace bgfxh
 		BGFXH_ASSERT(bgfx::isValid(m_programUntexturedPassthrough), "m_programUntexturedPassthrough");
 		BGFXH_ASSERT(bgfx::isValid(m_programTexturePassthroughArray), "m_programTexturePassthroughArray");
 		
+		// Names for programs are not supported in bgfx
+		//if (bgfx::isValid(m_programTexturePassthrough)) bgfx::setName(m_programTexturePassthrough, "m_programTexturePassthrough");
+		//if (bgfx::isValid(m_programTexturePassthroughMonochromatic)) bgfx::setName(m_programTexturePassthroughMonochromatic, "m_programTexturePassthroughMonochromatic");
+		//if (bgfx::isValid(m_programUntexturedPassthrough)) bgfx::setName(m_programUntexturedPassthrough, "m_programUntexturedPassthrough");
+		//if (bgfx::isValid(m_programTexturePassthroughArray)) bgfx::setName(m_programTexturePassthroughArray, "m_programTexturePassthroughArray");
+		
 		//std::cout << "Is valid? " << bgfx::isValid(m_programTexturePassthrough) << " " << bgfx::isValid(m_programTexturePassthroughMonochromatic) << " " << bgfx::isValid(m_programUntexturedPassthrough) << std::endl;
 		//exit(1);
 		}
@@ -619,7 +625,11 @@ namespace bgfxh
   void deInit ()
                        {
 		destroyHandle (s_texColor);
+		destroyHandle (m_programUntexturedPassthrough);
 		destroyHandle (m_programTexturePassthrough);
+		destroyHandle (m_programTexturePassthroughArray);
+		destroyHandle (m_programTexturePassthroughMonochromatic);
+		destroyHandle (u_bgfxhUtilUniform);
 		}
 }
 namespace bgfxh

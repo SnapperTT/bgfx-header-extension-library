@@ -137,6 +137,8 @@ namespace bgfxh
 {
   void bloomEffect::init ()
                      {
+		BGFXH_ASSERT(!inited, "double initialisation");
+		
 		/// Creates resources based on User Parameters
 		m_bloomFB[0] = bgfx::createFrameBuffer(bloomWidth, bloomHeight, framebufferTexFormat, BGFXH_RT_UV_CLAMP); // Bloom Tick
 		m_bloomFB[1] = bgfx::createFrameBuffer(bloomWidth, bloomHeight, framebufferTexFormat, BGFXH_RT_UV_CLAMP); // Bloom Tock

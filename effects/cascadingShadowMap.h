@@ -229,6 +229,8 @@ namespace bgfxh
 {
   void cascadingShadowMapEffect::init ()
                      {
+		BGFXH_ASSERT(!inited, "double initialisation");
+		
 		const uint64_t shadowTexFlags = BGFX_TEXTURE_RT
 				 | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_W_CLAMP;
 		for (unsigned int i = 0; i < nShadowLevels; ++i) {

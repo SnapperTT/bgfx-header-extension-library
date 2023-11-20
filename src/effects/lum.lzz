@@ -130,6 +130,8 @@ public:
 		}
 
 	void init () {
+		BGFXH_ASSERT(!inited, "double initialisation");
+		
 		/// Creates resources based on User Parameters
 		s_texColor  = bgfx::createUniform("s_texColor",  bgfx::UniformType::Sampler);
 		s_texLum    = bgfx::createUniform("s_texLum",  bgfx::UniformType::Sampler);
@@ -219,9 +221,10 @@ public:
 	void deInit () {
 		// Frees resources if occupied. bgfxh::destroyhandle will null check
 		for (int i = 0; i < 6; ++i)
-		bgfxh::destroyHandle (m_lumFB[i]);
+			bgfxh::destroyHandle (m_lumFB[i]);
 		bgfxh::destroyHandle (s_texColor);
 		bgfxh::destroyHandle (s_texLum);
+		bgfxh::destroyHandle (u_lumOffset);
 		bgfxh::destroyHandle (u_screenSize);
 		bgfxh::destroyHandle (u_frameTime);
 		

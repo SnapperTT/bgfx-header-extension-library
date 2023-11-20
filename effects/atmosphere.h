@@ -288,6 +288,8 @@ namespace bgfxh
 {
   void atmosphericEffect::init ()
                      {
+		BGFXH_ASSERT(!inited, "double initialisation");
+		
 		u_sunDirection = bgfx::createUniform("u_sunDirection", bgfx::UniformType::Vec4); 
 		u_worldPosAndSize = bgfx::createUniform("u_worldPosAndSize", bgfx::UniformType::Vec4);
 		u_atmosphericParams = bgfx::createUniform("u_atmosphericParams", bgfx::UniformType::Vec4, 2);

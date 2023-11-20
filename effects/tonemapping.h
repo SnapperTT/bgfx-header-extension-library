@@ -157,6 +157,8 @@ namespace bgfxh
 {
   void tonemappingEffect::init ()
                      {
+		BGFXH_ASSERT(!inited, "double initialisation");
+		
 		if (!renderToBackbuffer) {
 			mOutputFB = bgfx::createFrameBuffer(width, height, framebufferTexFormat, BGFXH_RT_UV_CLAMP);
 			bgfx::setName(mOutputFB, "bgfxh::tonemappingEffect::mOutputFB");
@@ -285,6 +287,7 @@ namespace bgfxh
 		
 		for (unsigned int i = 0; i < 4; ++i) {
 			bgfxh::destroyHandle(s_texFilterExtra[i]);
+			bgfxh::destroyHandle(textureToCombine[i]);
 			additiveWeights[i] = 0.f;
 			multiplicitiveWeights[i] = 0.f;
 			}

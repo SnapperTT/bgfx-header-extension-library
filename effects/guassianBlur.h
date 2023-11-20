@@ -214,6 +214,8 @@ namespace bgfxh
 {
   void guassianBlurEffect::init ()
                      {
+		BGFXH_ASSERT(!inited, "double initialisation");
+		
 		m_blurFB[0] = bgfx::createFrameBuffer(blurWidth, blurHeight, framebufferTexFormat, BGFXH_RT_UV_CLAMP); // Bloom Tick
 		m_blurFB[1] = bgfx::createFrameBuffer(blurWidth, blurHeight, framebufferTexFormat, BGFXH_RT_UV_CLAMP); // Bloom Tock
 		bgfx::setName(m_blurFB[0], "Guassian Blur Tick");
@@ -279,11 +281,12 @@ namespace bgfxh
 {
   void guassianBlurEffect::deInit ()
                        {
-		// Frees resources if occupied. bgfxh::destroyhandle will null check
+		// Frees resources if occupied. bgfxh::destroyhandle will null check	
 		bgfxh::destroyHandle (m_blurFB[0]);
 		bgfxh::destroyHandle (m_blurFB[1]);
 		bgfxh::destroyHandle (s_texColor);
 		bgfxh::destroyHandle (u_blurParameters);
+		bgfxh::destroyHandle (u_screenSize);
 		
 		bgfxh::destroyHandle (m_programBlur[0]);
 		bgfxh::destroyHandle (m_programBlur[1]);
