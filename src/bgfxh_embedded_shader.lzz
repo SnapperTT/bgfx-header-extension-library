@@ -3,7 +3,7 @@
 #ifndef BGFXH_EMBEDDED_SHADER
 
 #include <bgfx/embedded_shader.h>
-#define BGFXH_EMBEDDED_SHADER_DX9BC BGFX_EMBEDDED_SHADER_DX9BC
+//#define BGFXH_EMBEDDED_SHADER_DX9BC BGFX_EMBEDDED_SHADER_DX9BC
 #define BGFXH_EMBEDDED_SHADER_DXBC BGFX_EMBEDDED_SHADER_DXBC
 #define BGFXH_EMBEDDED_SHADER_PSSL BGFX_EMBEDDED_SHADER_PSSL
 #define BGFXH_EMBEDDED_SHADER_GLSL BGFX_EMBEDDED_SHADER_GLSL
@@ -12,7 +12,7 @@
 #define BGFXH_EMBEDDED_SHADER_SPIRV BGFX_EMBEDDED_SHADER_SPIRV
 #define BGFXH_EMBEDDED_SHADER_METAL BGFX_EMBEDDED_SHADER_METAL
 
-#if BGFX_PLATFORM_SUPPORTS_DX9BC
+#if 0 //BGFX_PLATFORM_SUPPORTS_DX9BC
 #	undef  BGFXH_EMBEDDED_SHADER_DX9BC
 #	define BGFXH_EMBEDDED_SHADER_DX9BC(_renderer, _name) \
 		{ _renderer, BX_CONCATENATE(_name, _dx9 ), BX_CONCATENATE(_name, _dx9_size) },
@@ -63,7 +63,6 @@
 			{                                                                                      \
 				#_name,                                                                            \
 				{                                                                                  \
-					BGFXH_EMBEDDED_SHADER_DX9BC(bgfx::RendererType::Direct3D9,  _name)             \
 					BGFXH_EMBEDDED_SHADER_DXBC (bgfx::RendererType::Direct3D11, _name)             \
 					BGFXH_EMBEDDED_SHADER_DXBC (bgfx::RendererType::Direct3D12, _name)             \
 					BGFXH_EMBEDDED_SHADER_PSSL (bgfx::RendererType::Gnm,        _name)             \

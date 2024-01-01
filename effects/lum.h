@@ -296,7 +296,7 @@ namespace bgfxh
 		bgfxh::initView2D (viewId + 4, "Downscale Luminance 3",  1,  1, frameTickTock ? m_lumFB[4] : m_lumFB[5]);
 			
 		const bgfx::RendererType::Enum renderer = bgfx::getRendererType();
-		const float _texelHalf = (bgfx::RendererType::Direct3D9 == renderer) ? 0.5f : 0.0f;
+		const float _texelHalf = 0.0f;//(bgfx::RendererType::Direct3D9 == renderer) ? 0.5f : 0.0f;
 	
 		bgfxh::lumEffect::setOffsets2x2Lum(u_lumOffset, 128, 128, _texelHalf);
 		bgfx::setTexture(SAMPLER_COLOR, s_texColor, colourBufferIn);

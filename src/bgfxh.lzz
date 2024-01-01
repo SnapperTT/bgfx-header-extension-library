@@ -134,7 +134,7 @@ namespace bgfxh {
 			
 		switch (type) {
 			case bgfx::RendererType::Noop:
-			case bgfx::RendererType::Direct3D9:  return "dx9";   break;
+			//case bgfx::RendererType::Direct3D9:  return "dx9";   break;
 			case bgfx::RendererType::Direct3D11:
 			case bgfx::RendererType::Direct3D12: return "dx11";  break;
 			case bgfx::RendererType::Gnm:        return "pssl";  break;
@@ -350,7 +350,7 @@ namespace bgfxh {
 	template <typename T> 
 	struct bxMathWrap {
 		T v;
-		inline bxMathWrap() : v(bx::init::NoneType()) {}
+		inline bxMathWrap() : v(bx::InitNone) {}
 		inline T& operator = (const T & p) { v = p; return v; }
 		inline operator T& () { return v; }
 		inline operator const T& () const { return v; }
@@ -493,7 +493,7 @@ namespace bgfxh {
 		* License: https://github.com/bkaradzic/bgfx#license-bsd-2-clause
 		*/
 		const bgfx::RendererType::Enum renderer = bgfx::getRendererType();
-		const float _texelHalf = bgfx::RendererType::Direct3D9 == renderer ? 0.5f : 0.0f;
+		const float _texelHalf = 0.0f;//bgfx::RendererType::Direct3D9 == renderer ? 0.5f : 0.0f;
 		const bool _originBottomLeft = bgfx::getCaps()->originBottomLeft;
 		const float _width = 1.0f;
 		const float _height = 1.0f;
@@ -563,7 +563,7 @@ namespace bgfxh {
 		* License: https://github.com/bkaradzic/bgfx#license-bsd-2-clause
 		*/
 		const bgfx::RendererType::Enum renderer = bgfx::getRendererType();
-		const float _texelHalf = bgfx::RendererType::Direct3D9 == renderer ? 0.5f : 0.0f;
+		const float _texelHalf = 0.0f;//bgfx::RendererType::Direct3D9 == renderer ? 0.5f : 0.0f;
 		const bool _originBottomLeft = bgfx::getCaps()->originBottomLeft;
 		
 		if (6 == bgfx::getAvailTransientVertexBuffer(6, bgfxh::PosTexCoord0Vertex::ms_decl) ) {

@@ -1,67 +1,38 @@
-#hdr
-///////////////////////////////////////////////////////////////////////
-// Lum Filter
-// Takes an input texture (or framebuffer), downscales to a 1x1 texture
-// and calculates luminance.
-// 
-// How to use:
-// 0. Include! Use #include <bgfxh/bgfxh.h>, #include <bgfxh/lumEffect.h> in a relevent file. Be sure to use #define BGFXH_IMPL *once* to generate an implementation somewhere!
-// 1. Create an instance of the lumEffect object ( bgfxh::lumEffect mLumFilter; )
-// 2. Set the user parameters to your liking
-// 3. Call mLumFilter.init() - this will generate framebuffers and uniforms and load the shaders
-// 4. In your rendering loop, call mLumFilter.submit( frameTime ), where frameTime is the time since the last frame in seconds (or just use 1.f/60)
-// 5. Use the output as a sampler with mLumFilter.getOutputTexture()
-// 
-// VIEWS: This filter will consume 5 views
-// 
-// User Parameters Parameters:
-//	bgfx::ViewId viewId; 		// The *first* view id for this. This filter will take up getViewIncrement() incremental views!
-//	bgfx::TextureFormat::Enum framebufferTexFormat;	// The texture format for the bloom filter framebuffers. Default is RGBA8
+// lum.cpp
 //
 
-#end
-
-// bloom filter
-namespace bgfxh {
-
-
-class lumEffect : public renderJob {
-public:
-	/// Resources/member data. Do not touch unless you know what you're doing!
-	bgfx::ProgramHandle m_lumProgram;
-	bgfx::ProgramHandle m_lumAvgProgram;
-	bgfx::ProgramHandle m_lumAvgOutputProgram;
-			
-	bgfx::FrameBufferHandle m_lumFB[6];
-	bgfx::UniformHandle s_texColor; // Remember - bgfx::uniformHandles are reference counted by bgfx!
-	bgfx::UniformHandle s_texLum;
-	bgfx::UniformHandle u_lumOffset;
-	bgfx::UniformHandle u_screenSize;
-	bgfx::UniformHandle u_frameTime;
-	bool frameTickTock;
-	bool isFirstFrame;
-	bool inited;
-		
-	/// User Parameters - set these before calling init!
-	bgfx::ViewId viewId; // The *first* view id for this. This filter will take up getViewIncrement() incremental views!
-	bgfx::TextureFormat::Enum framebufferTexFormat;
-	
-	
-	lumEffect () { initToZero(); }
-	~lumEffect () { deInit(); }
-	
-	bgfx::FrameBufferHandle getOutputFrameBuffer () const {
+#include "lum.hh"
+#define LZZ_INLINE inline
+namespace bgfxh
+{
+  lumEffect::lumEffect ()
+                     { initToZero(); }
+}
+namespace bgfxh
+{
+  lumEffect::~ lumEffect ()
+                      { deInit(); }
+}
+namespace bgfxh
+{
+  bgfx::FrameBufferHandle lumEffect::getOutputFrameBuffer () const
+                                                              {
 		/// Returns the output for the bloom filter
 		return frameTickTock ? m_lumFB[4] : m_lumFB[5];
 		}
-	int getViewIncrement () const  {
+}
+namespace bgfxh
+{
+  int lumEffect::getViewIncrement () const
+                                       {
 		/// Returns how many views this filter takes
 		return 5;
 		}
-		
-	// Member functions
-protected:
-	void initToZero () {
+}
+namespace bgfxh
+{
+  void lumEffect::initToZero ()
+                           {
 		// Sets default vaules for this filter. Used in constructor
 		framebufferTexFormat = bgfx::TextureFormat::R16F;
 		for (int i = 0; i < 6; ++i)
@@ -81,9 +52,11 @@ protected:
 		isFirstFrame = true;
 		viewId = 0;
 		}
-		
-public:		
-	static void setOffsets2x2Lum(bgfx::UniformHandle _handle, const uint32_t _width, const uint32_t _height, const float _texelHalf) {
+}
+namespace bgfxh
+{
+  void lumEffect::setOffsets2x2Lum (bgfx::UniformHandle _handle, uint32_t const _width, uint32_t const _height, float const _texelHalf)
+                                                                                                                                         {
 		/*
 		* From the BGFX Examples, the following license applies to only this function:
 		* Copyright 2011-2018 Branimir Karadzic. All rights reserved.
@@ -105,8 +78,11 @@ public:
 
 		bgfx::setUniform(_handle, offsets, num);
 		}
-
-	static void setOffsets4x4Lum(bgfx::UniformHandle _handle, const uint32_t _width, const uint32_t _height, const float _texelHalf) {
+}
+namespace bgfxh
+{
+  void lumEffect::setOffsets4x4Lum (bgfx::UniformHandle _handle, uint32_t const _width, uint32_t const _height, float const _texelHalf)
+                                                                                                                                         {
 		/*
 		* From the BGFX Examples, the following license applies to only this function:
 		* Copyright 2011-2018 Branimir Karadzic. All rights reserved.
@@ -128,8 +104,11 @@ public:
 
 		bgfx::setUniform(_handle, offsets, num);
 		}
-
-	void init () {
+}
+namespace bgfxh
+{
+  void lumEffect::init ()
+                     {
 		BGFXH_ASSERT(!inited, "double initialisation");
 		
 		/// Creates resources based on User Parameters
@@ -217,8 +196,11 @@ public:
 		
 		inited = true;
 		}
-		
-	void deInit () {
+}
+namespace bgfxh
+{
+  void lumEffect::deInit ()
+                       {
 		// Frees resources if occupied. bgfxh::destroyhandle will null check
 		for (int i = 0; i < 6; ++i)
 			bgfxh::destroyHandle (m_lumFB[i]);
@@ -233,9 +215,11 @@ public:
 		bgfxh::destroyHandle (m_lumAvgOutputProgram);
 		inited = false;
 		}
-	
-		
-	void submit (const bgfx::TextureHandle & colourBufferIn, const float frameTime = (1.f/60.f)) {
+}
+namespace bgfxh
+{
+  void lumEffect::submit (bgfx::TextureHandle const & colourBufferIn, float const frameTime)
+                                                                                                     {
 		frameTickTock = !frameTickTock;
 		BGFXH_ASSERT(inited, "using a bgfxh::lumEffect without calling init()!");
 		
@@ -291,7 +275,5 @@ public:
 			bgfx::submit(viewId + 4, m_lumAvgOutputProgram);
 		isFirstFrame = false;
 		}
-	};
 }
-
-
+#undef LZZ_INLINE
