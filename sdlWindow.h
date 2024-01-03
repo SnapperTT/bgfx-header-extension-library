@@ -33,7 +33,9 @@ namespace bgfxh
 // sdlWindow.cpp
 //
 
-#include <SDL2/SDL_syswm.h> //Needed for window handling
+#ifndef BGFXH_SDL_SYSWM_HANDLED
+	#include <SDL2/SDL_syswm.h> //Needed for window handling
+#endif
 #define LZZ_INLINE inline
 namespace bgfxh
 {
