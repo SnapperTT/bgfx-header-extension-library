@@ -87,7 +87,7 @@ namespace bgfxh
 		
 		for (unsigned int i = 0; i < 4; ++i) {
 			char buf[32];
-			sprintf(buf, "s_texFilterExtra%i", i);
+			snprintf(buf, 31, "s_texFilterExtra%i", i);
 			s_texFilterExtra[i] = bgfx::createUniform(buf, bgfx::UniformType::Sampler);
 			}
 			
@@ -179,10 +179,10 @@ namespace bgfxh
 			}
 		#else
 		if (maxAdditonalSamplerSlots) {
-			char bufa[32];
-			char bufb[32];
-			sprintf (bufa, "vs_tonemapping_ch%i.bin", maxAdditonalSamplerSlots);
-			sprintf (bufb, "fs_tonemapping_ch%i.bin", maxAdditonalSamplerSlots);
+			char bufa[64];
+			char bufb[64];
+			snprintf (bufa, 63, "vs_tonemapping_ch%i.bin", maxAdditonalSamplerSlots);
+			snprintf (bufb, 63, "fs_tonemapping_ch%i.bin", maxAdditonalSamplerSlots);
 			m_tonemappingProgram = bgfxh::loadProgram(bgfxh::shaderSearchPath + bufa, bgfxh::shaderSearchPath + bufb);
 			}
 		else

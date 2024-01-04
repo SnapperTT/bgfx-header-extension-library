@@ -247,11 +247,11 @@ namespace bgfxh
 				m_shadowMapFB[i] = bgfx::createFrameBuffer(1, shadowProxTex, true);
 				}
 			char buf[32];
-			sprintf(buf, "m_shadowMapFB%i", i);
+			snprintf(buf, 31, "m_shadowMapFB%i", i);
 			bgfx::setName(m_shadowMapFB[i], buf);
-			sprintf(buf, "s_shadowMap%i", i);
+			snprintf(buf, 31, "s_shadowMap%i", i);
 			s_shadowMap[i] = bgfx::createUniform(buf,  bgfx::UniformType::Sampler); 
-			sprintf(buf, "u_lightMtx%i", i);
+			snprintf(buf, 31, "u_lightMtx%i", i);
 			u_lightMtx[i] = bgfx::createUniform(buf,  bgfx::UniformType::Mat4); 
 			}
 		
