@@ -241,11 +241,11 @@ namespace bgfxh
 }
 namespace bgfxh
 {
-  void initView (bgfx::ViewId const viewId, char const * tag, uint const vw, uint const vh, float const (view) [16], float const (proj) [16], bgfx::FrameBufferHandle const fh, bool const doClear = true, bool const forwardZ = true);
+  void initView (bgfx::ViewId const viewId, char const * tag, uint32_t const vw, uint32_t const vh, float const (view) [16], float const (proj) [16], bgfx::FrameBufferHandle const fh, bool const doClear = true, bool const forwardZ = true);
 }
 namespace bgfxh
 {
-  void initView2D (bgfx::ViewId const viewId, char const * tag, uint const vw, uint const vh, bgfx::FrameBufferHandle const fh, bool const doClear = true, bool const unitOrthoMatrix = true, bool const forwardZ = true);
+  void initView2D (bgfx::ViewId const viewId, char const * tag, uint32_t const vw, uint32_t const vh, bgfx::FrameBufferHandle const fh, bool const doClear = true, bool const unitOrthoMatrix = true, bool const forwardZ = true);
 }
 namespace bgfxh
 {
@@ -694,8 +694,8 @@ namespace bgfxh
 }
 namespace bgfxh
 {
-  void initView (bgfx::ViewId const viewId, char const * tag, uint const vw, uint const vh, float const (view) [16], float const (proj) [16], bgfx::FrameBufferHandle const fh, bool const doClear, bool const forwardZ)
-                                                                                                                                                                                                                                       {
+  void initView (bgfx::ViewId const viewId, char const * tag, uint32_t const vw, uint32_t const vh, float const (view) [16], float const (proj) [16], bgfx::FrameBufferHandle const fh, bool const doClear, bool const forwardZ)
+                                                                                                                                                                                                                                               {
 		bgfx::setViewName(viewId, tag);
 		bgfx::setViewRect(viewId, 0, 0, vw, vh);
 		bgfx::setViewTransform(viewId, view, proj);
@@ -710,8 +710,8 @@ namespace bgfxh
 }
 namespace bgfxh
 {
-  void initView2D (bgfx::ViewId const viewId, char const * tag, uint const vw, uint const vh, bgfx::FrameBufferHandle const fh, bool const doClear, bool const unitOrthoMatrix, bool const forwardZ)
-                                                                                                                                                                                                                                {
+  void initView2D (bgfx::ViewId const viewId, char const * tag, uint32_t const vw, uint32_t const vh, bgfx::FrameBufferHandle const fh, bool const doClear, bool const unitOrthoMatrix, bool const forwardZ)
+                                                                                                                                                                                                                                        {
 		float orthoProj[16];	// Ortho matrix for rendering screenspace quads
 		if (unitOrthoMatrix)
 			bx::mtxOrtho(orthoProj, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 100.0f, 0.0f, bgfx::getCaps()->homogeneousDepth); // flip bottom 0.0f and viewHeight if you don't like bottom left coordinates
@@ -739,7 +739,7 @@ namespace bgfxh
 		* Copyright 2011-2018 Branimir Karadzic. All rights reserved.
 		* License: https://github.com/bkaradzic/bgfx#license-bsd-2-clause
 		*/
-		const bgfx::RendererType::Enum renderer = bgfx::getRendererType();
+		//const bgfx::RendererType::Enum renderer = bgfx::getRendererType();
 		const float _texelHalf = 0.0f;//bgfx::RendererType::Direct3D9 == renderer ? 0.5f : 0.0f;
 		const bool _originBottomLeft = bgfx::getCaps()->originBottomLeft;
 		const float _width = 1.0f;
@@ -805,7 +805,7 @@ namespace bgfxh
 		* Copyright 2011-2018 Branimir Karadzic. All rights reserved.
 		* License: https://github.com/bkaradzic/bgfx#license-bsd-2-clause
 		*/
-		const bgfx::RendererType::Enum renderer = bgfx::getRendererType();
+		//const bgfx::RendererType::Enum renderer = bgfx::getRendererType();
 		const float _texelHalf = 0.0f;//bgfx::RendererType::Direct3D9 == renderer ? 0.5f : 0.0f;
 		const bool _originBottomLeft = bgfx::getCaps()->originBottomLeft;
 		

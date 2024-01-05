@@ -98,7 +98,7 @@ namespace bgfxh {
 		
 		//bgfx::renderFrame();
 		
-		bool initSet = (_init);
+		//bool initSet = (_init);
 		if (!_init) {
 			bgfx::Init init;
 			init.type     = bgfx::RendererType::Count;
