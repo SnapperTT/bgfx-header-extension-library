@@ -70,6 +70,11 @@
 	#include <string>
 #endif
 
+#ifndef BGFXH_VECTOR
+	#define BGFXH_VECTOR std::vector
+	#include <vector>
+#endif
+
 #define BGFXH_UV_CLAMP       BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP
 #define BGFXH_RT_UV_CLAMP    BGFX_TEXTURE_RT | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP
 

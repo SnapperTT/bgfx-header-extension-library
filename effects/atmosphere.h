@@ -114,7 +114,6 @@ namespace bgfxh
 //
 
 #include "../bgfxh_embedded_shader.h"
-#include <vector>
 #include <unordered_map>
 #define LZZ_INLINE inline
 namespace bgfxh
@@ -207,7 +206,7 @@ namespace bgfxh
 	// Subdivide!
 	for (unsigned int ii = 0; ii < nSubdivisions; ii++) {
 		const uint16_t smFacesSz = sm.faces.size();
-		vector<meshFace> newFaces;
+		BGFXH_VECTOR<meshFace> newFaces;
 		for (uint16_t i = 0; i < smFacesSz; ++i) {
 			const meshFace & tri = sm.faces[i];
 			

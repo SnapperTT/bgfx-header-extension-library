@@ -1,6 +1,4 @@
 #hdr
-
-#include <vector>
 #end
 
 #src
@@ -21,9 +19,9 @@ namespace bgfxh {
 	/// Index type should be uint16_t or uint32_t
 	template<typename VERT_TYPE, typename DECL_TYPE, typename INDEX_TYPE>
 	struct mesh {
-		vector<VERT_TYPE> verts;
-		vector<INDEX_TYPE> indices;
-		vector<meshFace> faces;
+		BGFXH_VECTOR<VERT_TYPE> verts;
+		BGFXH_VECTOR<INDEX_TYPE> indices;
+		BGFXH_VECTOR<meshFace> faces;
 		
 		bgfx::VertexBufferHandle m_vbh;
 		bgfx::IndexBufferHandle m_ibh;
@@ -33,13 +31,13 @@ namespace bgfxh {
 		
 		static void internal_freeVerts_cb(void* _ptr, void* _userData) {
 			BX_UNUSED(_ptr);
-			vector<VERT_TYPE>* vertsHeap = (vector<VERT_TYPE>*)_userData;
+			BGFXH_VECTOR<VERT_TYPE>* vertsHeap = (BGFXH_VECTOR<VERT_TYPE>*)_userData;
 			delete vertsHeap;
 			}
 			
 		static void internal_freeIndicies_cb(void* _ptr, void* _userData) {
 			BX_UNUSED(_ptr);
-			vector<INDEX_TYPE>* indicesHeap = (vector<INDEX_TYPE>*)_userData;
+			BGFXH_VECTOR<INDEX_TYPE>* indicesHeap = (BGFXH_VECTOR<INDEX_TYPE>*)_userData;
 			delete indicesHeap;
 			}
 		
@@ -48,8 +46,8 @@ namespace bgfxh {
 			if (freeOnUploadComplete) {
 				faces.clear();
 				
-				vector<VERT_TYPE>* vertsHeap = new vector<VERT_TYPE>;
-				vector<INDEX_TYPE>* indicesHeap = new vector<INDEX_TYPE>;
+				BGFXH_VECTOR<VERT_TYPE>* vertsHeap = new BGFXH_VECTOR<VERT_TYPE>;
+				BGFXH_VECTOR<INDEX_TYPE>* indicesHeap = new BGFXH_VECTOR<INDEX_TYPE>;
 				vertsHeap->swap(verts);
 				indicesHeap->swap(indices);
 				

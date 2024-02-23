@@ -3,8 +3,6 @@
 
 #ifndef LZZ_bgfxh_mesh_hh
 #define LZZ_bgfxh_mesh_hh
-
-#include <vector>
 #define LZZ_INLINE inline
 namespace bgfxh
 {
@@ -22,9 +20,9 @@ namespace bgfxh
   template <typename VERT_TYPE, typename DECL_TYPE, typename INDEX_TYPE>
   struct mesh
   {
-    vector <VERT_TYPE> verts;
-    vector <INDEX_TYPE> indices;
-    vector <meshFace> faces;
+    BGFXH_VECTOR <VERT_TYPE> verts;
+    BGFXH_VECTOR <INDEX_TYPE> indices;
+    BGFXH_VECTOR <meshFace> faces;
     bgfx::VertexBufferHandle m_vbh;
     bgfx::IndexBufferHandle m_ibh;
     mesh ();
@@ -70,7 +68,7 @@ namespace bgfxh
   void mesh <VERT_TYPE, DECL_TYPE, INDEX_TYPE>::internal_freeVerts_cb (void * _ptr, void * _userData)
                                                                                {
 			BX_UNUSED(_ptr);
-			vector<VERT_TYPE>* vertsHeap = (vector<VERT_TYPE>*)_userData;
+			BGFXH_VECTOR<VERT_TYPE>* vertsHeap = (BGFXH_VECTOR<VERT_TYPE>*)_userData;
 			delete vertsHeap;
 			}
 }
@@ -80,7 +78,7 @@ namespace bgfxh
   void mesh <VERT_TYPE, DECL_TYPE, INDEX_TYPE>::internal_freeIndicies_cb (void * _ptr, void * _userData)
                                                                                   {
 			BX_UNUSED(_ptr);
-			vector<INDEX_TYPE>* indicesHeap = (vector<INDEX_TYPE>*)_userData;
+			BGFXH_VECTOR<INDEX_TYPE>* indicesHeap = (BGFXH_VECTOR<INDEX_TYPE>*)_userData;
 			delete indicesHeap;
 			}
 }
@@ -93,8 +91,8 @@ namespace bgfxh
 			if (freeOnUploadComplete) {
 				faces.clear();
 				
-				vector<VERT_TYPE>* vertsHeap = new vector<VERT_TYPE>;
-				vector<INDEX_TYPE>* indicesHeap = new vector<INDEX_TYPE>;
+				BGFXH_VECTOR<VERT_TYPE>* vertsHeap = new BGFXH_VECTOR<VERT_TYPE>;
+				BGFXH_VECTOR<INDEX_TYPE>* indicesHeap = new BGFXH_VECTOR<INDEX_TYPE>;
 				vertsHeap->swap(verts);
 				indicesHeap->swap(indices);
 				

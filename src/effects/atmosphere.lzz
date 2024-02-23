@@ -66,7 +66,6 @@
 
 #src
 #include "../bgfxh_embedded_shader.h"
-#include <vector>
 #include <unordered_map>
 #end
 
@@ -158,7 +157,7 @@ void generateIsoSphere (bgfxh::simpleMesh & sm, const unsigned int nSubdivisions
 	// Subdivide!
 	for (unsigned int ii = 0; ii < nSubdivisions; ii++) {
 		const uint16_t smFacesSz = sm.faces.size();
-		vector<meshFace> newFaces;
+		BGFXH_VECTOR<meshFace> newFaces;
 		for (uint16_t i = 0; i < smFacesSz; ++i) {
 			const meshFace & tri = sm.faces[i];
 			
