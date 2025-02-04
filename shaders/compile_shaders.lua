@@ -13,7 +13,7 @@
 --			-D VALUE - #defines VALUE in the shaders that are being compiled. Can use -D VAL1 -D VAL2 etc.. for multiple defines
 --		The following are used to override defaults defined in this file
 --			-C_DO - compile c header shaders?
---			-DX9_DO - compile DX9 shaders?
+--			-DX9_DO - compile DX9 shaders? (NOTE: 2025 - DX9 shader compile has been disabled as it has been removed from bgfx)
 --			-DX11_DO - compile DX11/DX12 shaders?
 --			-NACL_DO - compile NACL shaders?
 --			-ANDROID_DO - compile ANDRIOD shaders?
@@ -168,8 +168,8 @@ DX9_FS_FLAGS="--platform windows -p ps_4_0 -O 3"
 DX9_SHADER_PATH="dx9"
 DX9_DO = true;
 
-DX11_VS_FLAGS="--platform windows -p vs_4_0 -O 3"
-DX11_FS_FLAGS="--platform windows -p ps_4_0 -O 3"
+DX11_VS_FLAGS="--platform windows -p vs_5_0 -O 3"
+DX11_FS_FLAGS="--platform windows -p ps_5_0 -O 3"
 DX11_CS_FLAGS="--platform windows -p cs_5_0 -O 1"
 DX11_SHADER_PATH="dx11"
 DX11_DO = true;

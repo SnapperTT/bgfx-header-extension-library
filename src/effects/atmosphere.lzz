@@ -29,6 +29,7 @@
 //	bgfxh::generateIsoSphere(skyMesh, 4) // Sphere with 4 subdivisions
 //	bgfxh::generateIsoSphere(skyMesh, 4, true) // Sphere with 4 subdivisions, only y >= 0 verts are subdivided
 //	bgfxh::generateIsoSphere(skyMesh, 4, true, 0.8) // Sphere with 4 subdivisions, only y >= 0.8 verts are subdivided
+//  This is slow, so you should cache the results to disc and load the pregenerated sphere at startup
 //
 // To draw:
 //	skyMesh.bind();
@@ -74,6 +75,11 @@ void generateIsoSphere (bgfxh::simpleMesh & sm, const unsigned int nSubdivisions
 	// Adapted from:
 	// http://blog.andreaskahler.com/2009/06/creating-icosphere-mesh-in-code.html
 	// https://schneide.blog/2016/07/15/generating-an-icosphere-in-c/
+	//
+	// Performance notes: This is very slow for nSubdivisions > 3. You should save pregenerated isospheres and just load them directly 
+	// This could be sped up by only subdividing one face, then using symmetery to copy the results
+	// Can also be sped up by using a thread pool on subdivisions, but this is probably overkill
+	//
 	const float gr = (1.0 + sqrt(5.0)) / 2.0;
 	const float gri = 1.0/gr;
 	
