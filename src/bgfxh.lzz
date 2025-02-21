@@ -122,6 +122,7 @@ namespace bgfxh {
 	// For debug drawing
 	bgfx::UniformHandle s_texColor = BGFX_INVALID_HANDLE;
 	bgfx::ProgramHandle m_programUntexturedPassthrough = BGFX_INVALID_HANDLE;
+	bgfx::ProgramHandle m_programUntexturedPassthroughColor = BGFX_INVALID_HANDLE;
 	bgfx::ProgramHandle m_programTexturePassthrough = BGFX_INVALID_HANDLE;
 	bgfx::ProgramHandle m_programTexturePassthroughArray = BGFX_INVALID_HANDLE;
 	bgfx::ProgramHandle m_programTexturePassthroughMonochromatic = BGFX_INVALID_HANDLE;
@@ -222,6 +223,24 @@ namespace bgfxh {
 			bgfx::RendererType::Enum type = bgfx::getRendererType();
 			m_programUntexturedPassthrough = bgfx::createProgram(bgfx::createEmbeddedShader(s_embeddedShaders, type, "vs_untextured_passthrough_bin")
 															, bgfx::createEmbeddedShader(s_embeddedShaders, type, "fs_untextured_passthrough_bin")
+															, true
+															);
+			}
+			
+			{
+			#include "shaders/textured_passthrough/c/vs_untextured_passthrough_color.bin.h"
+			#include "shaders/textured_passthrough/c/fs_untextured_passthrough_color.bin.h"
+
+			static const bgfx::EmbeddedShader s_embeddedShaders[] = {
+				BGFXH_EMBEDDED_SHADER(vs_untextured_passthrough_color_bin),
+				BGFXH_EMBEDDED_SHADER(fs_untextured_passthrough_color_bin),
+				
+				BGFX_EMBEDDED_SHADER_END()
+				};
+			
+			bgfx::RendererType::Enum type = bgfx::getRendererType();
+			m_programUntexturedPassthroughColor = bgfx::createProgram(bgfx::createEmbeddedShader(s_embeddedShaders, type, "vs_untextured_passthrough_color_bin")
+															, bgfx::createEmbeddedShader(s_embeddedShaders, type, "fs_untextured_passthrough_color_bin")
 															, true
 															);
 			}
@@ -329,11 +348,12 @@ namespace bgfxh {
 		
 	/// Should be called BEFORE bgfx::shutdown() ! Destroys resources created by this
 	void deInit () {
-		destroyHandle (s_texColor);
+		destroyHandle (m_programUntexturedPassthroughColor);
 		destroyHandle (m_programUntexturedPassthrough);
 		destroyHandle (m_programTexturePassthrough);
 		destroyHandle (m_programTexturePassthroughArray);
 		destroyHandle (m_programTexturePassthroughMonochromatic);
+		destroyHandle (s_texColor);
 		destroyHandle (u_bgfxhUtilUniform);
 		}
 	

@@ -114,6 +114,10 @@ namespace bgfxh
 }
 namespace bgfxh
 {
+  extern bgfx::ProgramHandle m_programUntexturedPassthroughColor;
+}
+namespace bgfxh
+{
   extern bgfx::ProgramHandle m_programTexturePassthrough;
 }
 namespace bgfxh
@@ -415,6 +419,10 @@ namespace bgfxh
 }
 namespace bgfxh
 {
+  bgfx::ProgramHandle m_programUntexturedPassthroughColor = BGFX_INVALID_HANDLE;
+}
+namespace bgfxh
+{
   bgfx::ProgramHandle m_programTexturePassthrough = BGFX_INVALID_HANDLE;
 }
 namespace bgfxh
@@ -530,6 +538,24 @@ namespace bgfxh
 			}
 			
 			{
+			#include "shaders/textured_passthrough/c/vs_untextured_passthrough_color.bin.h"
+			#include "shaders/textured_passthrough/c/fs_untextured_passthrough_color.bin.h"
+
+			static const bgfx::EmbeddedShader s_embeddedShaders[] = {
+				BGFXH_EMBEDDED_SHADER(vs_untextured_passthrough_color_bin),
+				BGFXH_EMBEDDED_SHADER(fs_untextured_passthrough_color_bin),
+				
+				BGFX_EMBEDDED_SHADER_END()
+				};
+			
+			bgfx::RendererType::Enum type = bgfx::getRendererType();
+			m_programUntexturedPassthroughColor = bgfx::createProgram(bgfx::createEmbeddedShader(s_embeddedShaders, type, "vs_untextured_passthrough_color_bin")
+															, bgfx::createEmbeddedShader(s_embeddedShaders, type, "fs_untextured_passthrough_color_bin")
+															, true
+															);
+			}
+			
+			{
 			#include "shaders/textured_passthrough/c/vs_textured_passthrough_array.bin.h"
 			#include "shaders/textured_passthrough/c/fs_textured_passthrough_array.bin.h"
 
@@ -629,11 +655,12 @@ namespace bgfxh
 {
   void deInit ()
                        {
-		destroyHandle (s_texColor);
+		destroyHandle (m_programUntexturedPassthroughColor);
 		destroyHandle (m_programUntexturedPassthrough);
 		destroyHandle (m_programTexturePassthrough);
 		destroyHandle (m_programTexturePassthroughArray);
 		destroyHandle (m_programTexturePassthroughMonochromatic);
+		destroyHandle (s_texColor);
 		destroyHandle (u_bgfxhUtilUniform);
 		}
 }
