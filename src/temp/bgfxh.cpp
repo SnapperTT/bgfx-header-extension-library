@@ -242,10 +242,17 @@ namespace bgfxh
 {
   void debugDrawTexture (bgfx::ViewId const viewId, bgfx::TextureHandle const texture, float const xOffset, float const yOffset, float const xSize, float const ySize, float const _targetFrameBufferWidth, float const _targetFrameBufferHeight)
                                                                                                                                                                                                                                                                       {
+		debugDrawTextureUv(viewId, texture, xOffset, yOffset, xSize, ySize, 0.f, 1.f, 0.f, 1.f);
+		}
+}
+namespace bgfxh
+{
+  void debugDrawTextureUv (bgfx::ViewId const viewId, bgfx::TextureHandle const texture, float const xOffset, float const yOffset, float const xSize, float const ySize, float const _minu, float const _maxu, float const _minv, float const _maxv)
+                                                                                                                                                                                                                                                           {
 		if (!bgfx::isValid(texture)) return;
 		bgfx::setTexture (SAMPLER_COLOR, s_texColor, texture);
 		bgfx::setState(BGFX_STATE_WRITE_RGB|BGFX_STATE_WRITE_A);
-		screenSpaceQuad (xOffset, yOffset, xSize, ySize, _targetFrameBufferWidth, _targetFrameBufferHeight);
+		screenSpaceQuadUv (xOffset, yOffset, xSize, ySize, _minu, _maxu, _minv, _maxv);
 		bgfx::submit (viewId, m_programTexturePassthrough);
 		}
 }
@@ -253,12 +260,19 @@ namespace bgfxh
 {
   void debugDrawTextureArray (bgfx::ViewId const viewId, bgfx::TextureHandle const texture, unsigned int const layer, float const xOffset, float const yOffset, float const xSize, float const ySize, float const _targetFrameBufferWidth, float const _targetFrameBufferHeight)
                                                                                                                                                                                                                                                                                                      {
+		debugDrawTextureArrayUv(viewId, texture, layer, xOffset, yOffset, xSize, ySize, 0.f, 1.f, 0.f, 1.f);
+		}
+}
+namespace bgfxh
+{
+  void debugDrawTextureArrayUv (bgfx::ViewId const viewId, bgfx::TextureHandle const texture, unsigned int const layer, float const xOffset, float const yOffset, float const xSize, float const ySize, float const _minu, float const _maxu, float const _minv, float const _maxv)
+                                                                                                                                                                                                                                                                                          {
 		if (!bgfx::isValid(texture)) return;
 		bgfx::setTexture (SAMPLER_COLOR, s_texColor, texture);
 		bgfx::setState(BGFX_STATE_WRITE_RGB|BGFX_STATE_WRITE_A);
 		float v[4] = { float(layer), 0.f, 0.f, 0.f };
 		bgfx::setUniform(u_bgfxhUtilUniform, v);
-		screenSpaceQuad (xOffset, yOffset, xSize, ySize, _targetFrameBufferWidth, _targetFrameBufferHeight);
+		screenSpaceQuadUv (xOffset, yOffset, xSize, ySize, _minu, _maxu, _minv, _maxv);
 		bgfx::submit (viewId, m_programTexturePassthroughArray);
 		}
 }
@@ -266,17 +280,31 @@ namespace bgfxh
 {
   void debugDrawFramebuffer (bgfx::ViewId const viewId, bgfx::FrameBufferHandle const framebuffer, float const xOffset, float const yOffset, float const xSize, float const ySize, float const _targetFrameBufferWidth, float const _targetFrameBufferHeight)
                                                                                                                                                                                                                                                                                   {
-		debugDrawTexture (viewId, bgfx::getTexture(framebuffer, 0), xOffset, yOffset, xSize, ySize, _targetFrameBufferWidth, _targetFrameBufferHeight);
+		debugDrawTextureUv (viewId, bgfx::getTexture(framebuffer, 0), xOffset, yOffset, xSize, ySize, 0.f, 1.f, 0.f, 1.f);
+		}
+}
+namespace bgfxh
+{
+  void debugDrawFramebufferUv (bgfx::ViewId const viewId, bgfx::FrameBufferHandle const framebuffer, float const xOffset, float const yOffset, float const xSize, float const ySize, float const _minu, float const _maxu, float const _minv, float const _maxv)
+                                                                                                                                                                                                                                                                       {
+		debugDrawTextureUv (viewId, bgfx::getTexture(framebuffer, 0), xOffset, yOffset, xSize, ySize, _minu, _maxu, _minv, _maxv);
 		}
 }
 namespace bgfxh
 {
   void debugDrawTextureMono (bgfx::ViewId const viewId, bgfx::TextureHandle const texture, float const xOffset, float const yOffset, float const xSize, float const ySize, float const _targetFrameBufferWidth, float const _targetFrameBufferHeight)
                                                                                                                                                                                                                                                                           {
+		debugDrawTextureMonoUv(viewId, texture, xOffset, yOffset, xSize, ySize, 0.f, 1.f, 0.f, 1.f);
+		}
+}
+namespace bgfxh
+{
+  void debugDrawTextureMonoUv (bgfx::ViewId const viewId, bgfx::TextureHandle const texture, float const xOffset, float const yOffset, float const xSize, float const ySize, float const _minu, float const _maxu, float const _minv, float const _maxv)
+                                                                                                                                                                                                                                                               {
 		if (!bgfx::isValid(texture)) return;
 		bgfx::setTexture (SAMPLER_COLOR, s_texColor, texture);
 		bgfx::setState(BGFX_STATE_WRITE_RGB|BGFX_STATE_WRITE_A);
-		screenSpaceQuad (xOffset, yOffset, xSize, ySize, _targetFrameBufferWidth, _targetFrameBufferHeight);
+		screenSpaceQuadUv (xOffset, yOffset, xSize, ySize, _minu, _maxu, _minv, _maxv);
 		bgfx::submit (viewId, m_programTexturePassthroughMonochromatic);
 		}
 }
@@ -466,15 +494,20 @@ namespace bgfxh
 }
 namespace bgfxh
 {
-  void screenSpaceQuad (float const xOffset, float const yOffset, float const xSize, float const ySize, float const _framebufferWidth, float const _framebufferHeight)
-                                                                                                                                                                                        {
+  void screenSpaceQuad (float const xOffset, float const yOffset, float const xSize, float const ySize, float const _unused__framebufferWidth, float const _unused_framebufferHeight)
+                                                                                                                                                                                                       {
+		screenSpaceQuadUv(xOffset, yOffset, xSize, ySize, 0.0f, 1.0f, 0.0f, 1.0f);
+		}
+}
+namespace bgfxh
+{
+  void screenSpaceQuadUv (float const xOffset, float const yOffset, float const xSize, float const ySize, float const _minu, float const _maxu, float const _minv, float const _maxv)
+                                                                                                                                                                                           {
 		/*
 		* From the BGFX Examples, the following license applies to only this function:
 		* Copyright 2011-2018 Branimir Karadzic. All rights reserved.
 		* License: https://github.com/bkaradzic/bgfx#license-bsd-2-clause
 		*/
-		//const bgfx::RendererType::Enum renderer = bgfx::getRendererType();
-		const float _texelHalf = 0.0f;//bgfx::RendererType::Direct3D9 == renderer ? 0.5f : 0.0f;
 		const bool _originBottomLeft = bgfx::getCaps()->originBottomLeft;
 		
 		if (6 == bgfx::getAvailTransientVertexBuffer(6, bgfxh::PosTexCoord0Vertex::ms_decl) ) {
@@ -487,19 +520,13 @@ namespace bgfxh
 			const float miny = yOffset;
 			const float maxy = (yOffset + ySize);
 
-			float texelHalfW = 0.f;
-			float texelHalfH = 0.f;
-			if (_framebufferWidth > 0.0f && _framebufferHeight > 0.0f) {
-				texelHalfW = _texelHalf/_framebufferWidth;
-				texelHalfH = _texelHalf/_framebufferHeight;
-				}
-			const float minu = 0.0f + texelHalfW;
-			const float maxu = 1.0f + texelHalfH;
+			const float minu = _minu;
+			const float maxu = _maxu;
 
 			const float zz = 0.0f;
 
-			float minv = texelHalfH;
-			float maxv = 1.0f + texelHalfH;
+			float minv = _minv;
+			float maxv = _maxv;
 
 			if (_originBottomLeft) {
 				float temp = minv;
@@ -542,7 +569,6 @@ namespace bgfxh
 			vertex[5].m_z = zz;
 			vertex[5].m_u = minu;
 			vertex[5].m_v = maxv;
-
 
 			bgfx::setVertexBuffer(0, &vb);
 			}

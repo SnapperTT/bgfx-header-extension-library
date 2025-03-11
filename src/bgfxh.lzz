@@ -294,20 +294,28 @@ namespace bgfxh {
 	/// Useful for inspecting a texture, or the content of a framebuffer
 	/// The arguments using whatever projection matrix that viewId is using. If the view was set up with 
 	void debugDrawTexture (const bgfx::ViewId viewId, const bgfx::TextureHandle texture, const float xOffset, const float yOffset, const float xSize, const float ySize, const float _targetFrameBufferWidth = 0.0f, const float _targetFrameBufferHeight = 0.0f) {
+		debugDrawTextureUv(viewId, texture, xOffset, yOffset, xSize, ySize, 0.f, 1.f, 0.f, 1.f);
+		}
+		
+	void debugDrawTextureUv (const bgfx::ViewId viewId, const bgfx::TextureHandle texture, const float xOffset, const float yOffset, const float xSize, const float ySize, const float _minu, const float _maxu, const float _minv, const float _maxv) {
 		if (!bgfx::isValid(texture)) return;
 		bgfx::setTexture (SAMPLER_COLOR, s_texColor, texture);
 		bgfx::setState(BGFX_STATE_WRITE_RGB|BGFX_STATE_WRITE_A);
-		screenSpaceQuad (xOffset, yOffset, xSize, ySize, _targetFrameBufferWidth, _targetFrameBufferHeight);
+		screenSpaceQuadUv (xOffset, yOffset, xSize, ySize, _minu, _maxu, _minv, _maxv);
 		bgfx::submit (viewId, m_programTexturePassthrough);
 		}
 	
 	void debugDrawTextureArray (const bgfx::ViewId viewId, const bgfx::TextureHandle texture, const unsigned int layer, const float xOffset, const float yOffset, const float xSize, const float ySize, const float _targetFrameBufferWidth = 0.0f, const float _targetFrameBufferHeight = 0.0f) {
+		debugDrawTextureArrayUv(viewId, texture, layer, xOffset, yOffset, xSize, ySize, 0.f, 1.f, 0.f, 1.f);
+		}
+		
+	void debugDrawTextureArrayUv (const bgfx::ViewId viewId, const bgfx::TextureHandle texture, const unsigned int layer, const float xOffset, const float yOffset, const float xSize, const float ySize, const float _minu, const float _maxu, const float _minv, const float _maxv) {
 		if (!bgfx::isValid(texture)) return;
 		bgfx::setTexture (SAMPLER_COLOR, s_texColor, texture);
 		bgfx::setState(BGFX_STATE_WRITE_RGB|BGFX_STATE_WRITE_A);
 		float v[4] = { float(layer), 0.f, 0.f, 0.f };
 		bgfx::setUniform(u_bgfxhUtilUniform, v);
-		screenSpaceQuad (xOffset, yOffset, xSize, ySize, _targetFrameBufferWidth, _targetFrameBufferHeight);
+		screenSpaceQuadUv (xOffset, yOffset, xSize, ySize, _minu, _maxu, _minv, _maxv);
 		bgfx::submit (viewId, m_programTexturePassthroughArray);
 		}
 		
@@ -318,7 +326,11 @@ namespace bgfxh {
 	/// of the buffer being drawn to - this is for DirectX9 2D half
 	/// pixel correction. If you don't care about that then you can ommit it.
 	void debugDrawFramebuffer (const bgfx::ViewId viewId, const bgfx::FrameBufferHandle framebuffer, const float xOffset, const float yOffset, const float xSize, const float ySize, const float _targetFrameBufferWidth = 0.0f, const float _targetFrameBufferHeight = 0.0f) {
-		debugDrawTexture (viewId, bgfx::getTexture(framebuffer, 0), xOffset, yOffset, xSize, ySize, _targetFrameBufferWidth, _targetFrameBufferHeight);
+		debugDrawTextureUv (viewId, bgfx::getTexture(framebuffer, 0), xOffset, yOffset, xSize, ySize, 0.f, 1.f, 0.f, 1.f);
+		}
+		
+	void debugDrawFramebufferUv (const bgfx::ViewId viewId, const bgfx::FrameBufferHandle framebuffer, const float xOffset, const float yOffset, const float xSize, const float ySize, const float _minu, const float _maxu, const float _minv, const float _maxv) {
+		debugDrawTextureUv (viewId, bgfx::getTexture(framebuffer, 0), xOffset, yOffset, xSize, ySize, _minu, _maxu, _minv, _maxv);
 		}
 	
 	/// Draws a texture at position (xOffset, yOffset -> xOffset + xSize, yOffset + ySize)
@@ -326,10 +338,14 @@ namespace bgfxh {
 	/// Useful for inspecting a texture, or the content of a framebuffer (especially depth buffers!)
 	/// The arguments using whatever projection matrix that viewId is using. If the view was set up with 
 	void debugDrawTextureMono (const bgfx::ViewId viewId, const bgfx::TextureHandle texture, const float xOffset, const float yOffset, const float xSize, const float ySize, const float _targetFrameBufferWidth = 0.0f, const float _targetFrameBufferHeight = 0.0f) {
+		debugDrawTextureMonoUv(viewId, texture, xOffset, yOffset, xSize, ySize, 0.f, 1.f, 0.f, 1.f);
+		}
+		
+	void debugDrawTextureMonoUv (const bgfx::ViewId viewId, const bgfx::TextureHandle texture, const float xOffset, const float yOffset, const float xSize, const float ySize, const float _minu, const float _maxu, const float _minv, const float _maxv) {
 		if (!bgfx::isValid(texture)) return;
 		bgfx::setTexture (SAMPLER_COLOR, s_texColor, texture);
 		bgfx::setState(BGFX_STATE_WRITE_RGB|BGFX_STATE_WRITE_A);
-		screenSpaceQuad (xOffset, yOffset, xSize, ySize, _targetFrameBufferWidth, _targetFrameBufferHeight);
+		screenSpaceQuadUv (xOffset, yOffset, xSize, ySize, _minu, _maxu, _minv, _maxv);
 		bgfx::submit (viewId, m_programTexturePassthroughMonochromatic);
 		}
 		
@@ -578,17 +594,17 @@ namespace bgfxh {
 	/// Assumes a unit orthonormal projection matrix (initView2D() will
 	/// make one). Then all arguments vary from 0.0 to 1.0
 	///
-	/// _framebufferWidth and _framebufferHeight are the width/height
-	/// of the buffer being drawn to - this is for DirectX9 2D half
-	/// pixel correction. If you don't care about that then you can ommit it.
-	void screenSpaceQuad(const float xOffset, const float yOffset, const float xSize, const float ySize, const float _framebufferWidth = 0.f, const float _framebufferHeight = 0.f) {
+	/// _unused__framebufferWidth/height is for compat with old bgfx versions that supported dx9
+	void screenSpaceQuad(const float xOffset, const float yOffset, const float xSize, const float ySize, const float _unused__framebufferWidth = 0.f, const float _unused_framebufferHeight = 0.f) {
+		screenSpaceQuadUv(xOffset, yOffset, xSize, ySize, 0.0f, 1.0f, 0.0f, 1.0f);
+		}
+		
+	void screenSpaceQuadUv(const float xOffset, const float yOffset, const float xSize, const float ySize, const float _minu, const float _maxu, const float _minv, const float _maxv) {
 		/*
 		* From the BGFX Examples, the following license applies to only this function:
 		* Copyright 2011-2018 Branimir Karadzic. All rights reserved.
 		* License: https://github.com/bkaradzic/bgfx#license-bsd-2-clause
 		*/
-		//const bgfx::RendererType::Enum renderer = bgfx::getRendererType();
-		const float _texelHalf = 0.0f;//bgfx::RendererType::Direct3D9 == renderer ? 0.5f : 0.0f;
 		const bool _originBottomLeft = bgfx::getCaps()->originBottomLeft;
 		
 		if (6 == bgfx::getAvailTransientVertexBuffer(6, bgfxh::PosTexCoord0Vertex::ms_decl) ) {
@@ -601,19 +617,13 @@ namespace bgfxh {
 			const float miny = yOffset;
 			const float maxy = (yOffset + ySize);
 
-			float texelHalfW = 0.f;
-			float texelHalfH = 0.f;
-			if (_framebufferWidth > 0.0f && _framebufferHeight > 0.0f) {
-				texelHalfW = _texelHalf/_framebufferWidth;
-				texelHalfH = _texelHalf/_framebufferHeight;
-				}
-			const float minu = 0.0f + texelHalfW;
-			const float maxu = 1.0f + texelHalfH;
+			const float minu = _minu;
+			const float maxu = _maxu;
 
 			const float zz = 0.0f;
 
-			float minv = texelHalfH;
-			float maxv = 1.0f + texelHalfH;
+			float minv = _minv;
+			float maxv = _maxv;
 
 			if (_originBottomLeft) {
 				float temp = minv;
@@ -656,7 +666,6 @@ namespace bgfxh {
 			vertex[5].m_z = zz;
 			vertex[5].m_u = minu;
 			vertex[5].m_v = maxv;
-
 
 			bgfx::setVertexBuffer(0, &vb);
 			}
