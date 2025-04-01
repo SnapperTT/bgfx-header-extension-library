@@ -4,15 +4,10 @@
 #ifndef LZZ_sdlWindow_hh
 #define LZZ_sdlWindow_hh
 struct SDL_Window;
-// Be sure to set macro BGFXH_USE_WAYLAND if using wayland on linux
 #define LZZ_INLINE inline
 namespace bgfxh
 {
-  void * getSdlNativeWindowHandle (SDL_Window * _window);
-}
-namespace bgfxh
-{
-  void * getNativeDisplayHandle (SDL_Window * _window);
+  bool getSdlNativeWindowHandles (SDL_Window * _window, bgfx::PlatformData & pdOut);
 }
 namespace bgfxh
 {
@@ -33,81 +28,44 @@ namespace bgfxh
 // sdlWindow.cpp
 //
 
-#ifndef BGFXH_SDL_SYSWM_HANDLED
-	#include <SDL2/SDL_syswm.h> //Needed for window handling
-#endif
 #define LZZ_INLINE inline
 namespace bgfxh
 {
-  void * getSdlNativeWindowHandle (SDL_Window * _window)
-                                                            {
-		// From bgfx/examples/common/entry_sdl.cpp
-		SDL_SysWMinfo wmi;
-		SDL_VERSION(&wmi.version);
-		if (!SDL_GetWindowWMInfo(_window, &wmi) ) {
-			return NULL;
+  bool getSdlNativeWindowHandles (SDL_Window * _window, bgfx::PlatformData & pdOut)
+                                                                                        {
+		// https://gist.github.com/ShogunateTM/87947e63ccb8ae273c85fbfc5f6f03b0
+		// writes nwh and ndt in pdOut
+		#if defined(SDL_PLATFORM_WIN32)
+			pdOut.nwh = SDL_GetPointerProperty( SDL_GetWindowProperties( _window ), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL );
+			pdOut.ndt = NULL;
+			return true;
+		#elif defined(SDL_PLATFORM_MACOS)
+			pdOut.nwh = SDL_GetPointerProperty( SDL_GetWindowProperties( _window ), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL );
+			pdOut.ndt = NULL;
+			return true;
+		#elif defined(SDL_PLATFORM_LINUX)
+			if( SDL_strcmp( SDL_GetCurrentVideoDriver(), "x11" ) == 0 ) 
+			{
+				pdOut.ndt = SDL_GetPointerProperty( SDL_GetWindowProperties( _window ), SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL );
+				pdOut.nwh = (void*) SDL_GetNumberProperty( SDL_GetWindowProperties( _window  ), SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0 );
+				return true;
 			}
-
-		#	if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
-		#		if BGFXH_USE_WAYLAND
-				wl_egl_window *win_impl = (wl_egl_window*)SDL_GetWindowData(_window, "wl_egl_window");
-				if(!win_impl)
-				{
-					int width, height;
-					SDL_GetWindowSize(_window, &width, &height);
-					struct wl_surface* surface = wmi.info.wl.surface;
-					if(!surface)
-						return nullptr;
-					win_impl = wl_egl_window_create(surface, width, height);
-					SDL_SetWindowData(_window, "wl_egl_window", win_impl);
-				}
-				return (void*)(uintptr_t)win_impl;
-		#		else
-				return (void*)wmi.info.x11.window;
-		#		endif
-		#	elif BX_PLATFORM_OSX || BX_PLATFORM_IOS
-				return wmi.info.cocoa.window;
-		#	elif BX_PLATFORM_WINDOWS
-				return wmi.info.win.window;
-		#   elif BX_PLATFORM_ANDROID
-				return wmi.info.android.window;
-		#	endif // BX_PLATFORM_
-		}
-}
-namespace bgfxh
-{
-  void * getNativeDisplayHandle (SDL_Window * _window)
-                                                          {
-		// From bgfx/examples/common/entry_sdl.cpp
-		SDL_SysWMinfo wmi;
-		SDL_VERSION(&wmi.version);
-		if (!SDL_GetWindowWMInfo(_window, &wmi) ) {
-			return NULL;
+			else if( SDL_strcmp( SDL_GetCurrentVideoDriver(), "wayland" ) == 0 ) 
+			{
+				/*struct wl_display *display*/ pdOut.ndt = SDL_GetPointerProperty( SDL_GetWindowProperties( _window ), SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, NULL );
+				/*struct wl_surface *surface*/ pdOut.nwh = SDL_GetPointerProperty( SDL_GetWindowProperties( _window ), SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, NULL );
+				return true;
 			}
-
-		#	if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
-		#		if BGFXH_USE_WAYLAND
-				return wmi.info.wl.display;
-		#		else
-				return wmi.info.x11.display;
-		#		endif // ENTRY_CONFIG_USE_WAYLAND
-		#	else
-				return NULL;
-		#	endif // BX_PLATFORM_*
+		#endif
+		return false;
 		}
 }
 namespace bgfxh
 {
   bool initSdlWindow (SDL_Window * _window, bgfx::PlatformData & pdOut)
                                                                               {
-		SDL_SysWMinfo wmi;
-		SDL_VERSION(&wmi.version);
-		if (!SDL_GetWindowWMInfo(_window, &wmi) ) {
-			return false;
-			}
-			
-		pdOut.nwh = bgfxh::getSdlNativeWindowHandle(_window);
-		pdOut.ndt = bgfxh::getNativeDisplayHandle(_window);
+		bool r = bgfxh::getSdlNativeWindowHandles(_window, pdOut);
+		if (!r) return false; // failed to get native handles
 		
 		pdOut.context      = NULL;
 		pdOut.backBuffer   = NULL;
