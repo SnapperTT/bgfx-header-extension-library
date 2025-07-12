@@ -8,9 +8,9 @@
 #include <bgfx_shader.shh>
 
 // Samplers
-uniform vec4 u_colour;
+uniform vec4 u_bgfxhUtilUniform;
 
 void  main() {
-	gl_FragColor = u_colour;
+	gl_FragColor = u_bgfxhUtilUniform;
 	}
 
