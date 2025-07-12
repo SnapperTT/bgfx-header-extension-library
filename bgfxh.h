@@ -596,22 +596,15 @@ namespace bgfxh
 			m_programTexturePassthrough = bgfxh::loadProgram (bgfxh::shaderSearchPath + "vs_textured_passthrough", bgfxh::shaderSearchPath + "fs_textured_passthrough");
 			m_programTexturePassthroughMonochromatic = bgfxh::loadProgram (bgfxh::shaderSearchPath + "vs_textured_passthrough_monochromatic", bgfxh::shaderSearchPath + "fs_textured_passthrough_monochromatic");
 			m_programUntexturedPassthrough = bgfxh::loadProgram (bgfxh::shaderSearchPath + "vs_untextured_passthrough", bgfxh::shaderSearchPath + "fs_untextured_passthrough");
+			m_programUntexturedPassthroughColor = bgfxh::loadProgram (bgfxh::shaderSearchPath + "vs_untextured_passthrough_color", bgfxh::shaderSearchPath + "fs_untextured_passthrough_color");
 			m_programTexturePassthroughArray = bgfxh::loadProgram (bgfxh::shaderSearchPath + "vs_textured_passthrough_array", bgfxh::shaderSearchPath + "fs_textured_passthrough_array");
 		#endif // BGFXH_EMBED_DEBUG_SHADERS
 		
 		BGFXH_ASSERT(bgfx::isValid(m_programTexturePassthrough), "m_programTexturePassthrough");
 		BGFXH_ASSERT(bgfx::isValid(m_programTexturePassthroughMonochromatic), "m_programTexturePassthroughMonochromatic");
 		BGFXH_ASSERT(bgfx::isValid(m_programUntexturedPassthrough), "m_programUntexturedPassthrough");
+		BGFXH_ASSERT(bgfx::isValid(m_programUntexturedPassthroughColor), "m_programUntexturedPassthroughColor");
 		BGFXH_ASSERT(bgfx::isValid(m_programTexturePassthroughArray), "m_programTexturePassthroughArray");
-		
-		// Names for programs are not supported in bgfx
-		//if (bgfx::isValid(m_programTexturePassthrough)) bgfx::setName(m_programTexturePassthrough, "m_programTexturePassthrough");
-		//if (bgfx::isValid(m_programTexturePassthroughMonochromatic)) bgfx::setName(m_programTexturePassthroughMonochromatic, "m_programTexturePassthroughMonochromatic");
-		//if (bgfx::isValid(m_programUntexturedPassthrough)) bgfx::setName(m_programUntexturedPassthrough, "m_programUntexturedPassthrough");
-		//if (bgfx::isValid(m_programTexturePassthroughArray)) bgfx::setName(m_programTexturePassthroughArray, "m_programTexturePassthroughArray");
-		
-		//std::cout << "Is valid? " << bgfx::isValid(m_programTexturePassthrough) << " " << bgfx::isValid(m_programTexturePassthroughMonochromatic) << " " << bgfx::isValid(m_programUntexturedPassthrough) << std::endl;
-		//exit(1);
 		}
 }
 namespace bgfxh
