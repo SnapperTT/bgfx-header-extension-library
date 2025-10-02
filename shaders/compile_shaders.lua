@@ -13,7 +13,6 @@
 --			-D VALUE - #defines VALUE in the shaders that are being compiled. Can use -D VAL1 -D VAL2 etc.. for multiple defines
 --		The following are used to override defaults defined in this file
 --			-C_DO - compile c header shaders?
---			-DX9_DO - compile DX9 shaders? (NOTE: 2025 - DX9 shader compile has been disabled as it has been removed from bgfx)
 --			-DX11_DO - compile DX11/DX12 shaders?
 --			-NACL_DO - compile NACL shaders?
 --			-ANDROID_DO - compile ANDRIOD shaders?
@@ -72,8 +71,6 @@ for i=1,#arg do
 		i=i+1;
 	elseif (arg[i] == "-C_DO") then
 		GLOBAL_C_DO = true;
-	elseif (arg[i] == "-DX9_DO") then
-		GLOBAL_DX9_DO = true;
 	elseif (arg[i] == "-DX11_DO") then
 		GLOBAL_DX11_DO = true;
 	elseif (arg[i] == "-NACL_DO") then
@@ -90,8 +87,6 @@ for i=1,#arg do
 		GLOBAL_SPRIV_DO = true;
 	elseif (arg[i] == "-C_DONT") then
 		GLOBAL_C_DO = false;
-	elseif (arg[i] == "-DX9_DONT") then
-		GLOBAL_DX9_DO = false;
 	elseif (arg[i] == "-DX11_DONT") then
 		GLOBAL_DX11_DO = false;
 	elseif (arg[i] == "-NACL_DONT") then
@@ -163,11 +158,6 @@ print ("Found shaderc: "..CC)
 CFLAGS=fixPath(" -i . -i include/ -i ../include/ ")
 
 -- Flags for different targets
-DX9_VS_FLAGS="--platform windows -p vs_4_0 -O 3"
-DX9_FS_FLAGS="--platform windows -p ps_4_0 -O 3"
-DX9_SHADER_PATH="dx9"
-DX9_DO = true;
-
 DX11_VS_FLAGS="--platform windows -p vs_5_0 -O 3"
 DX11_FS_FLAGS="--platform windows -p ps_5_0 -O 3"
 DX11_CS_FLAGS="--platform windows -p cs_5_0 -O 1"
@@ -213,7 +203,6 @@ C_SHADER_PATH="c"
 C_DO = true;
 
 if (GLSL_ONLY) then
-	DX9_DO = false;
 	DX11_DO = false;
 	NACL_DO = false;
 	ANDROID_DO = false;
@@ -223,7 +212,6 @@ if (GLSL_ONLY) then
 end
 
 if (HLSL_ONLY) then
-	DX9_DO = true;
 	DX11_DO = true;
 	NACL_DO = false;
 	ANDROID_DO = false;
@@ -233,7 +221,6 @@ if (HLSL_ONLY) then
 end
 
 if (GLOBAL_C_DO ~= nil) then C_DO = GLOBAL_C_DO; end -- Used invoking this from other scripts to override value
-if (GLOBAL_DX9_DO ~= nil) then DX9_DO = GLOBAL_DX9_DO; end
 if (GLOBAL_DX11_DO ~= nil) then DX11_DO = GLOBAL_DX11_DO; end
 if (GLOBAL_NACL_DO ~= nil) then NACL_DO = GLOBAL_NACL_DO; end
 if (GLOBAL_ANDROID_DO ~= nil) then ANDROID_DO = GLOBAL_ANDROID_DO; end
@@ -282,7 +269,6 @@ function buildC (path, inputFile, outputFile, isFragment)
 	
 	local r = ""
 	r = r .. xxd(getBinOutput(path, GLSL_SHADER_PATH, opPrefix, outputFile), "_"..GLSL_SHADER_PATH, not GLSL_DO);
-	r = r .. xxd(getBinOutput(path, DX9_SHADER_PATH, opPrefix, outputFile), "_"..DX9_SHADER_PATH, not DX9_DO);
 	r = r .. xxd(getBinOutput(path, DX11_SHADER_PATH, opPrefix, outputFile), "_"..DX11_SHADER_PATH, not DX11_DO);
 	r = r .. xxd(getBinOutput(path, METAL_SHADER_PATH, opPrefix, outputFile), "_"..METAL_SHADER_PATH, not METAL_DO);
 	r = r .. xxd(getBinOutput(path, SPRIV_SHADER_PATH, opPrefix, outputFile), "_"..SPRIV_SHADER_PATH, not SPRIV_DO); 
@@ -318,7 +304,6 @@ function buildShader (inputFile, outputFile, vdefFile, defs)
 	print ("Building shader \""..path..inputFile.."\" to \""..path..outputFile.."\"")
 
 	local cf_glsl  = buildCommand (path, inputFile, vdefFile, GLSL_SHADER_PATH, outputFile, true, GLSL_FS_FLAGS, defs);
-	local cf_dx9   = buildCommand (path, inputFile, vdefFile, DX9_SHADER_PATH, outputFile, true, DX9_FS_FLAGS, defs);
 	local cf_dx11  = buildCommand (path, inputFile, vdefFile, DX11_SHADER_PATH, outputFile, true, DX11_FS_FLAGS, defs);
 	local cf_metal = buildCommand (path, inputFile, vdefFile, METAL_SHADER_PATH, outputFile, true, METAL_FS_FLAGS, defs);
 	local cf_vk    = buildCommand (path, inputFile, vdefFile, SPRIV_SHADER_PATH, outputFile, true, SPRIV_FS_FLAGS, defs);
@@ -327,7 +312,6 @@ function buildShader (inputFile, outputFile, vdefFile, defs)
 	local cf_nacl  = buildCommand (path, inputFile, vdefFile, NACL_SHADER_PATH, outputFile, true, NACL_FS_FLAGS, defs);
 
 	local cv_glsl  = buildCommand (path, inputFile, vdefFile, GLSL_SHADER_PATH, outputFile, false, GLSL_VS_FLAGS, defs);
-	local cv_dx9   = buildCommand (path, inputFile, vdefFile, DX9_SHADER_PATH, outputFile, false, DX9_VS_FLAGS, defs);
 	local cv_dx11  = buildCommand (path, inputFile, vdefFile, DX11_SHADER_PATH, outputFile, false, DX11_VS_FLAGS, defs);
 	local cv_metal = buildCommand (path, inputFile, vdefFile, METAL_SHADER_PATH, outputFile, false, METAL_VS_FLAGS, defs);
 	local cv_vk    = buildCommand (path, inputFile, vdefFile, SPRIV_SHADER_PATH, outputFile, false, SPRIV_VS_FLAGS, defs);
@@ -344,7 +328,6 @@ function buildShader (inputFile, outputFile, vdefFile, defs)
 			execc (cf_dx11, doFrag)
 		else
 			execc (cf_glsl, GLSL_DO and doFrag)
-			--execc (cf_dx9, DX9_DO and doFrag)
 			execc (cf_dx11, DX11_DO and doFrag)
 			execc (cf_metal, METAL_DO and doFrag)
 			execc (cf_vk, SPRIV_DO and doFrag)
@@ -353,7 +336,6 @@ function buildShader (inputFile, outputFile, vdefFile, defs)
 			execc (cf_nacl, NACL_DO and doFrag)
 			
 			execc (cv_glsl, GLSL_DO and doVert)
-			--execc (cv_dx9, DX9_DO and doVert)
 			execc (cv_dx11, DX11_DO and doVert)
 			execc (cv_metal, METAL_DO and doVert)
 			execc (cv_vk, SPRIV_DO and doVert)
