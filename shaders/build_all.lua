@@ -69,6 +69,7 @@ print("Processing Directory ", dir)
 	for i=1,#dirs do
 		processDirectory(dir..SLASH..dirs[i]);
 	end
+print("Completed Processing Directory ", dir)
 end
 
 processDirectory(".");

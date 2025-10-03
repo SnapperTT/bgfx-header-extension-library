@@ -22,7 +22,6 @@
 --			-SPRIV_DO - compile SPRIV shaders?
 -- 
 -- Here be dragons, I have no idea what I was thinking while writing this
-
 INPUT_FILE = false;
 OUTPUT_FILE = false;
 VDEF_FILE = false;
@@ -240,6 +239,9 @@ function buildCommand (path, inputFile, vdefFile, shaderOutputPath, outputFile, 
 	local opPrefix = "vs_";
 	
 	if (isFragment) then vtype = "f"; opPrefix = "fs_"; end
+	
+	local outDirPath = fixPath(path.."../"..shaderOutputPath);
+	
 	local r = CC .. " -f "..path..opPrefix..inputFile..".sc --varyingdef "..path.."varying_"..vdefFile..".def.sc -o "..getBinOutput(path, shaderOutputPath, opPrefix, outputFile).." --type "..vtype.." " .. CFLAGS .. " " .. sFlags;
 
 	r = r .. " --define " .. inputFile:upper();
@@ -256,7 +258,7 @@ function buildCommand (path, inputFile, vdefFile, shaderOutputPath, outputFile, 
 		end
 	end
 
-	return fixPath(r);
+	return { fixPath(r), outDirPath };
 end
 
 
@@ -265,7 +267,8 @@ function buildC (path, inputFile, outputFile, isFragment)
 	local opPrefix = "vs_";
 	if (isFragment) then vtype = "f"; opPrefix = "fs_"; end
 	
-	local wo = getBinOutput(path, C_SHADER_PATH, opPrefix, outputFile, ".bin.h");
+	local wo = fixPath(getBinOutput(path, C_SHADER_PATH, opPrefix, outputFile, ".bin.h"));
+	local wd = getPath(wo);
 	
 	local r = ""
 	r = r .. xxd(getBinOutput(path, GLSL_SHADER_PATH, opPrefix, outputFile), "_"..GLSL_SHADER_PATH, not GLSL_DO);
@@ -275,7 +278,7 @@ function buildC (path, inputFile, outputFile, isFragment)
 	r = r .. xxd(getBinOutput(path, ANDROID_SHADER_PATH, opPrefix, outputFile), "_"..ANDROID_SHADER_PATH, not ANDROID_DO); 
 	r = r .. xxd(getBinOutput(path, ORBIS_SHADER_PATH, opPrefix, outputFile), "_"..ORBIS_SHADER_PATH, not ORBIS_DO); 
 	r = r .. xxd(getBinOutput(path, NACL_SHADER_PATH, opPrefix, outputFile), "_"..NACL_SHADER_PATH, not NACL_DO); 
-	return r, wo;
+	return r, wo, wd;
 end
 
 function buildShader (inputFile, outputFile, vdefFile, defs)
@@ -349,15 +352,21 @@ function buildShader (inputFile, outputFile, vdefFile, defs)
 	if (C_DO or C_ONLY) then
 		print ("Building c header file:");
 		if (doVert) then
-			local c,cp = buildC (path, inputFile, outputFile, false);
+			local c,cp,cd = buildC (path, inputFile, outputFile, false);
 			print ("",cp);
+			if (cd:len() > 0) then
+				mkdirp(cd);
+			end
 			local fh = io.open (cp, "w+");
 			fh:write(c);
 			fh:close();
 		end
 		if (doFrag) then
-			local c,cp = buildC (path, inputFile, outputFile, true);
+			local c,cp,cd = buildC (path, inputFile, outputFile, true);
 			print ("",cp);
+			if (cd:len() > 0) then
+				mkdirp(cd);
+			end
 			local fh = io.open (cp, "w+");
 			fh:write(c);
 			fh:close();
@@ -365,11 +374,23 @@ function buildShader (inputFile, outputFile, vdefFile, defs)
 	end
 end
 
+function mkdirp (p)
+	if (isWindows) then
+		print(">> mkdir "..p);
+		os.execute("mkdir "..p);
+	else
+		print(">> mkdir -p "..p);
+		os.execute("mkdir -p "..p);
+	end
+end
+
 function execc (c, doit)
 	-- Calls "c" and kills this script if the command results in an error
 	if (doit == false) then return; end
-	print (">> "..c);
-	stat = os.execute(c);
+	
+	mkdirp(c[2]);
+	print (">> "..c[1]);
+	stat = os.execute(c[1]);
 	if (not stat) then print ("Failed to compile!"); os.exit(false); end
 end
 
@@ -380,10 +401,11 @@ function btyeToPrintable (b)
 	return '.';
 end
 
-function xxd(fname, variableSuffix, dummy)
+function xxd(fname_a, variableSuffix, dummy)
 	-- Implements xxd -i
 	-- Forked from https://gist.github.com/cuhsat/cfa118f4398cae9e543b25cb5e19ecb6
 	-- By Christian Uhsat
+	local fname = fixPath(fname_a);
 	variableSuffix = variableSuffix or "";
 	local path = getPath(fname) or "";
 	local fnameWoPath = fname;
