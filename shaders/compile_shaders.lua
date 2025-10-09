@@ -168,8 +168,8 @@ NACL_FS_FLAGS="--platform nacl"
 NACL_SHADER_PATH="esslnacl"
 NACL_DO = false;
 
-ANDROID_VS_FLAGS="--platform android -p 100_es"
-ANDROID_FS_FLAGS="--platform android -p 100_es"
+ANDROID_VS_FLAGS="--platform android -p 300_es"
+ANDROID_FS_FLAGS="--platform android -p 300_es"
 ANDROID_CS_FLAGS="--platform android -p 300_es"
 ANDROID_SHADER_PATH="essl"
 ANDROID_DO = true;
