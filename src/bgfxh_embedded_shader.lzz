@@ -37,7 +37,7 @@
 			{ _renderer, BX_CONCATENATE(_name, _esslnacl), BX_CONCATENATE(_name, _esslnacl_size) },
 	#else
 	#	define BGFXH_EMBEDDED_SHADER_ESSL(_renderer, _name) \
-			{ _renderer, BX_CONCATENATE(_name, _esslandroid), BX_CONCATENATE(_name, _esslandroid_size) },
+			{ _renderer, BX_CONCATENATE(_name, _essl), BX_CONCATENATE(_name, _essl_size) },
 	#endif // BGFXH_GOOGLE
 #endif // BGFX_PLATFORM_SUPPORTS_ESSL
 

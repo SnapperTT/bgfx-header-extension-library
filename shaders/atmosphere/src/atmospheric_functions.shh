@@ -32,6 +32,13 @@
 	#define PI 3.14159265359
 #endif 
 
+#if BGFX_SHADER_LANGUAGE_GLSL == 100
+// glsl 100 es cannot assign const vec3
+	#define CONST_VEC3 vec3
+#else
+	#define CONST_VEC3 const vec3
+#endif
+
 #define SCALE_DEPTH 0.25
 #define DRADIUS 0.975
 #define ATMOS_CONSTANTS \
@@ -40,11 +47,11 @@
 	const float wavelengthRed = 0.650;				\
 	const float wavelengthGreen = 0.570;			\
 	const float wavelengthBlue = 0.475;				\
-	const vec3 v3InvWavelength = vec3(1.0 / pow(wavelengthRed, 4), 1.0 / pow(wavelengthGreen, 4), 1.0 / pow(wavelengthBlue, 4));\
+	CONST_VEC3  v3InvWavelength = vec3(1.0 / pow(wavelengthRed, 4), 1.0 / pow(wavelengthGreen, 4), 1.0 / pow(wavelengthBlue, 4)); \
 	const float fKrESun = fBetaRayleighMultiplier;	\
 	const float fKmESun = fBetaMieMultiplier;		\
-	const float fKr4PI = fBetaRayleighMultiplier * 4 * PI;	\
-	const float fKm4PI = fBetaMieMultiplier * 4 * PI;		\
+	const float fKr4PI = fBetaRayleighMultiplier * 4.0 * PI;	\
+	const float fKm4PI = fBetaMieMultiplier * 4.0 * PI;		\
 	const int nSamples = 4;							\
 
 float atmosphereScale(float fCos) {
@@ -76,7 +83,7 @@ void atmosphereSky (float fInnerRadius, float fOuterRadius, vec3 v3Pos, vec3 v3O
 	// v3Pos is modelView position
 	// v3Origin is the modelView origin of the planet
 	ATMOS_CONSTANTS
-	const float fSamples = nSamples;
+	const float fSamples = float(nSamples);
 	const float fInvSamples = 1.0/fSamples;
 	const float fInvScaleDepth = 1.0 / SCALE_DEPTH;
 	
@@ -180,7 +187,7 @@ void atmosphereSky (float fInnerRadius, float fOuterRadius, vec3 v3Pos, vec3 v3O
 
 void atmosphereGround (float fInnerRadius, float fOuterRadius, vec3 v3Pos, vec3 v3Origin, vec3 v3LightDir, vec3 v3RayleighMod, vec3 v3TintColor, inout vec3 v3RayleighColor, inout vec3 v3MieColor, inout vec3 v3Attenuate) {
 	ATMOS_CONSTANTS
-	const float fSamples = nSamples;
+	const float fSamples = float(nSamples);
 	const float fInvSamples = 1.0/fSamples;
 	const float fInvScaleDepth = 1.0 / SCALE_DEPTH;
 	

@@ -175,6 +175,7 @@ namespace bgfxh {
 		
 		#ifdef BGFXH_EMBED_DEBUG_SHADERS
 			{
+			BGFXH_WARN("false", "Creating embeded debug shaders");
 			#include "shaders/textured_passthrough/c/vs_textured_passthrough.bin.h"
 			#include "shaders/textured_passthrough/c/fs_textured_passthrough.bin.h"
 
@@ -263,6 +264,7 @@ namespace bgfxh {
 															);
 			}
 		#else
+			BGFXH_WARN("false", "Manually loading embeded debug shaders");
 			m_programTexturePassthrough = bgfxh::loadProgram (bgfxh::shaderSearchPath + "vs_textured_passthrough", bgfxh::shaderSearchPath + "fs_textured_passthrough");
 			m_programTexturePassthroughMonochromatic = bgfxh::loadProgram (bgfxh::shaderSearchPath + "vs_textured_passthrough_monochromatic", bgfxh::shaderSearchPath + "fs_textured_passthrough_monochromatic");
 			m_programUntexturedPassthrough = bgfxh::loadProgram (bgfxh::shaderSearchPath + "vs_untextured_passthrough", bgfxh::shaderSearchPath + "fs_untextured_passthrough");

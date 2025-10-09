@@ -23,10 +23,14 @@ void main() {
 
 //const ARRAY_BEGIN(float, bloomOffset3, 3) 0.0, 1.3846153846, 3.2307692308 ARRAY_END();
 //const ARRAY_BEGIN(float, bloomWeight3, 3) 0.2270270270, 0.3162162162, 0.0702702703 ARRAY_END(); // 9 tap with 5 lookups
-
-const ARRAY_BEGIN(float, bloomOffset5, 5) 0.0, 1.4444444444, 3.3703703704, 5.2962962963, 7.2222222222 ARRAY_END(); 
-const ARRAY_BEGIN(float, bloomWeight5, 5) 0.1550637538, 0.2591779886, 0.1257775533, 0.0330993561, 0.0044132475 ARRAY_END();//17 tap with 9 lookups
-
+	#if BGFX_SHADER_LANGUAGE_GLSL == 100
+		float bloomOffset5[5]; bloomOffset5[0] = 0.0;          bloomOffset5[1] = 1.4444444444; bloomOffset5[2] = 3.3703703704; bloomOffset5[3] = 5.2962962963; bloomOffset5[4] = 7.2222222222;
+		float bloomWeight5[5]; bloomWeight5[0] = 0.1550637538; bloomOffset5[1] = 0.2591779886; bloomOffset5[2] = 0.1257775533; bloomOffset5[3] = 0.0330993561; bloomOffset5[4] = 0.0044132475;
+	#else
+		const ARRAY_BEGIN(float, bloomOffset5, 5) 0.0, 1.4444444444, 3.3703703704, 5.2962962963, 7.2222222222 ARRAY_END(); 
+		const ARRAY_BEGIN(float, bloomWeight5, 5) 0.1550637538, 0.2591779886, 0.1257775533, 0.0330993561, 0.0044132475 ARRAY_END();//17 tap with 9 lookups
+	#endif
+	
 	vec3 rgb = 1.0*texture2D(s_texColor, v_texcoord0).xyz * bloomWeightR[0];
     vec2 tex_offset = 1.0 / u_screenSize.xy; // gets size of single texel
 
