@@ -63,6 +63,7 @@
 			{                                                                                      \
 				#_name,                                                                            \
 				{                                                                                  \
+					BGFXH_EMBEDDED_SHADER_PSSL (bgfx::RendererType::Agc,        _name)             \
 					BGFXH_EMBEDDED_SHADER_DXBC (bgfx::RendererType::Direct3D11, _name)             \
 					BGFXH_EMBEDDED_SHADER_DXBC (bgfx::RendererType::Direct3D12, _name)             \
 					BGFXH_EMBEDDED_SHADER_PSSL (bgfx::RendererType::Gnm,        _name)             \
