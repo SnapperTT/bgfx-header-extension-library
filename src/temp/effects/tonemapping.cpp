@@ -181,12 +181,12 @@ namespace bgfxh
 		if (maxAdditonalSamplerSlots) {
 			char bufa[64];
 			char bufb[64];
-			snprintf (bufa, 63, "vs_tonemapping_ch%i.bin", maxAdditonalSamplerSlots);
-			snprintf (bufb, 63, "fs_tonemapping_ch%i.bin", maxAdditonalSamplerSlots);
-			m_tonemappingProgram = bgfxh::loadProgram(bgfxh::shaderSearchPath + bufa, bgfxh::shaderSearchPath + bufb);
+			snprintf (bufa, 63, "vs_tonemapping_ch%i", maxAdditonalSamplerSlots);
+			snprintf (bufb, 63, "fs_tonemapping_ch%i", maxAdditonalSamplerSlots);
+			m_tonemappingProgram = bgfxh::loadProgramWCallback(&bufa[0], &bufb[0]);
 			}
 		else
-			m_tonemappingProgram = bgfxh::loadProgram(bgfxh::shaderSearchPath + "vs_tonemapping.bin", bgfxh::shaderSearchPath + "fs_tonemapping.bin");
+			m_tonemappingProgram = bgfxh::loadProgramWCallback("vs_tonemapping", "fs_tonemapping");
 		#endif
 		BGFXH_ASSERT(bgfx::isValid(m_tonemappingProgram), "failed to load shader bgfxh::tonemappingEffect::m_tonemappingProgram! Check your bgfxh::shaderSearchPath setting, path, and that the shader type matches the renderer type!");
 		inited = true;

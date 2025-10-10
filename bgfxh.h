@@ -306,6 +306,18 @@ namespace bgfxh
 }
 namespace bgfxh
 {
+  struct loadProgramCallback
+  {
+    static bgfxh::loadProgramCallback * mCallback;
+    virtual bgfx::ProgramHandle loadProgram (char const * vstag, char const * fstag);
+  };
+}
+namespace bgfxh
+{
+  bgfx::ProgramHandle loadProgramWCallback (char const * vstag, char const * fstag);
+}
+namespace bgfxh
+{
   template <typename T>
   LZZ_INLINE bxMathWrap <T>::bxMathWrap ()
     : v (bx::InitNone)
@@ -479,7 +491,7 @@ namespace bgfxh
 			#ifdef BGFXH_GOOGLE_NACL
 				case bgfx::RendererType::OpenGLES:   return "esslnacl";  break;
 			#else
-				case bgfx::RendererType::OpenGLES:   return "esslandroid";  break;
+				case bgfx::RendererType::OpenGLES:   return "essl";  break;
 			#endif
 			case bgfx::RendererType::Vulkan:     return "spirv"; break;
 			default: break;
@@ -1035,6 +1047,27 @@ namespace bgfxh
   bgfx::ProgramHandle loadProgram (BGFXH_STRING const & vertexShaderFile, BGFXH_STRING const & fragmentShaderFile)
                                                                                                                          {
 		return loadProgram (vertexShaderFile.c_str(), fragmentShaderFile.c_str());
+		}
+}
+namespace bgfxh
+{
+  bgfxh::loadProgramCallback * loadProgramCallback::mCallback = NULL;
+}
+namespace bgfxh
+{
+  bgfx::ProgramHandle loadProgramCallback::loadProgram (char const * vstag, char const * fstag)
+                                                                                                {
+			// implement your own loadProgram based on shader tags
+			}
+}
+namespace bgfxh
+{
+  bgfx::ProgramHandle loadProgramWCallback (char const * vstag, char const * fstag)
+                                                                                         {
+		if (!loadProgramCallback::mCallback)
+			return loadProgram(bgfxh::shaderSearchPath + vstag + ".bin", bgfxh::shaderSearchPath + fstag + ".bin");
+		else
+			return loadProgramCallback::mCallback->loadProgram(vstag, fstag);
 		}
 }
 #undef LZZ_INLINE

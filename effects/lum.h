@@ -251,9 +251,9 @@ namespace bgfxh
 													);
 			}
 		#else
-			m_lumProgram = bgfxh::loadProgram(bgfxh::shaderSearchPath + "vs_lum.bin", bgfxh::shaderSearchPath + "fs_lum.bin");
-			m_lumAvgProgram = bgfxh::loadProgram(bgfxh::shaderSearchPath + "vs_lum_avg.bin", bgfxh::shaderSearchPath + "fs_lum_avg.bin");
-			m_lumAvgOutputProgram = bgfxh::loadProgram(bgfxh::shaderSearchPath + "vs_lum_avg_output.bin", bgfxh::shaderSearchPath + "fs_lum_avg_output.bin");
+			m_lumProgram = bgfxh::loadProgramWCallback("vs_lum", "fs_lum");
+			m_lumAvgProgram = bgfxh::loadProgramWCallback("vs_lum_avg", "fs_lum_avg");
+			m_lumAvgOutputProgram = bgfxh::loadProgramWCallback( "vs_lum_avg_output", "fs_lum_avg_output");
 		#endif
 		
 		BGFXH_ASSERT(bgfx::isValid(m_lumProgram), "failed to load shader bgfxh::lumEffect::m_lumProgram! Check your bgfxh::shaderSearchPath setting, path, and that the shader type matches the renderer type!");

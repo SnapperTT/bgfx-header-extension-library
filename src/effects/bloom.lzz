@@ -175,11 +175,11 @@ public:
 			}
 		#else
 			if (useLum)
-				m_bloomExtractProgram = bgfxh::loadProgram(bgfxh::shaderSearchPath + "vs_bloom_brightpass_lum.bin", bgfxh::shaderSearchPath + "fs_bloom_brightpass_lum.bin");
+				m_bloomExtractProgram = bgfxh::loadProgramWCallback("vs_bloom_brightpass_lum", "fs_bloom_brightpass_lum");
 			else
-				m_bloomExtractProgram = bgfxh::loadProgram(bgfxh::shaderSearchPath + "vs_bloom_brightpass.bin", bgfxh::shaderSearchPath + "fs_bloom_brightpass.bin");
-			m_programBloomBlur[0] = bgfxh::loadProgram(bgfxh::shaderSearchPath + "vs_bloom_blur_hz.bin", bgfxh::shaderSearchPath + "fs_bloom_blur_hz.bin");
-			m_programBloomBlur[1] = bgfxh::loadProgram(bgfxh::shaderSearchPath + "vs_bloom_blur_vt.bin", bgfxh::shaderSearchPath + "fs_bloom_blur_vt.bin");
+				m_bloomExtractProgram = bgfxh::loadProgramWCallback("vs_bloom_brightpass", "fs_bloom_brightpass");
+			m_programBloomBlur[0] = bgfxh::loadProgramWCallback("vs_bloom_blur_hz", "fs_bloom_blur_hz");
+			m_programBloomBlur[1] = bgfxh::loadProgramWCallback("vs_bloom_blur_vt", "fs_bloom_blur_vt");
 		#endif
 			
 		BGFXH_ASSERT(bgfx::isValid(m_bloomExtractProgram), "failed to load shader bgfxh::bloomEffect::m_bloomExtractProgram! Check your bgfxh::shaderSearchPath setting, path, and that the shader type matches the renderer type!");

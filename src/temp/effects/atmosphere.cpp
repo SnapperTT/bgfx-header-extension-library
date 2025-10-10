@@ -224,9 +224,9 @@ namespace bgfxh
 				}
 		#else
 			if (doInFragShader)
-				m_programAtmosphere = bgfxh::loadProgram(bgfxh::shaderSearchPath + "vs_atmosphere_frag.bin", bgfxh::shaderSearchPath + "fs_atmosphere_frag.bin");
+				m_programAtmosphere = bgfxh::loadProgramWCallback("vs_atmosphere_frag", "fs_atmosphere_frag");
 			else
-				m_programAtmosphere = bgfxh::loadProgram(bgfxh::shaderSearchPath + "vs_atmosphere.bin", bgfxh::shaderSearchPath + "fs_atmosphere.bin");
+				m_programAtmosphere = bgfxh::loadProgramWCallback("vs_atmosphere", "fs_atmosphere");
 		#endif
 		
 		BGFXH_ASSERT(bgfx::isValid(m_programAtmosphere), "failed to load shader bgfxh::atmosphericEffect::m_programAtmosphere! Check your bgfxh::shaderSearchPath setting, path, and that the shader type matches the renderer type!");

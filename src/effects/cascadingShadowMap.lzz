@@ -225,9 +225,9 @@ public:
 			}
 		#else
 			if (useVsm)
-				m_programDepthWrite = bgfxh::loadProgram(bgfxh::shaderSearchPath + "vs_cascading_shadow_map_vsm.bin", bgfxh::shaderSearchPath + "fs_cascading_shadow_map_vsm.bin");
+				m_programDepthWrite = bgfxh::loadProgramWCallback("vs_cascading_shadow_map_vsm", "fs_cascading_shadow_map_vsm");
 			else
-				m_programDepthWrite = bgfxh::loadProgram(bgfxh::shaderSearchPath + "vs_cascading_shadow_map.bin", bgfxh::shaderSearchPath + "fs_cascading_shadow_map.bin");
+				m_programDepthWrite = bgfxh::loadProgramWCallback("vs_cascading_shadow_map", "fs_cascading_shadow_map");
 		#endif
 		
 		BGFXH_ASSERT(bgfx::isValid(m_programDepthWrite), "failed to load shader bgfxh::cascadingShadowMapEffect::m_programDepthWrite! Check your bgfxh::shaderSearchPath setting, path, and that the shader type matches the renderer type!");

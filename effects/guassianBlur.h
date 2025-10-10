@@ -265,8 +265,8 @@ namespace bgfxh
 													);
 			}
 		#else
-			m_programBlur[0] = bgfxh::loadProgram(bgfxh::shaderSearchPath + "vs_guassian_blur_hz.bin", bgfxh::shaderSearchPath + "fs_guassian_blur_hz.bin");
-			m_programBlur[1] = bgfxh::loadProgram(bgfxh::shaderSearchPath + "vs_guassian_blur_vt.bin", bgfxh::shaderSearchPath + "fs_guassian_blur_vt.bin");
+			m_programBlur[0] = bgfxh::loadProgramWCallback("vs_guassian_blur_hz", "fs_guassian_blur_hz");
+			m_programBlur[1] = bgfxh::loadProgramWCallback("vs_guassian_blur_vt", "fs_guassian_blur_vt");
 		#endif
 			
 		BGFXH_ASSERT(bgfx::isValid(m_programBlur[0]), "failed to load shader bgfxh::guassianBlurEffect::m_programBlur[0]! Check your bgfxh::shaderSearchPath setting, path, and that the shader type matches the renderer type!");

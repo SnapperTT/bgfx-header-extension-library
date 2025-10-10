@@ -150,7 +150,7 @@ namespace bgfxh {
 			#ifdef BGFXH_GOOGLE_NACL
 				case bgfx::RendererType::OpenGLES:   return "esslnacl";  break;
 			#else
-				case bgfx::RendererType::OpenGLES:   return "esslandroid";  break;
+				case bgfx::RendererType::OpenGLES:   return "essl";  break;
 			#endif
 			case bgfx::RendererType::Vulkan:     return "spirv"; break;
 			default: break;
@@ -737,6 +737,20 @@ namespace bgfxh {
 		
 	bgfx::ProgramHandle loadProgram (const BGFXH_STRING & vertexShaderFile, const BGFXH_STRING & fragmentShaderFile) {
 		return loadProgram (vertexShaderFile.c_str(), fragmentShaderFile.c_str());
+		}
+		
+	struct loadProgramCallback {
+		static bgfxh::loadProgramCallback * mCallback = NULL;
+		virtual bgfx::ProgramHandle loadProgram(const char * vstag, const char * fstag) {
+			// implement your own loadProgram based on shader tags
+			}
+		};
+		
+	bgfx::ProgramHandle loadProgramWCallback(const char * vstag, const char * fstag) {
+		if (!loadProgramCallback::mCallback)
+			return loadProgram(bgfxh::shaderSearchPath + vstag + ".bin", bgfxh::shaderSearchPath + fstag + ".bin");
+		else
+			return loadProgramCallback::mCallback->loadProgram(vstag, fstag);
 		}
 	
 	}
