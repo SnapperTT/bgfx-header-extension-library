@@ -743,6 +743,7 @@ namespace bgfxh {
 		static bgfxh::loadProgramCallback * mCallback = NULL;
 		virtual bgfx::ProgramHandle loadProgram(const char * vstag, const char * fstag) {
 			// implement your own loadProgram based on shader tags
+			return BGFX_INVALID_HANDLE;
 			}
 		};
 		
