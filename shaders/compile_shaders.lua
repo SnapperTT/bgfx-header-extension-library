@@ -11,6 +11,7 @@
 --          -c  - only build a c header file containing all the binary shaders that exist.
 --			-p	- ammends a path to the input file - use this if invoking this script from some weird directory
 --			-D VALUE - #defines VALUE in the shaders that are being compiled. Can use -D VAL1 -D VAL2 etc.. for multiple defines
+--			-THREAD_ID VALUE - For parallel builds (eg invoked by build_all.lua), this is the thread id
 --		The following are used to override defaults defined in this file
 --			-C_DO - compile c header shaders?
 --			-DX11_DO - compile DX11/DX12 shaders?
@@ -29,6 +30,7 @@ DEFS = {}
 GLSL_ONLY = false;
 HLSL_ONLY = false;
 C_ONLY = false;
+THREAD_ID = nil
 
 local arg={...}
 
@@ -100,15 +102,26 @@ for i=1,#arg do
 		GLOBAL_ORBIS_DO = false;
 	elseif (arg[i] == "-SPRIV_DONT") then
 		GLOBAL_SPRIV_DO = false;
+	elseif (arg[i] == "-THREAD_ID") then
+		THREAD_ID = tonumber(arg[i+1]);
+		i=i+1;
 	end
 end
 
-if (not INPUT_FILE) then
-	print("compile_shaders.lua: ERROR: no input files!");
+local THREAD_STR=""
+if (THREAD_ID) then
+	print("ERROR: THREAD_ID!", THREAD_ID);
+	THREAD_STR=" [Thread "..THREAD_ID.."] ";
 	os.exit(false);
 end
 
-print ("INPUT_FILE", INPUT_FILE, INPUT_PREFIX)
+if (not INPUT_FILE) then
+	print(THREAD_STR.."ERROR: compile_shaders.lua: no input files!");
+	os.exit(false);
+end
+
+
+--print ("INPUT_FILE", INPUT_FILE, INPUT_PREFIX)
 
 if (INPUT_PREFIX) then
 	INPUT_FILE = INPUT_PREFIX .. INPUT_FILE;
@@ -148,11 +161,11 @@ for i=1,5 do
 	if (file_exists(CC)) then goto found_cc end
 end
 
-print ("Failed to find tools/shadercRelease!");
+print (THREAD_STR.."ERROR: Failed to find tools/shadercRelease!");
 os.exit(false);
 ::found_cc::
 --CC="wine "..CC..".exe";
-print ("Found shaderc: "..CC)
+--print (THREAD_STR.."Found shaderc: "..CC)
 
 CFLAGS=fixPath(" -i . -i include/ -i ../include/ ")
 
@@ -298,13 +311,13 @@ function buildShader (inputFile, outputFile, vdefFile, defs)
 		vdefFile = inputFile;
 	end
 	
-	print ("PATH:", path)
-	print ("INPUT:", inputFile)
-	print ("Varying.def: " .. path .. "varying_"..vdefFile..".def.sc")
-	print ("Compile Frag: " .. tostring(doFrag) .. ", Source: " .. path.."fs_"..inputFile..".sc")
-	print ("Compile Vert: " .. tostring(doVert) .. ", Source: " .. path.."vs_"..inputFile..".sc")
-	print ("")
-	print ("Building shader \""..path..inputFile.."\" to \""..path..outputFile.."\"")
+	--print (THREAD_STR.."PATH:", path)
+	--print (THREAD_STR.."INPUT:", inputFile)
+	--print (THREAD_STR.."Varying.def: " .. path .. "varying_"..vdefFile..".def.sc")
+	--print (THREAD_STR.."Compile Frag: " .. tostring(doFrag) .. ", Source: " .. path.."fs_"..inputFile..".sc")
+	--print (THREAD_STR.."Compile Vert: " .. tostring(doVert) .. ", Source: " .. path.."vs_"..inputFile..".sc")
+	--print ("")
+	print (THREAD_STR.."Building shader \""..path..inputFile.."\" to \""..path..outputFile.."\"")
 
 	local cf_glsl  = buildCommand (path, inputFile, vdefFile, GLSL_SHADER_PATH, outputFile, true, GLSL_FS_FLAGS, defs);
 	local cf_dx11  = buildCommand (path, inputFile, vdefFile, DX11_SHADER_PATH, outputFile, true, DX11_FS_FLAGS, defs);
@@ -350,7 +363,7 @@ function buildShader (inputFile, outputFile, vdefFile, defs)
 	
 	--if ((C_DO and not (GLSL_ONLY or HLSL_ONLY)) or C_ONLY) then
 	if (C_DO or C_ONLY) then
-		print ("Building c header file:");
+		print (THREAD_STR.."Building c header file:");
 		if (doVert) then
 			local c,cp,cd = buildC (path, inputFile, outputFile, false);
 			print ("",cp);
@@ -376,10 +389,10 @@ end
 
 function mkdirp (p)
 	if (isWindows) then
-		print(">> mkdir "..p);
+		print(THREAD_STR..">> mkdir "..p);
 		os.execute("mkdir "..p);
 	else
-		print(">> mkdir -p "..p);
+		print(THREAD_STR..">> mkdir -p "..p);
 		os.execute("mkdir -p "..p);
 	end
 end
@@ -391,7 +404,7 @@ function execc (c, doit)
 	mkdirp(c[2]);
 	print (">> "..c[1]);
 	stat = os.execute(c[1]);
-	if (not stat) then print ("Failed to compile!"); os.exit(false); end
+	if (not stat) then print (THREAD_STR.."ERROR: Failed to compile!"); os.exit(false); end
 end
 
 function btyeToPrintable (b)
