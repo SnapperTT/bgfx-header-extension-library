@@ -6,6 +6,7 @@
 -- 			-d/-debug - only compile GLSL
 --			-f - only do the frag
 --			-v - only do the vert
+--			-compute - builds as a compute shader (looks for filename.cs)
 --			-vdef - specify a varying.def Eg: -vdef foo will make this look for varying_foo.def
 -- 			-dx11 - only compile HLSL for dx11. (Warning: HLSL will not compile on non-windows machines)
 --          -c  - only build a c header file containing all the binary shaders that exist.
@@ -29,6 +30,7 @@ VDEF_FILE = false;
 DEFS = {}
 GLSL_ONLY = false;
 HLSL_ONLY = false;
+IS_COMPUTE= false;
 C_ONLY = false;
 THREAD_ID = nil
 
@@ -55,6 +57,8 @@ for i=1,#arg do
 	elseif (arg[i] == "-v") then
 		doFrag = false;
 		doVert = true;
+	elseif (arg[i] == "-compute") then
+		IS_COMPUTE = true;
 	elseif (arg[i] == "-p") then
 		INPUT_PREFIX = arg[i+1];
 		i=i+1;
@@ -106,6 +110,11 @@ for i=1,#arg do
 		THREAD_ID = tonumber(arg[i+1]);
 		i=i+1;
 	end
+end
+
+if (IS_COMPUTE) then
+	doFrag = false;
+	doVert = false;
 end
 
 local THREAD_STR=""
@@ -178,6 +187,7 @@ DX11_DO = true;
 
 NACL_VS_FLAGS="--platform nacl"
 NACL_FS_FLAGS="--platform nacl"
+NACL_CS_FLAGS="--platform nacl"
 NACL_SHADER_PATH="esslnacl"
 NACL_DO = false;
 
@@ -255,7 +265,14 @@ function buildCommand (path, inputFile, vdefFile, shaderOutputPath, outputFile, 
 	
 	local outDirPath = fixPath(path.."../"..shaderOutputPath);
 	
-	local r = CC .. " -f "..path..opPrefix..inputFile..".sc --varyingdef "..path.."varying_"..vdefFile..".def.sc -o "..getBinOutput(path, shaderOutputPath, opPrefix, outputFile).." --type "..vtype.." " .. CFLAGS .. " " .. sFlags;
+	local r = "";
+	if (vdefFile) then
+		r = CC .. " -f "..path..opPrefix..inputFile..".sc --varyingdef "..path.."varying_"..vdefFile..".def.sc -o "..getBinOutput(path, shaderOutputPath, opPrefix, outputFile).." --type "..vtype.." " .. CFLAGS .. " " .. sFlags;
+	else
+		vtype = c;
+		opPrefix = "cs_";
+		r = CC .. " -f "..path..opPrefix..inputFile..".cs -o "..getBinOutput(path, shaderOutputPath, opPrefix, outputFile).." --type c " .. CFLAGS .. " " .. sFlags;
+	end
 
 	r = r .. " --define " .. inputFile:upper();
 	if (defs and #defs > 0) then
@@ -275,10 +292,11 @@ function buildCommand (path, inputFile, vdefFile, shaderOutputPath, outputFile, 
 end
 
 
-function buildC (path, inputFile, outputFile, isFragment)
+function buildC (path, inputFile, outputFile, isFragment, isCompute)
 	local vtype = "v";
 	local opPrefix = "vs_";
 	if (isFragment) then vtype = "f"; opPrefix = "fs_"; end
+	if (isCompute) then vtype = "c"; opPrefix = ""; end
 	
 	local wo = fixPath(getBinOutput(path, C_SHADER_PATH, opPrefix, outputFile, ".bin.h"));
 	local wd = getPath(wo);
@@ -334,6 +352,24 @@ function buildShader (inputFile, outputFile, vdefFile, defs)
 	local cv_an    = buildCommand (path, inputFile, vdefFile, ANDROID_SHADER_PATH, outputFile, false, ANDROID_VS_FLAGS, defs);
 	local cv_pssl  = buildCommand (path, inputFile, vdefFile, ORBIS_SHADER_PATH, outputFile, false, ORBIS_VS_FLAGS, defs);
 	local cv_nacl  = buildCommand (path, inputFile, vdefFile, NACL_SHADER_PATH, outputFile, false, NACL_VS_FLAGS, defs);
+
+	local cc_glsl  = buildCommand (path, inputFile, nil, GLSL_SHADER_PATH, outputFile, false, GLSL_CS_FLAGS, defs);
+	local cc_dx11  = buildCommand (path, inputFile, nil, DX11_SHADER_PATH, outputFile, false, DX11_CS_FLAGS, defs);
+	local cc_metal = buildCommand (path, inputFile, nil, METAL_SHADER_PATH, outputFile, false, METAL_CS_FLAGS, defs);
+	local cc_vk    = buildCommand (path, inputFile, nil, SPRIV_SHADER_PATH, outputFile, false, SPRIV_CS_FLAGS, defs);
+	local cc_an    = buildCommand (path, inputFile, nil, ANDROID_SHADER_PATH, outputFile, false, ANDROID_CS_FLAGS, defs);
+	local cc_pssl  = buildCommand (path, inputFile, nil, ORBIS_SHADER_PATH, outputFile, false, ORBIS_CS_FLAGS, defs);
+	local cc_nacl  = buildCommand (path, inputFile, nil, NACL_SHADER_PATH, outputFile, false, NACL_CS_FLAGS, defs);
+
+	if (IS_COMPUTE) then
+		execc (cc_glsl, GLSL_DO)
+		execc (cc_dx11, DX11_DO)
+		execc (cc_metal, METAL_DO)
+		execc (cc_vk, SPRIV_DO)
+		execc (cc_an, ANDROID_DO)
+		execc (cc_pssl, ORBIS_DO)
+		execc (cc_nacl, NACL_DO)
+	end
 
 	if (not C_ONLY) then
 		if (false and GLSL_ONLY) then
