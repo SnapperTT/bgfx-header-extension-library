@@ -271,7 +271,7 @@ function buildCommand (path, inputFile, vdefFile, shaderOutputPath, outputFile, 
 	else
 		vtype = c;
 		opPrefix = "cs_";
-		r = CC .. " -f "..path..opPrefix..inputFile..".cs -o "..getBinOutput(path, shaderOutputPath, opPrefix, outputFile).." --type c " .. CFLAGS .. " " .. sFlags;
+		r = CC .. " -f "..path..opPrefix..inputFile..".sc -o "..getBinOutput(path, shaderOutputPath, opPrefix, outputFile).." --type c " .. CFLAGS .. " " .. sFlags;
 	end
 
 	r = r .. " --define " .. inputFile:upper();
