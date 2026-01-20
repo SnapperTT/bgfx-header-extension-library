@@ -52,11 +52,13 @@ namespace bgfxh
 			s_shadowMap[i] = BGFX_INVALID_HANDLE;
 			u_lightMtx[i] = BGFX_INVALID_HANDLE;
 			depthGates[i] = i * 9999.f / BGFXH_MAX_SHADOW_LEVELS;
-			shadowAabbMin[i] = bx::Vec3(0.f, 0.f, 0.f);
-			shadowAabbMax[i] = bx::Vec3(0.f, 0.f, 0.f);
+			//shadowAabbMin[i] = bx::Vec3(0.f, 0.f, 0.f);
+			//shadowAabbMax[i] = bx::Vec3(0.f, 0.f, 0.f);
 			bx::mtxIdentity(shadowLightView[i]);
 			bx::mtxIdentity(shadowLightProj[i]);
 			bx::mtxIdentity(shadowLightViewProj[i]);
+			for (unsigned int j = 0; j < 24; ++j)
+				frustumPlanes[i][j] = 0;
 			}
 		if (BGFXH_MAX_SHADOW_LEVELS > 0) depthGates[0] = 20.0f;
 		if (BGFXH_MAX_SHADOW_LEVELS > 1) depthGates[1] = 100.0f;
@@ -227,10 +229,12 @@ namespace bgfxh
 			minZ = zAvg - zSz*safetyFactor/2.0 - zMargin;
 			maxZ = zAvg + zSz*safetyFactor/2.0 + zMargin;
 			
-			shadowAabbMin[i] = bx::Vec3(minX, minY, minZ);
-			shadowAabbMax[i] = bx::Vec3(maxX, maxY, maxZ);
+			//shadowAabbMin[i] = bx::Vec3(minX, minY, minZ);
+			//shadowAabbMax[i] = bx::Vec3(maxX, maxY, maxZ);
 			
 			bx::mtxOrtho(shadowLightProj[i], minX, maxX, minY, maxY, minZ, maxZ, 0.0f, caps->homogeneousDepth);
+			
+			bgfxh::computeFrustumPlanes(&shadowLightProj[i][0], &frustumPlanes[i][0]);
 			}
 		
 		// Always render all shadows			
@@ -268,32 +272,15 @@ namespace bgfxh
   bool cascadingShadowMapEffect::isObjectInShadowVolume (bx::Vec3 const & _pos, float const radius, unsigned int const csmLevel)
                                                                                                              {
 		/// Checks if an object at a position and radius 
-		/// TODO: simd optimisation
 		const bx::Vec3 pos = bx::mul(_pos, shadowLightView[csmLevel]); // Get the object's position in light-view space
-		float d2 = internal_sqDistPointAabb (pos, shadowAabbMin[csmLevel], shadowAabbMax[csmLevel]);
-		return d2 < (radius * radius);
-		}
-}
-namespace bgfxh
-{
-  float cascadingShadowMapEffect::internal_sqDistPointAabb (bx::Vec3 const & point, bx::Vec3 const & aabbMin, bx::Vec3 const & aabbMax)
-                                                                                                                    {
-		/// Returns the distance squared to an aabb
-		float maxDist2 = 0.0;
-		{
-			const float & v = point.x;
-			if (v < aabbMin.x) maxDist2 += (aabbMin.x - v) * (aabbMin.x - v);
-			if (v > aabbMax.x) maxDist2 += (aabbMax.x - v) * (aabbMax.x - v);
-		}{
-			const float & v = point.y;
-			if (v < aabbMin.y) maxDist2 += (aabbMin.y - v) * (aabbMin.y - v);
-			if (v > aabbMax.y) maxDist2 += (aabbMax.y - v) * (aabbMax.y - v);
-		}{
-			const float & v = point.z;
-			if (v < aabbMin.z) maxDist2 += (aabbMin.z - v) * (aabbMin.z - v);
-			if (v > aabbMax.z) maxDist2 += (aabbMax.z - v) * (aabbMax.z - v);
-		}
-		return maxDist2;
+		
+		for (int i = 0; i < 6; ++i) {
+			const float* p = (&frustumPlanes[csmLevel][0]) + i * 4;
+
+			float dist = p[0] * pos.x + p[1] * pos.y + p[2] * pos.z + p[3];
+			if (dist < -radius) return false;
+			}
+		return true;
 		}
 }
 namespace bgfxh

@@ -675,4 +675,86 @@ namespace bgfxh
 			return loadProgramCallback::mCallback->loadProgram(vstag, fstag);
 		}
 }
+namespace bgfxh
+{
+  void computeFrustumPlanes (float const * m, float * out)
+                                                              {
+		struct Plane {
+			float x, y, z, d;
+			
+			inline void normalise() {
+				double invLen = 1.0 / sqrt(x*x + y*y + z*z);
+				x *= invLen;
+				y *= invLen;
+				z *= invLen;
+				d *= invLen;
+				}
+			};
+			
+		Plane* outPlanes = (Plane*) out;
+		
+		#ifdef M
+			#define __M_old M
+		#endif
+		#define M(col,row) m[(col)*4 + (row)]
+		
+		// LEFT   :  m3 + m0
+		outPlanes[0] = {
+			M(3,0) + M(0,0),
+			M(3,1) + M(0,1),
+			M(3,2) + M(0,2),
+			M(3,3) + M(0,3)
+			};
+
+		// RIGHT  :  m3 - m0
+		outPlanes[1] = {
+			M(3,0) - M(0,0),
+			M(3,1) - M(0,1),
+			M(3,2) - M(0,2),
+			M(3,3) - M(0,3)
+			};
+
+		// BOTTOM :  m3 + m1
+		outPlanes[2] = {
+			M(3,0) + M(1,0),
+			M(3,1) + M(1,1),
+			M(3,2) + M(1,2),
+			M(3,3) + M(1,3)
+			};
+
+		// TOP    :  m3 - m1
+		outPlanes[3] = {
+			M(3,0) - M(1,0),
+			M(3,1) - M(1,1),
+			M(3,2) - M(1,2),
+			M(3,3) - M(1,3)
+			};
+
+		// NEAR   :  m3 + m2   (OpenGL convention)
+		outPlanes[4] = {
+			M(3,0) + M(2,0),
+			M(3,1) + M(2,1),
+			M(3,2) + M(2,2),
+			M(3,3) + M(2,3)
+			};
+
+		// FAR    :  m3 - m2
+		outPlanes[5] = {
+			M(3,0) - M(2,0),
+			M(3,1) - M(2,1),
+			M(3,2) - M(2,2),
+			M(3,3) - M(2,3)
+			};
+		
+		#undef M
+		#ifdef __M_old
+			#define M __M_old
+		#endif
+		
+		// Normalize all planes
+		for (int i = 0; i < 6; ++i) {
+			outPlanes[i].normalise();
+			}
+		}
+}
 #undef LZZ_INLINE

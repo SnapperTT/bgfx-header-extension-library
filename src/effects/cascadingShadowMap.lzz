@@ -101,8 +101,7 @@ public:
 	float shadowLightView[BGFXH_MAX_SHADOW_LEVELS][16];	// For shadop mapping
 	float shadowLightProj[BGFXH_MAX_SHADOW_LEVELS][16];	// For shadow mapping
 	float shadowLightViewProj[BGFXH_MAX_SHADOW_LEVELS][16]; // View * Proj
-	Vec3Wrap shadowAabbMin[BGFXH_MAX_SHADOW_LEVELS]; // For fustrum checking
-	Vec3Wrap shadowAabbMax[BGFXH_MAX_SHADOW_LEVELS]; // For fustrum checking
+	float frustumPlanes[BGFXH_MAX_SHADOW_LEVELS][24]; // For frustum checking
 	bgfx::ProgramHandle m_programDepthWrite;
 	bool inited;
 	
@@ -137,11 +136,13 @@ public:
 			s_shadowMap[i] = BGFX_INVALID_HANDLE;
 			u_lightMtx[i] = BGFX_INVALID_HANDLE;
 			depthGates[i] = i * 9999.f / BGFXH_MAX_SHADOW_LEVELS;
-			shadowAabbMin[i] = bx::Vec3(0.f, 0.f, 0.f);
-			shadowAabbMax[i] = bx::Vec3(0.f, 0.f, 0.f);
+			//shadowAabbMin[i] = bx::Vec3(0.f, 0.f, 0.f);
+			//shadowAabbMax[i] = bx::Vec3(0.f, 0.f, 0.f);
 			bx::mtxIdentity(shadowLightView[i]);
 			bx::mtxIdentity(shadowLightProj[i]);
 			bx::mtxIdentity(shadowLightViewProj[i]);
+			for (unsigned int j = 0; j < 24; ++j)
+				frustumPlanes[i][j] = 0;
 			}
 		if (BGFXH_MAX_SHADOW_LEVELS > 0) depthGates[0] = 20.0f;
 		if (BGFXH_MAX_SHADOW_LEVELS > 1) depthGates[1] = 100.0f;
@@ -304,10 +305,12 @@ public:
 			minZ = zAvg - zSz*safetyFactor/2.0 - zMargin;
 			maxZ = zAvg + zSz*safetyFactor/2.0 + zMargin;
 			
-			shadowAabbMin[i] = bx::Vec3(minX, minY, minZ);
-			shadowAabbMax[i] = bx::Vec3(maxX, maxY, maxZ);
+			//shadowAabbMin[i] = bx::Vec3(minX, minY, minZ);
+			//shadowAabbMax[i] = bx::Vec3(maxX, maxY, maxZ);
 			
 			bx::mtxOrtho(shadowLightProj[i], minX, maxX, minY, maxY, minZ, maxZ, 0.0f, caps->homogeneousDepth);
+			
+			bgfxh::computeFrustumPlanes(&shadowLightProj[i][0], &frustumPlanes[i][0]);
 			}
 		
 		// Always render all shadows			
@@ -343,35 +346,22 @@ public:
 		
 	bool isObjectInShadowVolume (const bx::Vec3 & _pos, const float radius, const unsigned int csmLevel) {
 		/// Checks if an object at a position and radius 
-		/// TODO: simd optimisation
 		const bx::Vec3 pos = bx::mul(_pos, shadowLightView[csmLevel]); // Get the object's position in light-view space
-		float d2 = internal_sqDistPointAabb (pos, shadowAabbMin[csmLevel], shadowAabbMax[csmLevel]);
-		return d2 < (radius * radius);
-		}
 		
-	float internal_sqDistPointAabb (const bx::Vec3 & point, const bx::Vec3 & aabbMin, const bx::Vec3 & aabbMax) {
-		/// Returns the distance squared to an aabb
-		float maxDist2 = 0.0;
-		{
-			const float & v = point.x;
-			if (v < aabbMin.x) maxDist2 += (aabbMin.x - v) * (aabbMin.x - v);
-			if (v > aabbMax.x) maxDist2 += (aabbMax.x - v) * (aabbMax.x - v);
-		}{
-			const float & v = point.y;
-			if (v < aabbMin.y) maxDist2 += (aabbMin.y - v) * (aabbMin.y - v);
-			if (v > aabbMax.y) maxDist2 += (aabbMax.y - v) * (aabbMax.y - v);
-		}{
-			const float & v = point.z;
-			if (v < aabbMin.z) maxDist2 += (aabbMin.z - v) * (aabbMin.z - v);
-			if (v > aabbMax.z) maxDist2 += (aabbMax.z - v) * (aabbMax.z - v);
+		for (int i = 0; i < 6; ++i) {
+			const float* p = (&frustumPlanes[csmLevel][0]) + i * 4;
+
+			float dist = p[0] * pos.x + p[1] * pos.y + p[2] * pos.z + p[3];
+			if (dist < -radius) return false;
+			}
+		return true;
 		}
-		return maxDist2;
-		}
+	
 	
 	/// Submit geometry to the shadow map at a specified level
 	inline void submit (const uint32_t level) {
 		bgfx::submit (viewId + level, m_programDepthWrite);
-		}
+		}	
 		
 	/// Sets: the shadow map samplers (so (shadowSampler0+0) will be the level 0 shadow map,
 	/// 	(shadowSampler0+1) will be the level 1 shadow map, etc
