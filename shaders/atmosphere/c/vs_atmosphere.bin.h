@@ -738,8 +738,8 @@ static const uint8_t vs_atmosphere_bin_glsl[] = {
   0x6d, 0x70, 0x76, 0x61, 0x72, 0x5f, 0x37, 0x37, 0x29, 0x3b, 0x0a, 0x7d, 0x0a, 0x0a, 0x00 };      // tmpvar_77);.}...
 unsigned int vs_atmosphere_bin_glsl_size = 11791;
 
-BX_UNUSED(vs_atmosphere_bin_glsl)
-BX_UNUSED(vs_atmosphere_bin_glsl_size)
+BX_UNUSED(vs_atmosphere_bin_glsl);
+BX_UNUSED(vs_atmosphere_bin_glsl_size);
 static const uint8_t vs_atmosphere_bin_dx11[] = {
   0x56, 0x53, 0x48, 0x0b, 0x00, 0x00, 0x00, 0x00, 0xbf, 0xfe, 0x8f, 0xdc, 0x05, 0x00, 0x0b, 0x75,  // VSH............u
   0x5f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x56, 0x69, 0x65, 0x77, 0x04, 0x00, 0x00, 0x00, 0x04, 0x00,  // _modelView......
@@ -1114,8 +1114,8 @@ static const uint8_t vs_atmosphere_bin_dx11[] = {
   0x00, 0x3e, 0x00, 0x00, 0x01, 0x00, 0x01, 0x01, 0x00, 0xc0, 0x00 };                              // ......>.........
 unsigned int vs_atmosphere_bin_dx11_size = 5931;
 
-BX_UNUSED(vs_atmosphere_bin_dx11)
-BX_UNUSED(vs_atmosphere_bin_dx11_size)
+BX_UNUSED(vs_atmosphere_bin_dx11);
+BX_UNUSED(vs_atmosphere_bin_dx11_size);
 static const uint8_t vs_atmosphere_bin_metal[] = {
   0x56, 0x53, 0x48, 0x0b, 0x00, 0x00, 0x00, 0x00, 0xbf, 0xfe, 0x8f, 0xdc, 0x05, 0x00, 0x11, 0x75,  // VSH............u
   0x5f, 0x77, 0x6f, 0x72, 0x6c, 0x64, 0x50, 0x6f, 0x73, 0x41, 0x6e, 0x64, 0x53, 0x69, 0x7a, 0x65,  // _worldPosAndSize
@@ -1493,8 +1493,8 @@ static const uint8_t vs_atmosphere_bin_metal[] = {
   0x00, 0xc0, 0x00 };                                                                              // n out;.}........
 unsigned int vs_atmosphere_bin_metal_size = 5971;
 
-BX_UNUSED(vs_atmosphere_bin_metal)
-BX_UNUSED(vs_atmosphere_bin_metal_size)
+BX_UNUSED(vs_atmosphere_bin_metal);
+BX_UNUSED(vs_atmosphere_bin_metal_size);
 static const uint8_t vs_atmosphere_bin_spirv[] = {
   0x56, 0x53, 0x48, 0x0b, 0x00, 0x00, 0x00, 0x00, 0xbf, 0xfe, 0x8f, 0xdc, 0x05, 0x00, 0x11, 0x75,  // VSH............u
   0x5f, 0x77, 0x6f, 0x72, 0x6c, 0x64, 0x50, 0x6f, 0x73, 0x41, 0x6e, 0x64, 0x53, 0x69, 0x7a, 0x65,  // _worldPosAndSize
@@ -1932,8 +1932,8 @@ static const uint8_t vs_atmosphere_bin_spirv[] = {
   0x00, 0x00, 0x01, 0x01, 0x00, 0xc0, 0x00 };                                                      // ......8.........
 unsigned int vs_atmosphere_bin_spirv_size = 6935;
 
-BX_UNUSED(vs_atmosphere_bin_spirv)
-BX_UNUSED(vs_atmosphere_bin_spirv_size)
+BX_UNUSED(vs_atmosphere_bin_spirv);
+BX_UNUSED(vs_atmosphere_bin_spirv_size);
 static const uint8_t vs_atmosphere_bin_essl[] = {
   0x56, 0x53, 0x48, 0x0b, 0x00, 0x00, 0x00, 0x00, 0xbf, 0xfe, 0x8f, 0xdc, 0x05, 0x00, 0x0b, 0x75,  // VSH............u
   0x5f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x56, 0x69, 0x65, 0x77, 0x04, 0x01, 0x00, 0x00, 0x04, 0x00,  // _modelView......
@@ -2710,15 +2710,15 @@ static const uint8_t vs_atmosphere_bin_essl[] = {
   0x3b, 0x0a, 0x7d, 0x0a, 0x0a, 0x00 };                                                            // tmpvar_77);.}...
 unsigned int vs_atmosphere_bin_essl_size = 12358;
 
-BX_UNUSED(vs_atmosphere_bin_essl)
-BX_UNUSED(vs_atmosphere_bin_essl_size)
+BX_UNUSED(vs_atmosphere_bin_essl);
+BX_UNUSED(vs_atmosphere_bin_essl_size);
 static const uint8_t * vs_atmosphere_bin_pssl = NULL;
 unsigned int vs_atmosphere_bin_pssl_size = 0;
 
-BX_UNUSED(vs_atmosphere_bin_pssl)
-BX_UNUSED(vs_atmosphere_bin_pssl_size)
+BX_UNUSED(vs_atmosphere_bin_pssl);
+BX_UNUSED(vs_atmosphere_bin_pssl_size);
 static const uint8_t * vs_atmosphere_bin_esslnacl = NULL;
 unsigned int vs_atmosphere_bin_esslnacl_size = 0;
 
-BX_UNUSED(vs_atmosphere_bin_esslnacl)
-BX_UNUSED(vs_atmosphere_bin_esslnacl_size)
+BX_UNUSED(vs_atmosphere_bin_esslnacl);
+BX_UNUSED(vs_atmosphere_bin_esslnacl_size);

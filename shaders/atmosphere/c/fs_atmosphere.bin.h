@@ -73,8 +73,8 @@ static const uint8_t fs_atmosphere_bin_glsl[] = {
   0x37, 0x3b, 0x0a, 0x7d, 0x0a, 0x0a, 0x00 };                                                      // = tmpvar_7;.}...
 unsigned int fs_atmosphere_bin_glsl_size = 1143;
 
-BX_UNUSED(fs_atmosphere_bin_glsl)
-BX_UNUSED(fs_atmosphere_bin_glsl_size)
+BX_UNUSED(fs_atmosphere_bin_glsl);
+BX_UNUSED(fs_atmosphere_bin_glsl_size);
 static const uint8_t fs_atmosphere_bin_dx11[] = {
   0x46, 0x53, 0x48, 0x0b, 0xbf, 0xfe, 0x8f, 0xdc, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x0e, 0x75,  // FSH............u
   0x5f, 0x73, 0x75, 0x6e, 0x44, 0x69, 0x72, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x00, 0x00,  // _sunDirection...
@@ -171,8 +171,8 @@ static const uint8_t fs_atmosphere_bin_dx11[] = {
   0x3f, 0x3e, 0x00, 0x00, 0x01, 0x00, 0x00, 0x30, 0x00 };                                          // .@.....?>.....0.
 unsigned int fs_atmosphere_bin_dx11_size = 1481;
 
-BX_UNUSED(fs_atmosphere_bin_dx11)
-BX_UNUSED(fs_atmosphere_bin_dx11_size)
+BX_UNUSED(fs_atmosphere_bin_dx11);
+BX_UNUSED(fs_atmosphere_bin_dx11_size);
 static const uint8_t fs_atmosphere_bin_metal[] = {
   0x46, 0x53, 0x48, 0x0b, 0xbf, 0xfe, 0x8f, 0xdc, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x13, 0x75,  // FSH............u
   0x5f, 0x61, 0x74, 0x6d, 0x6f, 0x73, 0x70, 0x68, 0x65, 0x72, 0x69, 0x63, 0x50, 0x61, 0x72, 0x61,  // _atmosphericPara
@@ -268,8 +268,8 @@ static const uint8_t fs_atmosphere_bin_metal[] = {
   0x6e, 0x20, 0x6f, 0x75, 0x74, 0x3b, 0x0a, 0x7d, 0x0a, 0x0a, 0x00, 0x00, 0x30, 0x00 };            // urn out;.}....0.
 unsigned int fs_atmosphere_bin_metal_size = 1470;
 
-BX_UNUSED(fs_atmosphere_bin_metal)
-BX_UNUSED(fs_atmosphere_bin_metal_size)
+BX_UNUSED(fs_atmosphere_bin_metal);
+BX_UNUSED(fs_atmosphere_bin_metal_size);
 static const uint8_t fs_atmosphere_bin_spirv[] = {
   0x46, 0x53, 0x48, 0x0b, 0xbf, 0xfe, 0x8f, 0xdc, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x13, 0x75,  // FSH............u
   0x5f, 0x61, 0x74, 0x6d, 0x6f, 0x73, 0x70, 0x68, 0x65, 0x72, 0x69, 0x63, 0x50, 0x61, 0x72, 0x61,  // _atmosphericPara
@@ -421,8 +421,8 @@ static const uint8_t fs_atmosphere_bin_spirv[] = {
   0x00, 0x00, 0x00, 0x30, 0x00 };                                                                  // 3.......8.....0.
 unsigned int fs_atmosphere_bin_spirv_size = 2357;
 
-BX_UNUSED(fs_atmosphere_bin_spirv)
-BX_UNUSED(fs_atmosphere_bin_spirv_size)
+BX_UNUSED(fs_atmosphere_bin_spirv);
+BX_UNUSED(fs_atmosphere_bin_spirv_size);
 static const uint8_t fs_atmosphere_bin_essl[] = {
   0x46, 0x53, 0x48, 0x0b, 0xbf, 0xfe, 0x8f, 0xdc, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x0e, 0x75,  // FSH............u
   0x5f, 0x73, 0x75, 0x6e, 0x44, 0x69, 0x72, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x02, 0x01, 0x00,  // _sunDirection...
@@ -503,15 +503,15 @@ static const uint8_t fs_atmosphere_bin_essl[] = {
   0x20, 0x74, 0x6d, 0x70, 0x76, 0x61, 0x72, 0x5f, 0x37, 0x3b, 0x0a, 0x7d, 0x0a, 0x0a, 0x00 };      // = tmpvar_7;.}...
 unsigned int fs_atmosphere_bin_essl_size = 1231;
 
-BX_UNUSED(fs_atmosphere_bin_essl)
-BX_UNUSED(fs_atmosphere_bin_essl_size)
+BX_UNUSED(fs_atmosphere_bin_essl);
+BX_UNUSED(fs_atmosphere_bin_essl_size);
 static const uint8_t * fs_atmosphere_bin_pssl = NULL;
 unsigned int fs_atmosphere_bin_pssl_size = 0;
 
-BX_UNUSED(fs_atmosphere_bin_pssl)
-BX_UNUSED(fs_atmosphere_bin_pssl_size)
+BX_UNUSED(fs_atmosphere_bin_pssl);
+BX_UNUSED(fs_atmosphere_bin_pssl_size);
 static const uint8_t * fs_atmosphere_bin_esslnacl = NULL;
 unsigned int fs_atmosphere_bin_esslnacl_size = 0;
 
-BX_UNUSED(fs_atmosphere_bin_esslnacl)
-BX_UNUSED(fs_atmosphere_bin_esslnacl_size)
+BX_UNUSED(fs_atmosphere_bin_esslnacl);
+BX_UNUSED(fs_atmosphere_bin_esslnacl_size);

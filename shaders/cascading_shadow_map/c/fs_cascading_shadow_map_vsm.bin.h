@@ -14,8 +14,8 @@ static const uint8_t fs_cascading_shadow_map_vsm_bin_glsl[] = {
   0x0a, 0x00 };                                                                                    // = tmpvar_1;.}...
 unsigned int fs_cascading_shadow_map_vsm_bin_glsl_size = 194;
 
-BX_UNUSED(fs_cascading_shadow_map_vsm_bin_glsl)
-BX_UNUSED(fs_cascading_shadow_map_vsm_bin_glsl_size)
+BX_UNUSED(fs_cascading_shadow_map_vsm_bin_glsl);
+BX_UNUSED(fs_cascading_shadow_map_vsm_bin_glsl_size);
 static const uint8_t fs_cascading_shadow_map_vsm_bin_dx11[] = {
   0x46, 0x53, 0x48, 0x0b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x18, 0x01,  // FSH.............
   0x00, 0x00, 0x44, 0x58, 0x42, 0x43, 0xa0, 0xdb, 0xb0, 0xd6, 0x3d, 0xaa, 0x98, 0xcb, 0xf5, 0x26,  // ..DXBC....=....&
@@ -38,8 +38,8 @@ static const uint8_t fs_cascading_shadow_map_vsm_bin_dx11[] = {
   0x00, 0x00, 0x00, 0x00, 0x80, 0x3f, 0x3e, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00 };            // .......?>.......
 unsigned int fs_cascading_shadow_map_vsm_bin_dx11_size = 302;
 
-BX_UNUSED(fs_cascading_shadow_map_vsm_bin_dx11)
-BX_UNUSED(fs_cascading_shadow_map_vsm_bin_dx11_size)
+BX_UNUSED(fs_cascading_shadow_map_vsm_bin_dx11);
+BX_UNUSED(fs_cascading_shadow_map_vsm_bin_dx11_size);
 static const uint8_t fs_cascading_shadow_map_vsm_bin_metal[] = {
   0x46, 0x53, 0x48, 0x0b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x63, 0x01,  // FSH...........c.
   0x00, 0x00, 0x23, 0x69, 0x6e, 0x63, 0x6c, 0x75, 0x64, 0x65, 0x20, 0x3c, 0x6d, 0x65, 0x74, 0x61,  // ..#include <meta
@@ -67,8 +67,8 @@ static const uint8_t fs_cascading_shadow_map_vsm_bin_metal[] = {
   0x3b, 0x0a, 0x7d, 0x0a, 0x0a, 0x00, 0x00, 0x00, 0x00 };                                          // urn out;.}......
 unsigned int fs_cascading_shadow_map_vsm_bin_metal_size = 377;
 
-BX_UNUSED(fs_cascading_shadow_map_vsm_bin_metal)
-BX_UNUSED(fs_cascading_shadow_map_vsm_bin_metal_size)
+BX_UNUSED(fs_cascading_shadow_map_vsm_bin_metal);
+BX_UNUSED(fs_cascading_shadow_map_vsm_bin_metal_size);
 static const uint8_t fs_cascading_shadow_map_vsm_bin_spirv[] = {
   0x46, 0x53, 0x48, 0x0b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x02,  // FSH.............
   0x00, 0x00, 0x03, 0x02, 0x23, 0x07, 0x00, 0x00, 0x01, 0x00, 0x0a, 0x00, 0x08, 0x00, 0x57, 0x00,  // ....#.........W.
@@ -107,8 +107,8 @@ static const uint8_t fs_cascading_shadow_map_vsm_bin_spirv[] = {
   0x01, 0x00, 0x00, 0x00, 0x00, 0x00 };                                                            // V.......8.......
 unsigned int fs_cascading_shadow_map_vsm_bin_spirv_size = 550;
 
-BX_UNUSED(fs_cascading_shadow_map_vsm_bin_spirv)
-BX_UNUSED(fs_cascading_shadow_map_vsm_bin_spirv_size)
+BX_UNUSED(fs_cascading_shadow_map_vsm_bin_spirv);
+BX_UNUSED(fs_cascading_shadow_map_vsm_bin_spirv_size);
 static const uint8_t fs_cascading_shadow_map_vsm_bin_essl[] = {
   0x46, 0x53, 0x48, 0x0b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x22, 0x01,  // FSH...........".
   0x00, 0x00, 0x70, 0x72, 0x65, 0x63, 0x69, 0x73, 0x69, 0x6f, 0x6e, 0x20, 0x68, 0x69, 0x67, 0x68,  // ..precision high
@@ -132,15 +132,15 @@ static const uint8_t fs_cascading_shadow_map_vsm_bin_essl[] = {
   0x0a, 0x7d, 0x0a, 0x0a, 0x00 };                                                                  // = tmpvar_1;.}...
 unsigned int fs_cascading_shadow_map_vsm_bin_essl_size = 309;
 
-BX_UNUSED(fs_cascading_shadow_map_vsm_bin_essl)
-BX_UNUSED(fs_cascading_shadow_map_vsm_bin_essl_size)
+BX_UNUSED(fs_cascading_shadow_map_vsm_bin_essl);
+BX_UNUSED(fs_cascading_shadow_map_vsm_bin_essl_size);
 static const uint8_t * fs_cascading_shadow_map_vsm_bin_pssl = NULL;
 unsigned int fs_cascading_shadow_map_vsm_bin_pssl_size = 0;
 
-BX_UNUSED(fs_cascading_shadow_map_vsm_bin_pssl)
-BX_UNUSED(fs_cascading_shadow_map_vsm_bin_pssl_size)
+BX_UNUSED(fs_cascading_shadow_map_vsm_bin_pssl);
+BX_UNUSED(fs_cascading_shadow_map_vsm_bin_pssl_size);
 static const uint8_t * fs_cascading_shadow_map_vsm_bin_esslnacl = NULL;
 unsigned int fs_cascading_shadow_map_vsm_bin_esslnacl_size = 0;
 
-BX_UNUSED(fs_cascading_shadow_map_vsm_bin_esslnacl)
-BX_UNUSED(fs_cascading_shadow_map_vsm_bin_esslnacl_size)
+BX_UNUSED(fs_cascading_shadow_map_vsm_bin_esslnacl);
+BX_UNUSED(fs_cascading_shadow_map_vsm_bin_esslnacl_size);

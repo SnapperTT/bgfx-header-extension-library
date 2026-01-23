@@ -16,8 +16,8 @@ static const uint8_t vs_cascading_shadow_map_bin_glsl[] = {
   0x31, 0x29, 0x3b, 0x0a, 0x7d, 0x0a, 0x0a, 0x00 };                                                //  tmpvar_1);.}...
 unsigned int vs_cascading_shadow_map_bin_glsl_size = 232;
 
-BX_UNUSED(vs_cascading_shadow_map_bin_glsl)
-BX_UNUSED(vs_cascading_shadow_map_bin_glsl_size)
+BX_UNUSED(vs_cascading_shadow_map_bin_glsl);
+BX_UNUSED(vs_cascading_shadow_map_bin_glsl_size);
 static const uint8_t vs_cascading_shadow_map_bin_dx11[] = {
   0x56, 0x53, 0x48, 0x0b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x0f, 0x75,  // VSH............u
   0x5f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x56, 0x69, 0x65, 0x77, 0x50, 0x72, 0x6f, 0x6a, 0x04, 0x00,  // _modelViewProj..
@@ -48,8 +48,8 @@ static const uint8_t vs_cascading_shadow_map_bin_dx11[] = {
   0x40, 0x00 };                                                                                    // ......>.......@.
 unsigned int vs_cascading_shadow_map_bin_dx11_size = 418;
 
-BX_UNUSED(vs_cascading_shadow_map_bin_dx11)
-BX_UNUSED(vs_cascading_shadow_map_bin_dx11_size)
+BX_UNUSED(vs_cascading_shadow_map_bin_dx11);
+BX_UNUSED(vs_cascading_shadow_map_bin_dx11_size);
 static const uint8_t vs_cascading_shadow_map_bin_metal[] = {
   0x56, 0x53, 0x48, 0x0b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x0f, 0x75,  // VSH............u
   0x5f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x56, 0x69, 0x65, 0x77, 0x50, 0x72, 0x6f, 0x6a, 0x04, 0x01,  // _modelViewProj..
@@ -87,8 +87,8 @@ static const uint8_t vs_cascading_shadow_map_bin_metal[] = {
   0x74, 0x3b, 0x0a, 0x7d, 0x0a, 0x0a, 0x00, 0x01, 0x01, 0x00, 0x40, 0x00 };                        // n out;.}......@.
 unsigned int vs_cascading_shadow_map_bin_metal_size = 540;
 
-BX_UNUSED(vs_cascading_shadow_map_bin_metal)
-BX_UNUSED(vs_cascading_shadow_map_bin_metal_size)
+BX_UNUSED(vs_cascading_shadow_map_bin_metal);
+BX_UNUSED(vs_cascading_shadow_map_bin_metal_size);
 static const uint8_t vs_cascading_shadow_map_bin_spirv[] = {
   0x56, 0x53, 0x48, 0x0b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x0f, 0x75,  // VSH............u
   0x5f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x56, 0x69, 0x65, 0x77, 0x50, 0x72, 0x6f, 0x6a, 0x04, 0x00,  // _modelViewProj..
@@ -148,8 +148,8 @@ static const uint8_t vs_cascading_shadow_map_bin_spirv[] = {
   0x00, 0x01, 0x01, 0x00, 0x40, 0x00 };                                                            // ......8.......@.
 unsigned int vs_cascading_shadow_map_bin_spirv_size = 886;
 
-BX_UNUSED(vs_cascading_shadow_map_bin_spirv)
-BX_UNUSED(vs_cascading_shadow_map_bin_spirv_size)
+BX_UNUSED(vs_cascading_shadow_map_bin_spirv);
+BX_UNUSED(vs_cascading_shadow_map_bin_spirv_size);
 static const uint8_t vs_cascading_shadow_map_bin_essl[] = {
   0x56, 0x53, 0x48, 0x0b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x0f, 0x75,  // VSH............u
   0x5f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x56, 0x69, 0x65, 0x77, 0x50, 0x72, 0x6f, 0x6a, 0x04, 0x01,  // _modelViewProj..
@@ -173,15 +173,15 @@ static const uint8_t vs_cascading_shadow_map_bin_essl[] = {
   0x74, 0x6d, 0x70, 0x76, 0x61, 0x72, 0x5f, 0x31, 0x29, 0x3b, 0x0a, 0x7d, 0x0a, 0x0a, 0x00 };      //  tmpvar_1);.}...
 unsigned int vs_cascading_shadow_map_bin_essl_size = 319;
 
-BX_UNUSED(vs_cascading_shadow_map_bin_essl)
-BX_UNUSED(vs_cascading_shadow_map_bin_essl_size)
+BX_UNUSED(vs_cascading_shadow_map_bin_essl);
+BX_UNUSED(vs_cascading_shadow_map_bin_essl_size);
 static const uint8_t * vs_cascading_shadow_map_bin_pssl = NULL;
 unsigned int vs_cascading_shadow_map_bin_pssl_size = 0;
 
-BX_UNUSED(vs_cascading_shadow_map_bin_pssl)
-BX_UNUSED(vs_cascading_shadow_map_bin_pssl_size)
+BX_UNUSED(vs_cascading_shadow_map_bin_pssl);
+BX_UNUSED(vs_cascading_shadow_map_bin_pssl_size);
 static const uint8_t * vs_cascading_shadow_map_bin_esslnacl = NULL;
 unsigned int vs_cascading_shadow_map_bin_esslnacl_size = 0;
 
-BX_UNUSED(vs_cascading_shadow_map_bin_esslnacl)
-BX_UNUSED(vs_cascading_shadow_map_bin_esslnacl_size)
+BX_UNUSED(vs_cascading_shadow_map_bin_esslnacl);
+BX_UNUSED(vs_cascading_shadow_map_bin_esslnacl_size);

@@ -22,8 +22,8 @@ static const uint8_t fs_textured_passthrough_monochromatic_bin_glsl[] = {
   0x0a, 0x0a, 0x00 };                                                                              // = tmpvar_2;.}...
 unsigned int fs_textured_passthrough_monochromatic_bin_glsl_size = 323;
 
-BX_UNUSED(fs_textured_passthrough_monochromatic_bin_glsl)
-BX_UNUSED(fs_textured_passthrough_monochromatic_bin_glsl_size)
+BX_UNUSED(fs_textured_passthrough_monochromatic_bin_glsl);
+BX_UNUSED(fs_textured_passthrough_monochromatic_bin_glsl_size);
 static const uint8_t fs_textured_passthrough_monochromatic_bin_dx11[] = {
   0x46, 0x53, 0x48, 0x0b, 0x6f, 0x1e, 0x3e, 0x3c, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x0a, 0x73,  // FSH.o.><.......s
   0x5f, 0x74, 0x65, 0x78, 0x43, 0x6f, 0x6c, 0x6f, 0x72, 0x30, 0x01, 0x00, 0x00, 0x01, 0x00, 0x00,  // _texColor0......
@@ -53,8 +53,8 @@ static const uint8_t fs_textured_passthrough_monochromatic_bin_dx11[] = {
   0x01, 0x40, 0x00, 0x00, 0x00, 0x00, 0x80, 0x3f, 0x3e, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00 };                                                                                                // .@.....?>.......
 unsigned int fs_textured_passthrough_monochromatic_bin_dx11_size = 416;
 
-BX_UNUSED(fs_textured_passthrough_monochromatic_bin_dx11)
-BX_UNUSED(fs_textured_passthrough_monochromatic_bin_dx11_size)
+BX_UNUSED(fs_textured_passthrough_monochromatic_bin_dx11);
+BX_UNUSED(fs_textured_passthrough_monochromatic_bin_dx11_size);
 static const uint8_t fs_textured_passthrough_monochromatic_bin_metal[] = {
   0x46, 0x53, 0x48, 0x0b, 0x6f, 0x1e, 0x3e, 0x3c, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x11, 0x73,  // FSH.o.><.......s
   0x5f, 0x74, 0x65, 0x78, 0x43, 0x6f, 0x6c, 0x6f, 0x72, 0x53, 0x61, 0x6d, 0x70, 0x6c, 0x65, 0x72,  // _texColorSampler
@@ -97,8 +97,8 @@ static const uint8_t fs_textured_passthrough_monochromatic_bin_metal[] = {
   0x20, 0x00 };                                                                                    // urn out;.}.... .
 unsigned int fs_textured_passthrough_monochromatic_bin_metal_size = 610;
 
-BX_UNUSED(fs_textured_passthrough_monochromatic_bin_metal)
-BX_UNUSED(fs_textured_passthrough_monochromatic_bin_metal_size)
+BX_UNUSED(fs_textured_passthrough_monochromatic_bin_metal);
+BX_UNUSED(fs_textured_passthrough_monochromatic_bin_metal_size);
 static const uint8_t fs_textured_passthrough_monochromatic_bin_spirv[] = {
   0x46, 0x53, 0x48, 0x0b, 0x6f, 0x1e, 0x3e, 0x3c, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x0a, 0x73,  // FSH.o.><.......s
   0x5f, 0x74, 0x65, 0x78, 0x43, 0x6f, 0x6c, 0x6f, 0x72, 0x30, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00,  // _texColor0......
@@ -154,8 +154,8 @@ static const uint8_t fs_textured_passthrough_monochromatic_bin_spirv[] = {
   0x00, 0x00, 0x00 };                                                                              // ........8.......
 unsigned int fs_textured_passthrough_monochromatic_bin_spirv_size = 819;
 
-BX_UNUSED(fs_textured_passthrough_monochromatic_bin_spirv)
-BX_UNUSED(fs_textured_passthrough_monochromatic_bin_spirv_size)
+BX_UNUSED(fs_textured_passthrough_monochromatic_bin_spirv);
+BX_UNUSED(fs_textured_passthrough_monochromatic_bin_spirv_size);
 static const uint8_t fs_textured_passthrough_monochromatic_bin_essl[] = {
   0x46, 0x53, 0x48, 0x0b, 0x6f, 0x1e, 0x3e, 0x3c, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x0a, 0x73,  // FSH.o.><.......s
   0x5f, 0x74, 0x65, 0x78, 0x43, 0x6f, 0x6c, 0x6f, 0x72, 0x00, 0x01, 0x00, 0x00, 0x01, 0x00, 0x00,  // _texColor.......
@@ -187,15 +187,15 @@ static const uint8_t fs_textured_passthrough_monochromatic_bin_essl[] = {
   0x0a, 0x00 };                                                                                    // = tmpvar_2;.}...
 unsigned int fs_textured_passthrough_monochromatic_bin_essl_size = 434;
 
-BX_UNUSED(fs_textured_passthrough_monochromatic_bin_essl)
-BX_UNUSED(fs_textured_passthrough_monochromatic_bin_essl_size)
+BX_UNUSED(fs_textured_passthrough_monochromatic_bin_essl);
+BX_UNUSED(fs_textured_passthrough_monochromatic_bin_essl_size);
 static const uint8_t * fs_textured_passthrough_monochromatic_bin_pssl = NULL;
 unsigned int fs_textured_passthrough_monochromatic_bin_pssl_size = 0;
 
-BX_UNUSED(fs_textured_passthrough_monochromatic_bin_pssl)
-BX_UNUSED(fs_textured_passthrough_monochromatic_bin_pssl_size)
+BX_UNUSED(fs_textured_passthrough_monochromatic_bin_pssl);
+BX_UNUSED(fs_textured_passthrough_monochromatic_bin_pssl_size);
 static const uint8_t * fs_textured_passthrough_monochromatic_bin_esslnacl = NULL;
 unsigned int fs_textured_passthrough_monochromatic_bin_esslnacl_size = 0;
 
-BX_UNUSED(fs_textured_passthrough_monochromatic_bin_esslnacl)
-BX_UNUSED(fs_textured_passthrough_monochromatic_bin_esslnacl_size)
+BX_UNUSED(fs_textured_passthrough_monochromatic_bin_esslnacl);
+BX_UNUSED(fs_textured_passthrough_monochromatic_bin_esslnacl_size);

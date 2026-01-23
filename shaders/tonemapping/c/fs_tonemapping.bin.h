@@ -39,8 +39,8 @@ static const uint8_t fs_tonemapping_bin_glsl[] = {
   0x6f, 0x72, 0x20, 0x3d, 0x20, 0x74, 0x65, 0x78, 0x5f, 0x31, 0x3b, 0x0a, 0x7d, 0x0a, 0x0a, 0x00 };                                                                                                // or = tex_1;.}...
 unsigned int fs_tonemapping_bin_glsl_size = 608;
 
-BX_UNUSED(fs_tonemapping_bin_glsl)
-BX_UNUSED(fs_tonemapping_bin_glsl_size)
+BX_UNUSED(fs_tonemapping_bin_glsl);
+BX_UNUSED(fs_tonemapping_bin_glsl_size);
 static const uint8_t fs_tonemapping_bin_dx11[] = {
   0x46, 0x53, 0x48, 0x0b, 0x6f, 0x1e, 0x3e, 0x3c, 0x00, 0x00, 0x00, 0x00, 0x04, 0x00, 0x0a, 0x73,  // FSH.o.><.......s
   0x5f, 0x74, 0x65, 0x78, 0x43, 0x6f, 0x6c, 0x6f, 0x72, 0x30, 0x01, 0x00, 0x00, 0x01, 0x00, 0x00,  // _texColor0......
@@ -106,8 +106,8 @@ static const uint8_t fs_tonemapping_bin_dx11[] = {
   0x00, 0x00 };                                                                                    // F.......>.......
 unsigned int fs_tonemapping_bin_dx11_size = 978;
 
-BX_UNUSED(fs_tonemapping_bin_dx11)
-BX_UNUSED(fs_tonemapping_bin_dx11_size)
+BX_UNUSED(fs_tonemapping_bin_dx11);
+BX_UNUSED(fs_tonemapping_bin_dx11_size);
 static const uint8_t fs_tonemapping_bin_metal[] = {
   0x46, 0x53, 0x48, 0x0b, 0x6f, 0x1e, 0x3e, 0x3c, 0x00, 0x00, 0x00, 0x00, 0x06, 0x00, 0x11, 0x73,  // FSH.o.><.......s
   0x5f, 0x74, 0x65, 0x78, 0x43, 0x6f, 0x6c, 0x6f, 0x72, 0x53, 0x61, 0x6d, 0x70, 0x6c, 0x65, 0x72,  // _texColorSampler
@@ -195,8 +195,8 @@ static const uint8_t fs_tonemapping_bin_metal[] = {
   0x72, 0x6e, 0x20, 0x6f, 0x75, 0x74, 0x3b, 0x0a, 0x7d, 0x0a, 0x0a, 0x00, 0x00, 0x40, 0x00 };      // urn out;.}....@.
 unsigned int fs_tonemapping_bin_metal_size = 1343;
 
-BX_UNUSED(fs_tonemapping_bin_metal)
-BX_UNUSED(fs_tonemapping_bin_metal_size)
+BX_UNUSED(fs_tonemapping_bin_metal);
+BX_UNUSED(fs_tonemapping_bin_metal_size);
 static const uint8_t fs_tonemapping_bin_spirv[] = {
   0x46, 0x53, 0x48, 0x0b, 0x6f, 0x1e, 0x3e, 0x3c, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x0a, 0x73,  // FSH.o.><.......s
   0x5f, 0x74, 0x65, 0x78, 0x43, 0x6f, 0x6c, 0x6f, 0x72, 0x30, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00,  // _texColor0......
@@ -317,8 +317,8 @@ static const uint8_t fs_tonemapping_bin_spirv[] = {
   0x00, 0x00 };                                                                                    // f.......8.......
 unsigned int fs_tonemapping_bin_spirv_size = 1858;
 
-BX_UNUSED(fs_tonemapping_bin_spirv)
-BX_UNUSED(fs_tonemapping_bin_spirv_size)
+BX_UNUSED(fs_tonemapping_bin_spirv);
+BX_UNUSED(fs_tonemapping_bin_spirv_size);
 static const uint8_t fs_tonemapping_bin_essl[] = {
   0x46, 0x53, 0x48, 0x0b, 0x6f, 0x1e, 0x3e, 0x3c, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x0a, 0x73,  // FSH.o.><.......s
   0x5f, 0x74, 0x65, 0x78, 0x43, 0x6f, 0x6c, 0x6f, 0x72, 0x00, 0x01, 0x00, 0x00, 0x01, 0x00, 0x00,  // _texColor.......
@@ -368,15 +368,15 @@ static const uint8_t fs_tonemapping_bin_essl[] = {
   0x0a, 0x00 };                                                                                    // or = tex_1;.}...
 unsigned int fs_tonemapping_bin_essl_size = 722;
 
-BX_UNUSED(fs_tonemapping_bin_essl)
-BX_UNUSED(fs_tonemapping_bin_essl_size)
+BX_UNUSED(fs_tonemapping_bin_essl);
+BX_UNUSED(fs_tonemapping_bin_essl_size);
 static const uint8_t * fs_tonemapping_bin_pssl = NULL;
 unsigned int fs_tonemapping_bin_pssl_size = 0;
 
-BX_UNUSED(fs_tonemapping_bin_pssl)
-BX_UNUSED(fs_tonemapping_bin_pssl_size)
+BX_UNUSED(fs_tonemapping_bin_pssl);
+BX_UNUSED(fs_tonemapping_bin_pssl_size);
 static const uint8_t * fs_tonemapping_bin_esslnacl = NULL;
 unsigned int fs_tonemapping_bin_esslnacl_size = 0;
 
-BX_UNUSED(fs_tonemapping_bin_esslnacl)
-BX_UNUSED(fs_tonemapping_bin_esslnacl_size)
+BX_UNUSED(fs_tonemapping_bin_esslnacl);
+BX_UNUSED(fs_tonemapping_bin_esslnacl_size);

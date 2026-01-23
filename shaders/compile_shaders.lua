@@ -522,8 +522,8 @@ function xxd(fname_a, variableSuffix, dummy)
 	end
 
 	r = r .. (LENGTH:format(cSafeFname..variableSuffix, #buf));
-	r = r .. "BX_UNUSED("..(cSafeFname..variableSuffix)..")\n";
-	r = r .. "BX_UNUSED("..(cSafeFname..variableSuffix).."_size)\n";
+	r = r .. "BX_UNUSED("..(cSafeFname..variableSuffix)..");\n";
+	r = r .. "BX_UNUSED("..(cSafeFname..variableSuffix).."_size);\n";
 	return r;
 end
 
