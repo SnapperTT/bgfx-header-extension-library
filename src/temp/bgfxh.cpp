@@ -785,26 +785,30 @@ namespace bgfxh
                                                                                                                                                            {
 		const uint32_t numVerts = numSegments * 2;
 
-		if (!bgfx::getAvailTransientVertexBuffer(numVerts, PosVertex::ms_decl))
+		uint32_t nVertsAvail = 0;
+		nVertsAvail = bgfx::getAvailTransientVertexBuffer(numVerts, PosVertex::ms_decl);
+		
+		if (nVertsAvail % 2)
+			nVertsAvail--;	// don't draw half-line segments
+		if (nVertsAvail < 2)
 			return;
 
 		bgfx::TransientVertexBuffer tvb;
-		bgfx::allocTransientVertexBuffer(&tvb, numVerts, PosVertex::ms_decl);
+		bgfx::allocTransientVertexBuffer(&tvb, nVertsAvail, PosVertex::ms_decl);
 
 		PosVertex* verts = (PosVertex*)tvb.data;
 
-		for (uint32_t i = 0; i < numSegments; ++i) {
-			const bx::Vec3& a = segments[i*2 + 0];
-			const bx::Vec3& b = segments[i*2 + 1];
-			verts[i*2 + 0].m_x = a.x;
-			verts[i*2 + 0].m_y = a.y;
-			verts[i*2 + 0].m_z = a.z;
-			verts[i*2 + 1].m_x = b.x;
-			verts[i*2 + 1].m_y = b.y;
-			verts[i*2 + 1].m_z = b.z;
+		for (uint32_t i = 0; i < nVertsAvail; ++i) {
+			const bx::Vec3& a = segments[i];
+			verts[i].m_x = a.x;
+			verts[i].m_y = a.y;
+			verts[i].m_z = a.z;
 			}
 
 		bgfx::setVertexBuffer(0, &tvb);
+		float identity[16];
+		bx::mtxIdentity(identity);
+		bgfx::setTransform(identity);
 
 		if (!state) {
 			state =
@@ -824,8 +828,9 @@ namespace bgfxh
 		colorMod[2] = ((colorRGBA >> 8)  & 0xff) / 255.0f; // B
 		colorMod[3] = ((colorRGBA >> 0)  & 0xff) / 255.0f; // A
 		bgfx::setUniform(u_bgfxhUtilUniform, &colorMod[0]);
+		bgfx::setState(state);
 
-		bgfx::submit(viewId, m_programUntexturedPassthrough);
+		bgfx::submit(viewId, m_programUntexturedPassthroughColor);
 		}
 }
 #undef LZZ_INLINE
