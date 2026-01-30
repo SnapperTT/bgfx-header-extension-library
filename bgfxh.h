@@ -322,6 +322,10 @@ namespace bgfxh
 }
 namespace bgfxh
 {
+  void comnputeFustrumPlanesVerts (float const * p, float * out);
+}
+namespace bgfxh
+{
   template <typename T>
   LZZ_INLINE bxMathWrap <T>::bxMathWrap ()
     : v (bx::InitNone)
@@ -432,6 +436,10 @@ namespace bgfxh
 namespace bgfxh
 {
   static unsigned int const SAMPLER_TONEMAPING_EXTRA3 = 5;
+}
+namespace bgfxh
+{
+  static bx::Vec3 intersectPlanes (bx::Plane const & p1, bx::Plane const & p2, bx::Plane const & p3);
 }
 namespace bgfxh
 {
@@ -1077,21 +1085,31 @@ namespace bgfxh
 }
 namespace bgfxh
 {
+  static bx::Vec3 intersectPlanes (bx::Plane const & p1, bx::Plane const & p2, bx::Plane const & p3)
+                                                                                                        {
+		bx::Vec3 n2xn3 = bx::cross(p1.normal, p3.normal);
+		bx::Vec3 n3xn1 = bx::cross(p3.normal, p1.normal);
+		bx::Vec3 n1xn2 = bx::cross(p1.normal, p2.normal);
+
+		float denom = bx::dot(p1.normal, n2xn3);
+
+		if (bx::abs(denom) < 1e-6f)
+			return bx::Vec3{0.0f, 0.0f, 0.0f};
+
+		bx::Vec3 term1 = bx::mul(n2xn3, -p1.dist);
+		bx::Vec3 term2 = bx::mul(n3xn1, -p2.dist);
+		bx::Vec3 term3 = bx::mul(n1xn2, -p3.dist);
+
+		bx::Vec3 sum = bx::add(bx::add(term1, term2), term3);
+
+		return bx::mul(sum, 1.0f / denom);
+		}
+}
+namespace bgfxh
+{
   void computeFrustumPlanes (float const * m, float * out)
                                                               {
-		struct Plane {
-			float x, y, z, d;
-			
-			inline void normalise() {
-				double invLen = 1.0 / sqrt(x*x + y*y + z*z);
-				x *= invLen;
-				y *= invLen;
-				z *= invLen;
-				d *= invLen;
-				}
-			};
-			
-		Plane* outPlanes = (Plane*) out;
+		bx::Plane* outPlanes = (bx::Plane*) out;
 		
 		#ifdef M
 			#define __M_old M
@@ -1099,52 +1117,22 @@ namespace bgfxh
 		#define M(col,row) m[(col)*4 + (row)]
 		
 		// LEFT   :  m3 + m0
-		outPlanes[0] = {
-			M(3,0) + M(0,0),
-			M(3,1) + M(0,1),
-			M(3,2) + M(0,2),
-			M(3,3) + M(0,3)
-			};
+		outPlanes[0] = bx::Plane(bx::Vec3(M(3,0) + M(0,0), M(3,1) + M(0,1), M(3,2) + M(0,2)), M(3,3) + M(0,3));
 
 		// RIGHT  :  m3 - m0
-		outPlanes[1] = {
-			M(3,0) - M(0,0),
-			M(3,1) - M(0,1),
-			M(3,2) - M(0,2),
-			M(3,3) - M(0,3)
-			};
+		outPlanes[1] = bx::Plane(bx::Vec3(M(3,0) - M(0,0), M(3,1) - M(0,1), M(3,2) - M(0,2)), M(3,3) - M(0,3));
 
 		// BOTTOM :  m3 + m1
-		outPlanes[2] = {
-			M(3,0) + M(1,0),
-			M(3,1) + M(1,1),
-			M(3,2) + M(1,2),
-			M(3,3) + M(1,3)
-			};
+		outPlanes[2] = bx::Plane(bx::Vec3(M(3,0) + M(1,0), M(3,1) + M(1,1), M(3,2) + M(1,2)), M(3,3) + M(1,3));
 
 		// TOP    :  m3 - m1
-		outPlanes[3] = {
-			M(3,0) - M(1,0),
-			M(3,1) - M(1,1),
-			M(3,2) - M(1,2),
-			M(3,3) - M(1,3)
-			};
+		outPlanes[3] = bx::Plane(bx::Vec3(M(3,0) - M(1,0), M(3,1) - M(1,1), M(3,2) - M(1,2)), M(3,3) - M(1,3));
 
 		// NEAR   :  m3 + m2   (OpenGL convention)
-		outPlanes[4] = {
-			M(3,0) + M(2,0),
-			M(3,1) + M(2,1),
-			M(3,2) + M(2,2),
-			M(3,3) + M(2,3)
-			};
+		outPlanes[4] = bx::Plane(bx::Vec3(M(3,0) + M(2,0), M(3,1) + M(2,1), M(3,2) + M(2,2)), M(3,3) + M(2,3));
 
 		// FAR    :  m3 - m2
-		outPlanes[5] = {
-			M(3,0) - M(2,0),
-			M(3,1) - M(2,1),
-			M(3,2) - M(2,2),
-			M(3,3) - M(2,3)
-			};
+		outPlanes[5] = bx::Plane(bx::Vec3(M(3,0) - M(2,0), M(3,1) - M(2,1), M(3,2) - M(2,2)), M(3,3) - M(2,3));
 		
 		#undef M
 		#ifdef __M_old
@@ -1153,8 +1141,46 @@ namespace bgfxh
 		
 		// Normalize all planes
 		for (int i = 0; i < 6; ++i) {
-			outPlanes[i].normalise();
+			float x = outPlanes[i].normal.x;
+			float y = outPlanes[i].normal.y;
+			float z = outPlanes[i].normal.z;
+			float d = outPlanes[i].dist;
+			
+			double invLen = 1.0 / sqrt(x*x + y*y + z*z);
+			x *= invLen;
+			y *= invLen;
+			z *= invLen;
+			d *= invLen;
+			
+			outPlanes[i] = bx::Plane(bx::Vec3(x, y, z), d);
 			}
+		}
+}
+namespace bgfxh
+{
+  void comnputeFustrumPlanesVerts (float const * p, float * out)
+                                                                    {
+		const bx::Plane* inPlanes = (bx::Plane*) p;
+		bx::Vec3* outVec = (bx::Vec3*) out;
+		
+		const bx::Plane& L = inPlanes[0];
+		const bx::Plane& R = inPlanes[1];
+		const bx::Plane& B = inPlanes[2];
+		const bx::Plane& T = inPlanes[3];
+		const bx::Plane& N = inPlanes[4];
+		const bx::Plane& F = inPlanes[5];
+
+		// Near
+		outVec[0] = intersectPlanes(L, B, N);
+		outVec[1] = intersectPlanes(R, B, N);
+		outVec[2] = intersectPlanes(R, T, N);
+		outVec[3] = intersectPlanes(L, T, N);
+
+		// Far
+		outVec[4] = intersectPlanes(L, B, F);
+		outVec[5] = intersectPlanes(R, B, F);
+		outVec[6] = intersectPlanes(R, T, F);
+		outVec[7] = intersectPlanes(L, T, F);		
 		}
 }
 #undef LZZ_INLINE
