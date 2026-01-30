@@ -779,4 +779,53 @@ namespace bgfxh
 		outVec[7] = intersectPlanes(L, T, F);		
 		}
 }
+namespace bgfxh
+{
+  void debugDrawLines (bgfx::ViewId const viewId, bx::Vec3 const * segments, uint32_t const numSegments, uint32_t const colorRGBA, uint64_t state)
+                                                                                                                                                           {
+		const uint32_t numVerts = numSegments * 2;
+
+		if (!bgfx::getAvailTransientVertexBuffer(numVerts, PosVertex::ms_decl))
+			return;
+
+		bgfx::TransientVertexBuffer tvb;
+		bgfx::allocTransientVertexBuffer(&tvb, numVerts, PosVertex::ms_decl);
+
+		PosVertex* verts = (PosVertex*)tvb.data;
+
+		for (uint32_t i = 0; i < numSegments; ++i) {
+			const bx::Vec3& a = segments[i*2 + 0];
+			const bx::Vec3& b = segments[i*2 + 1];
+			verts[i*2 + 0].m_x = a.x;
+			verts[i*2 + 0].m_y = a.y;
+			verts[i*2 + 0].m_z = a.z;
+			verts[i*2 + 1].m_x = b.x;
+			verts[i*2 + 1].m_y = b.y;
+			verts[i*2 + 1].m_z = b.z;
+			}
+
+		bgfx::setVertexBuffer(0, &tvb);
+
+		if (!state) {
+			state =
+				  BGFX_STATE_WRITE_RGB
+				| BGFX_STATE_WRITE_A
+				| BGFX_STATE_PT_LINES
+				| BGFX_STATE_DEPTH_TEST_LESS;
+
+			if (((colorRGBA >> 0) & 0xff) < 255) {
+				state |= BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA);
+				}
+			}
+		
+		float colorMod[4];
+		colorMod[0] = ((colorRGBA >> 24) & 0xff) / 255.0f; // R
+		colorMod[1] = ((colorRGBA >> 16) & 0xff) / 255.0f; // G
+		colorMod[2] = ((colorRGBA >> 8)  & 0xff) / 255.0f; // B
+		colorMod[3] = ((colorRGBA >> 0)  & 0xff) / 255.0f; // A
+		bgfx::setUniform(u_bgfxhUtilUniform, &colorMod[0]);
+
+		bgfx::submit(viewId, m_programUntexturedPassthrough);
+		}
+}
 #undef LZZ_INLINE
