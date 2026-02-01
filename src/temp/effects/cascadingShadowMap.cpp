@@ -52,13 +52,13 @@ namespace bgfxh
 			s_shadowMap[i] = BGFX_INVALID_HANDLE;
 			u_lightMtx[i] = BGFX_INVALID_HANDLE;
 			depthGates[i] = i * 9999.f / BGFXH_MAX_SHADOW_LEVELS;
-			//shadowAabbMin[i] = bx::Vec3(0.f, 0.f, 0.f);
-			//shadowAabbMax[i] = bx::Vec3(0.f, 0.f, 0.f);
+			shadowAabbMin[i] = bx::Vec3(0.f, 0.f, 0.f);
+			shadowAabbMax[i] = bx::Vec3(0.f, 0.f, 0.f);
 			bx::mtxIdentity(shadowLightView[i]);
 			bx::mtxIdentity(shadowLightProj[i]);
 			bx::mtxIdentity(shadowLightViewProj[i]);
-			for (unsigned int j = 0; j < 24; ++j)
-				frustumPlanes[i][j] = 0;
+			//for (unsigned int j = 0; j < 24; ++j)
+			//	frustumPlanes[i][j] = 0;
 			}
 		if (BGFXH_MAX_SHADOW_LEVELS > 0) depthGates[0] = 20.0f;
 		if (BGFXH_MAX_SHADOW_LEVELS > 1) depthGates[1] = 100.0f;
@@ -169,26 +169,41 @@ namespace bgfxh
 }
 namespace bgfxh
 {
-  void cascadingShadowMapEffect::setupViews (float * viewMtx, float * projMtx, bx::Vec3 const & lightDirection, float const FOV_H_DEG, float const FOV_V_DEG)
-                                                                                                                                          {
+  void cascadingShadowMapEffect::setupViews (float const * cameraTransform, bx::Vec3 const & lightDirection, float const FOV_H_DEG, float const FOV_V_DEG)
+                                                                                                                                     {
+		// CameraTransform is a 4x4 matrix of floats
+		const bx::Vec3 cameraPosition = bx::Vec3 ( cameraTransform[12], cameraTransform[13],  cameraTransform[14] );
+		const bx::Vec3 cameraDirection = bx::Vec3 ( cameraTransform[8], cameraTransform[9],  cameraTransform[10] );
+		const bx::Vec3 up = fabs(bx::dot(lightDirection, bx::Vec3(0,1,0))) > 0.98f ? bx::Vec3(1,0,0) : bx::Vec3(0,1,0);
+		
 		const bool shadowUseForwardZ = true;
 		const uint64_t STATE_SHADOW_DEPTH_TEST = shadowUseForwardZ ? BGFX_STATE_DEPTH_TEST_LESS : BGFX_STATE_DEPTH_TEST_GREATER;
 		const uint32_t shadowClearColour = shadowUseForwardZ ? 0xffffffff : 0x00000000;
 		submitState = STATE_SHADOW_DEPTH_TEST | BGFX_STATE_WRITE_Z;
 		if (useVsm) submitState |= BGFX_STATE_WRITE_R | BGFX_STATE_WRITE_G;
 		const bgfx::Caps * caps = bgfx::getCaps();
+				
 		
 		for (unsigned int i = 0; i < nShadowLevels; ++i) {
 			// Set the view matrix
-			bx::mtxLookAt(shadowLightView[i], lightDirection, bx::Vec3(0.f, 0.f, 0.f));
+			// The view is at the centre of the CSM level
+			float z1 = i ? depthGates[i-1] : 0.f;
+			float z2 = depthGates[i];
+			
+			bx::Vec3 cascadeLevelStart = bx::add(cameraPosition, bx::mul(cameraDirection, z1));
+			bx::Vec3 cascadeLevelEnd =   bx::add(cameraPosition, bx::mul(cameraDirection, z2));
+			bx::Vec3 cascadeLevelMid = bx::mul(bx::add(cascadeLevelStart, cascadeLevelEnd), 0.5f);
+			
+			bx::Vec3 scaledLightDirection = bx::mul(lightDirection, (z2+z1)*0.5);
+			
+			bx::mtxLookAt(shadowLightView[i], bx::add(cascadeLevelMid, scaledLightDirection), cascadeLevelMid, up);
+			//bx::mtxLookAt(shadowLightView[i], lightDirection, bx::Vec3(0,0,0), up);
 			
 			// Set the projection matrix
 			// This is done by slicing the frustum into several sub-frustum
 			// starting at one depth position and ending at another
 			// The projection matrix is then constructed as a box
 			// that encompases the sub-frustum
-			float z1 = i ? depthGates[i-1] : 0.f;
-			float z2 = depthGates[i];
 			float x1 = z1 * tan(bx::toRad(FOV_H_DEG)/2.0f);
 			float x2 = z2 * tan(bx::toRad(FOV_H_DEG)/2.0f);
 			float y1 = z1 * tan(bx::toRad(FOV_V_DEG)/2.0f);
@@ -204,6 +219,8 @@ namespace bgfxh
 			coords[6] = bx::Vec3( x2,-y2,z2);
 			coords[7] = bx::Vec3(-x2, y2,z2);
 			
+			for (unsigned int j = 0; j < 8; ++j)
+				coords[j] = bx::mul(coords[j], cameraTransform);
 			for (unsigned int j = 0; j < 8; ++j)
 				coords[j] = bx::mul(coords[j], shadowLightView[i]);
 			
@@ -229,12 +246,12 @@ namespace bgfxh
 			minZ = zAvg - zSz*safetyFactor/2.0 - zMargin;
 			maxZ = zAvg + zSz*safetyFactor/2.0 + zMargin;
 			
-			//shadowAabbMin[i] = bx::Vec3(minX, minY, minZ);
-			//shadowAabbMax[i] = bx::Vec3(maxX, maxY, maxZ);
+			shadowAabbMin[i] = bx::Vec3(minX, minY, minZ);
+			shadowAabbMax[i] = bx::Vec3(maxX, maxY, maxZ);
 			
 			bx::mtxOrtho(shadowLightProj[i], minX, maxX, minY, maxY, minZ, maxZ, 0.0f, caps->homogeneousDepth);
 			
-			bgfxh::computeFrustumPlanes(&shadowLightProj[i][0], &frustumPlanes[i][0]);
+			//bgfxh::computeFrustumPlanes(&shadowLightProj[i][0], &frustumPlanes[i][0]);
 			}
 		
 		// Always render all shadows			
@@ -274,13 +291,12 @@ namespace bgfxh
 		/// Checks if an object at a position and radius 
 		const bx::Vec3 pos = bx::mul(_pos, shadowLightView[csmLevel]); // Get the object's position in light-view space
 		
-		for (int i = 0; i < 6; ++i) {
-			const float* p = (&frustumPlanes[csmLevel][0]) + i * 4;
-
-			float dist = p[0] * pos.x + p[1] * pos.y + p[2] * pos.z + p[3];
-			if (dist < -radius) return false;
-			}
-		return true;
+		return pos.x + radius >= shadowAabbMin[csmLevel].v.x &&
+			pos.x - radius <= shadowAabbMax[csmLevel].v.x &&
+			pos.y + radius >= shadowAabbMin[csmLevel].v.y &&
+			pos.y - radius <= shadowAabbMax[csmLevel].v.y &&
+			pos.z + radius >= shadowAabbMin[csmLevel].v.z &&
+			pos.z - radius <= shadowAabbMax[csmLevel].v.z;
 		}
 }
 namespace bgfxh
@@ -295,11 +311,34 @@ namespace bgfxh
 {
   void cascadingShadowMapEffect::setLightMVP (float const * modelMtx)
                                                   {
-		for (unsigned int csmLevel = 0; csmLevel < nShadowLevels; ++csmLevel) {
-			float mvp_shadow[16];
-			bx::mtxMul(mvp_shadow, modelMtx, shadowLightViewProj[csmLevel]);
-			bgfx::setUniform (u_lightMtx[csmLevel], mvp_shadow);
-			}
+		for (unsigned int csmLevel = 0; csmLevel < nShadowLevels; ++csmLevel)
+			setLightMVP(modelMtx, csmLevel);
+		}
+}
+namespace bgfxh
+{
+  void cascadingShadowMapEffect::setLightMVP (float const * modelMtx, unsigned int const csmLevel)
+                                                                               {
+		float mvp_shadow[16];
+		bx::mtxMul(mvp_shadow, modelMtx, shadowLightViewProj[csmLevel]);
+		bgfx::setUniform (u_lightMtx[csmLevel], mvp_shadow);
+		}
+}
+namespace bgfxh
+{
+  void cascadingShadowMapEffect::setLightMV (float const * modelMtx)
+                                                 {
+		for (unsigned int csmLevel = 0; csmLevel < nShadowLevels; ++csmLevel)
+			setLightMV(modelMtx, csmLevel);
+		}
+}
+namespace bgfxh
+{
+  void cascadingShadowMapEffect::setLightMV (float const * modelMtx, unsigned int const csmLevel)
+                                                                              {
+		float mv_shadow[16];
+		bx::mtxMul(mv_shadow, modelMtx, shadowLightView[csmLevel]);
+		bgfx::setUniform (u_lightMtx[csmLevel], mv_shadow);
 		}
 }
 #undef LZZ_INLINE
