@@ -176,7 +176,6 @@ namespace bgfxh
 		const bx::Vec3 cameraDirection = bx::Vec3 ( cameraTransform[8], cameraTransform[9],  cameraTransform[10] );
 		const bx::Vec3 up = fabs(bx::dot(lightDirection, bx::Vec3(0,1,0))) > 0.98f ? bx::Vec3(1,0,0) : bx::Vec3(0,1,0);
 		
-		const bool shadowUseForwardZ = true;
 		const uint64_t STATE_SHADOW_DEPTH_TEST = shadowUseForwardZ ? BGFX_STATE_DEPTH_TEST_LESS : BGFX_STATE_DEPTH_TEST_GREATER;
 		const uint32_t shadowClearColour = shadowUseForwardZ ? 0xffffffff : 0x00000000;
 		submitState = STATE_SHADOW_DEPTH_TEST | BGFX_STATE_WRITE_Z;
@@ -251,7 +250,30 @@ namespace bgfxh
 			
 			bx::mtxOrtho(shadowLightProj[i], minX, maxX, minY, maxY, minZ, maxZ, 0.0f, caps->homogeneousDepth);
 			
-			//bgfxh::computeFrustumPlanes(&shadowLightProj[i][0], &frustumPlanes[i][0]);
+			// Compute frustum planes
+			/*
+			 NOT WORKING!
+			PlaneWrap planesLS[6];
+				planesLS[0] = bx::Plane( bx::Vec3( 1, 0, 0), -minX);
+				planesLS[1] = bx::Plane( bx::Vec3(-1, 0, 0), -maxX);
+				planesLS[2] = bx::Plane( bx::Vec3( 0, 1, 0), -minX);
+				planesLS[3] = bx::Plane( bx::Vec3( 0,-1, 0), -maxY);
+				planesLS[4] = bx::Plane( bx::Vec3( 0, 0, 1), -minZ);
+				planesLS[5] = bx::Plane( bx::Vec3( 0, 0,-1),  maxZ);
+				
+			float shadowLightViewInv[16];
+			bx::mtxInverse(shadowLightViewInv, shadowLightView[i]);
+			
+			for (uint32_t j = 0; j < 6; ++j) {
+			    float result[4];
+			    bx::vec4MulMtx(result, (float*) &planesLS[j], shadowLightViewInv);
+			    
+			    float invLen = 1.0 / sqrt(result[0]*result[0] + result[1]*result[1] + result[2]*result[2]);
+			    frustumPlanes[i][j*4 + 0] = result[0]*invLen;
+			    frustumPlanes[i][j*4 + 1] = result[1]*invLen;
+			    frustumPlanes[i][j*4 + 2] = result[2]*invLen;
+			    frustumPlanes[i][j*4 + 3] = result[3]*invLen;
+				}*/
 			}
 		
 		// Always render all shadows			
@@ -288,8 +310,9 @@ namespace bgfxh
 {
   bool cascadingShadowMapEffect::isObjectInShadowVolume (bx::Vec3 const & _pos, float const radius, unsigned int const csmLevel)
                                                                                                              {
-		/// Checks if an object at a position and radius 
-		const bx::Vec3 pos = bx::mul(_pos, shadowLightView[csmLevel]); // Get the object's position in light-view space
+		/// Checks if an object with a specified bounding sphere is in the shadow volume
+		/// This function requires converting _pos to light space
+		const bx::Vec3 pos = bx::mul(_pos, shadowLightView[csmLevel]);
 		
 		return pos.x + radius >= shadowAabbMin[csmLevel].v.x &&
 			pos.x - radius <= shadowAabbMax[csmLevel].v.x &&

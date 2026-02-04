@@ -227,12 +227,17 @@ namespace bgfxh
 {
   struct frustum
   {
-    PlaneWrap (planes) [4];
+    PlaneWrap (planes) [6];
     frustum ();
     void setFromViewAndProjMatrix (float * mView, float * mProj);
     static float dotPV (bx::Plane const & p, bx::Vec3 const pos);
-    bool frustumCheck (bx::Vec3 const & where, float const objectBoundingRadius) const;
-    bool frustumCheck (float const * bgfxModelMtx, float const objectBoundingRadius) const;
+    bool frustumCheck4 (bx::Vec3 const & where, float const objectBoundingRadius) const;
+    bool frustumCheck4 (float const * bgfxModelMtx, float const objectBoundingRadius) const;
+    bool frustumCheck5 (bx::Vec3 const & where, float const objectBoundingRadius) const;
+    bool frustumCheck5 (float const * bgfxModelMtx, float const objectBoundingRadius) const;
+    bool frustumCheck6 (bx::Vec3 const & where, float const objectBoundingRadius) const;
+    bool frustumCheck6 (float const * bgfxModelMtx, float const objectBoundingRadius) const;
+    void buildViewFrustum (float * out, float const fovX, float const fovY, float const zNear, float const zFar);
   };
 }
 namespace bgfxh
@@ -318,10 +323,6 @@ namespace bgfxh
 }
 namespace bgfxh
 {
-  void computeFrustumPlanes (float const * m, float * out);
-}
-namespace bgfxh
-{
   void comnputeFustrumPlanesVerts (float const * p, float * out);
 }
 namespace bgfxh
@@ -368,9 +369,10 @@ namespace bgfxh
 }
 namespace bgfxh
 {
-  LZZ_INLINE bool frustum::frustumCheck (bx::Vec3 const & where, float const objectBoundingRadius) const
-                                                                                                          {
+  LZZ_INLINE bool frustum::frustumCheck4 (bx::Vec3 const & where, float const objectBoundingRadius) const
+                                                                                                           {
 			/// To do: sse optimisation
+			/// Checks left/right/top/bottom
 			return (dotPV(planes[0], where) + objectBoundingRadius> 0.0f) &&
 					(dotPV(planes[1], where) + objectBoundingRadius> 0.0f) &&
 					(dotPV(planes[2], where) + objectBoundingRadius> 0.0f) &&
@@ -379,13 +381,53 @@ namespace bgfxh
 }
 namespace bgfxh
 {
-  LZZ_INLINE bool frustum::frustumCheck (float const * bgfxModelMtx, float const objectBoundingRadius) const
-                                                                                                              {
+  LZZ_INLINE bool frustum::frustumCheck4 (float const * bgfxModelMtx, float const objectBoundingRadius) const
+                                                                                                               {
 			bx::Vec3 where(bgfxModelMtx[12], bgfxModelMtx[13], bgfxModelMtx[14]);
+			return frustumCheck4(where, objectBoundingRadius);
+			}
+}
+namespace bgfxh
+{
+  LZZ_INLINE bool frustum::frustumCheck5 (bx::Vec3 const & where, float const objectBoundingRadius) const
+                                                                                                           {
+			/// To do: sse optimisation
+			/// Checks left/right/top/bottom/near
 			return (dotPV(planes[0], where) + objectBoundingRadius> 0.0f) &&
 					(dotPV(planes[1], where) + objectBoundingRadius> 0.0f) &&
 					(dotPV(planes[2], where) + objectBoundingRadius> 0.0f) &&
-					(dotPV(planes[3], where) + objectBoundingRadius> 0.0f);
+					(dotPV(planes[3], where) + objectBoundingRadius> 0.0f) &&
+					(dotPV(planes[4], where) + objectBoundingRadius> 0.0f);
+			}
+}
+namespace bgfxh
+{
+  LZZ_INLINE bool frustum::frustumCheck5 (float const * bgfxModelMtx, float const objectBoundingRadius) const
+                                                                                                               {
+			bx::Vec3 where(bgfxModelMtx[12], bgfxModelMtx[13], bgfxModelMtx[14]);
+			return frustumCheck5(where, objectBoundingRadius);
+			}
+}
+namespace bgfxh
+{
+  LZZ_INLINE bool frustum::frustumCheck6 (bx::Vec3 const & where, float const objectBoundingRadius) const
+                                                                                                           {
+			/// To do: sse optimisation
+			/// Checks left/right/top/bottom/near/far
+			return (dotPV(planes[0], where) + objectBoundingRadius> 0.0f) &&
+					(dotPV(planes[1], where) + objectBoundingRadius> 0.0f) &&
+					(dotPV(planes[2], where) + objectBoundingRadius> 0.0f) &&
+					(dotPV(planes[3], where) + objectBoundingRadius> 0.0f) &&
+					(dotPV(planes[4], where) + objectBoundingRadius> 0.0f) &&
+					(dotPV(planes[5], where) + objectBoundingRadius> 0.0f);
+			}
+}
+namespace bgfxh
+{
+  LZZ_INLINE bool frustum::frustumCheck6 (float const * bgfxModelMtx, float const objectBoundingRadius) const
+                                                                                                               {
+			bx::Vec3 where(bgfxModelMtx[12], bgfxModelMtx[13], bgfxModelMtx[14]);
+			return frustumCheck6(where, objectBoundingRadius);
 			}
 }
 namespace bgfxh
@@ -753,17 +795,39 @@ namespace bgfxh
 			bx::Plane & right = planes[1];
 			bx::Plane & top =   planes[2];
 			bx::Plane & bottom = planes[3];
+			bx::Plane & near = planes[4];
+			bx::Plane & far = planes[5];
 			left.normal   = bx::Vec3(res[0][3] + res[0][0], res[1][3] + res[1][0], res[2][3] + res[2][0]); left.dist   = (res[3][3] + res[3][0]);
 			right.normal  = bx::Vec3(res[0][3] - res[0][0], res[1][3] - res[1][0], res[2][3] - res[2][0]); right.dist  = (res[3][3] - res[3][0]);
 			top.normal    = bx::Vec3(res[0][3] - res[0][1], res[1][3] - res[1][1], res[2][3] - res[2][1]); top.dist    = (res[3][3] - res[3][1]);
 			bottom.normal = bx::Vec3(res[0][3] + res[0][1], res[1][3] + res[1][1], res[2][3] + res[2][1]); bottom.dist = (res[3][3] + res[3][1]);
-			
+			near.normal   = bx::Vec3(res[0][3] + res[0][2], res[1][3] + res[1][2], res[2][3] + res[2][2]); near.dist   = (res[3][3] + res[3][2]);
+			far.normal    = bx::Vec3(res[0][3] - res[0][2], res[1][3] - res[1][2], res[2][3] - res[2][2]); far.dist    = (res[3][3] - res[3][2]);
+
 			// Normalize the planes
-			for (unsigned int i = 0; i < 4; ++i) {
+			for (unsigned int i = 0; i < 6; ++i) {
 				float invLen = 1.0/length(planes[i].v.normal);
 				planes[i].v.normal = bx::mul(planes[i].v.normal, invLen);
 				planes[i].v.dist   *= invLen;
 				}
+			}
+}
+namespace bgfxh
+{
+  void frustum::buildViewFrustum (float * out, float const fovX, float const fovY, float const zNear, float const zFar)
+                                                                                                                           {
+			const float tanX = tanf(fovX * 0.5f);
+			const float tanY = tanf(fovY * 0.5f);
+
+			// Left/Right/Top/Bottom
+			planes[0] = bx::Plane( bx::normalize(bx::Vec3( 1.0f, 0.0f, -tanX )), 0.0f);
+			planes[1] = bx::Plane( bx::normalize(bx::Vec3(-1.0f, 0.0f, -tanX )), 0.0f);
+			planes[2] = bx::Plane( bx::normalize(bx::Vec3( 0.0f,-1.0f, -tanY )), 0.0f);
+			planes[3] = bx::Plane( bx::normalize(bx::Vec3( 0.0f, 1.0f, -tanY )), 0.0f);
+
+			// Near/far
+			planes[4] = bx::Plane( bx::Vec3(0.0f, 0.0f, 1.0f), zNear);
+			planes[5] = bx::Plane( bx::Vec3(0.0f, 0.0f,-1.0f), zFar);
 			}
 }
 namespace bgfxh
@@ -1107,57 +1171,6 @@ namespace bgfxh
 		bx::Vec3 sum = bx::add(bx::add(term1, term2), term3);
 
 		return bx::mul(sum, 1.0f / denom);
-		}
-}
-namespace bgfxh
-{
-  void computeFrustumPlanes (float const * m, float * out)
-                                                              {
-		bx::Plane* outPlanes = (bx::Plane*) out;
-		
-		#ifdef M
-			#define __M_old M
-		#endif
-		#define M(col,row) m[(col)*4 + (row)]
-		
-		// LEFT   :  m3 + m0
-		outPlanes[0] = bx::Plane(bx::Vec3(M(3,0) + M(0,0), M(3,1) + M(0,1), M(3,2) + M(0,2)), M(3,3) + M(0,3));
-
-		// RIGHT  :  m3 - m0
-		outPlanes[1] = bx::Plane(bx::Vec3(M(3,0) - M(0,0), M(3,1) - M(0,1), M(3,2) - M(0,2)), M(3,3) - M(0,3));
-
-		// BOTTOM :  m3 + m1
-		outPlanes[2] = bx::Plane(bx::Vec3(M(3,0) + M(1,0), M(3,1) + M(1,1), M(3,2) + M(1,2)), M(3,3) + M(1,3));
-
-		// TOP    :  m3 - m1
-		outPlanes[3] = bx::Plane(bx::Vec3(M(3,0) - M(1,0), M(3,1) - M(1,1), M(3,2) - M(1,2)), M(3,3) - M(1,3));
-
-		// NEAR   :  m3 + m2   (OpenGL convention)
-		outPlanes[4] = bx::Plane(bx::Vec3(M(3,0) + M(2,0), M(3,1) + M(2,1), M(3,2) + M(2,2)), M(3,3) + M(2,3));
-
-		// FAR    :  m3 - m2
-		outPlanes[5] = bx::Plane(bx::Vec3(M(3,0) - M(2,0), M(3,1) - M(2,1), M(3,2) - M(2,2)), M(3,3) - M(2,3));
-		
-		#undef M
-		#ifdef __M_old
-			#define M __M_old
-		#endif
-		
-		// Normalize all planes
-		for (int i = 0; i < 6; ++i) {
-			float x = outPlanes[i].normal.x;
-			float y = outPlanes[i].normal.y;
-			float z = outPlanes[i].normal.z;
-			float d = outPlanes[i].dist;
-			
-			double invLen = 1.0 / sqrt(x*x + y*y + z*z);
-			x *= invLen;
-			y *= invLen;
-			z *= invLen;
-			d *= invLen;
-			
-			outPlanes[i] = bx::Plane(bx::Vec3(x, y, z), d);
-			}
 		}
 }
 namespace bgfxh
