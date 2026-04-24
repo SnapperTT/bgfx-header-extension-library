@@ -42,9 +42,10 @@ function getDirectories(dir)
 	else
 		local pfile = io.popen('ls -d "'..dir..'"/*/')
 		for f in pfile:lines() do
-			f = f:sub(dir:len()+2);
-			f = f:sub(1, f:len()-1);
-			t[#t+1] = f;
+			local f2 = f;
+			f2 = f2:sub(dir:len()+2);
+			f2 = f2:sub(1, f2:len()-1);
+			t[#t+1] = f2;
 		end
  	end
  	return t;

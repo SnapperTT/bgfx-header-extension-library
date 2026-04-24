@@ -44,7 +44,8 @@ function isOnOrOff(a)
 	return false;
 end
 
-for i=1,#arg do
+local i = 1
+while i < #arg do
 	if (arg[i] == "-debug" or arg[i] == "-d") then
 		GLSL_ONLY = true;
 	elseif (arg[i] == "-dx11") then
@@ -110,6 +111,7 @@ for i=1,#arg do
 		THREAD_ID = tonumber(arg[i+1]);
 		i=i+1;
 	end
+	i = i+1;
 end
 
 if (IS_COMPUTE) then
