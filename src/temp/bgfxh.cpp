@@ -341,18 +341,18 @@ namespace bgfxh
 			float res[4][4];
 			bx::mtxMul((float *) res, mView, mProj);
 			
-			bx::Plane & left =  planes[0];
-			bx::Plane & right = planes[1];
-			bx::Plane & top =   planes[2];
-			bx::Plane & bottom = planes[3];
-			bx::Plane & near = planes[4];
-			bx::Plane & far = planes[5];
-			left.normal   = bx::Vec3(res[0][3] + res[0][0], res[1][3] + res[1][0], res[2][3] + res[2][0]); left.dist   = (res[3][3] + res[3][0]);
-			right.normal  = bx::Vec3(res[0][3] - res[0][0], res[1][3] - res[1][0], res[2][3] - res[2][0]); right.dist  = (res[3][3] - res[3][0]);
-			top.normal    = bx::Vec3(res[0][3] - res[0][1], res[1][3] - res[1][1], res[2][3] - res[2][1]); top.dist    = (res[3][3] - res[3][1]);
-			bottom.normal = bx::Vec3(res[0][3] + res[0][1], res[1][3] + res[1][1], res[2][3] + res[2][1]); bottom.dist = (res[3][3] + res[3][1]);
-			near.normal   = bx::Vec3(res[0][3] + res[0][2], res[1][3] + res[1][2], res[2][3] + res[2][2]); near.dist   = (res[3][3] + res[3][2]);
-			far.normal    = bx::Vec3(res[0][3] - res[0][2], res[1][3] - res[1][2], res[2][3] - res[2][2]); far.dist    = (res[3][3] - res[3][2]);
+			bx::Plane & mleft =  planes[0];
+			bx::Plane & mright = planes[1];
+			bx::Plane & mtop =   planes[2];
+			bx::Plane & mbottom = planes[3];
+			bx::Plane & mnear = planes[4];
+			bx::Plane & mfar = planes[5];
+			mleft.normal   = bx::Vec3(res[0][3] + res[0][0], res[1][3] + res[1][0], res[2][3] + res[2][0]); mleft.dist   = (res[3][3] + res[3][0]);
+			mright.normal  = bx::Vec3(res[0][3] - res[0][0], res[1][3] - res[1][0], res[2][3] - res[2][0]); mright.dist  = (res[3][3] - res[3][0]);
+			mtop.normal    = bx::Vec3(res[0][3] - res[0][1], res[1][3] - res[1][1], res[2][3] - res[2][1]); mtop.dist    = (res[3][3] - res[3][1]);
+			mbottom.normal = bx::Vec3(res[0][3] + res[0][1], res[1][3] + res[1][1], res[2][3] + res[2][1]); mbottom.dist = (res[3][3] + res[3][1]);
+			mnear.normal   = bx::Vec3(res[0][3] + res[0][2], res[1][3] + res[1][2], res[2][3] + res[2][2]); mnear.dist   = (res[3][3] + res[3][2]);
+			mfar.normal    = bx::Vec3(res[0][3] - res[0][2], res[1][3] - res[1][2], res[2][3] - res[2][2]); mfar.dist    = (res[3][3] - res[3][2]);
 
 			// Normalize the planes
 			for (unsigned int i = 0; i < 6; ++i) {
