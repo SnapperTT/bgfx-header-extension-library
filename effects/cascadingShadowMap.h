@@ -140,7 +140,7 @@ namespace bgfxh
 {
   LZZ_INLINE bool cascadingShadowMapEffect::isObjectInShadowVolume (float const * m_xyzr, unsigned int const csmLevel)
                                                                                               {
-		return (bx::Vec3(m_xyzr[0], m_xyzr[1], m_xyzr[2]), m_xyzr[3], csmLevel);
+		return isObjectInShadowVolume(bx::Vec3(m_xyzr[0], m_xyzr[1], m_xyzr[2]), m_xyzr[3], csmLevel);
 		}
 }
 namespace bgfxh
