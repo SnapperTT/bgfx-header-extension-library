@@ -441,6 +441,12 @@ namespace bgfxh {
 					(dotPV(planes[3], where) + objectBoundingRadius> 0.0f);
 			}
 			
+		inline bool frustumCheck4 (const float* m_xyzr) const {
+			/// @m_xyzr is an array of 4 floats
+			bx::Vec3 where(m_xyzr[0], m_xyzr[1], m_xyzr[2]);
+			return frustumCheck4(where, m_xyzr[3]);
+			}
+			
 		inline bool frustumCheck4 (const float * bgfxModelMtx, const float objectBoundingRadius) const {
 			bx::Vec3 where(bgfxModelMtx[12], bgfxModelMtx[13], bgfxModelMtx[14]);
 			return frustumCheck4(where, objectBoundingRadius);

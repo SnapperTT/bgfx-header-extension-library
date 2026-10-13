@@ -232,6 +232,7 @@ namespace bgfxh
     void setFromViewAndProjMatrix (float * mView, float * mProj);
     static float dotPV (bx::Plane const & p, bx::Vec3 const pos);
     bool frustumCheck4 (bx::Vec3 const & where, float const objectBoundingRadius) const;
+    bool frustumCheck4 (float const * m_xyzr) const;
     bool frustumCheck4 (float const * bgfxModelMtx, float const objectBoundingRadius) const;
     bool frustumCheck5 (bx::Vec3 const & where, float const objectBoundingRadius) const;
     bool frustumCheck5 (float const * bgfxModelMtx, float const objectBoundingRadius) const;
@@ -377,6 +378,15 @@ namespace bgfxh
 					(dotPV(planes[1], where) + objectBoundingRadius> 0.0f) &&
 					(dotPV(planes[2], where) + objectBoundingRadius> 0.0f) &&
 					(dotPV(planes[3], where) + objectBoundingRadius> 0.0f);
+			}
+}
+namespace bgfxh
+{
+  LZZ_INLINE bool frustum::frustumCheck4 (float const * m_xyzr) const
+                                                                      {
+			/// @m_xyzr is an array of 4 floats
+			bx::Vec3 where(m_xyzr[0], m_xyzr[1], m_xyzr[2]);
+			return frustumCheck4(where, m_xyzr[3]);
 			}
 }
 namespace bgfxh
