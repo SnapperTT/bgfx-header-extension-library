@@ -126,6 +126,7 @@ namespace bgfxh
     void init ();
     void deInit ();
     void setupViews (float const * cameraTransform, bx::Vec3 const & lightDirection, float const FOV_H_DEG, float const FOV_V_DEG);
+    bool isObjectInShadowVolume (float const * m_xyzr, unsigned int const csmLevel);
     bool isObjectInShadowVolume (bx::Vec3 const & _pos, float const radius, unsigned int const csmLevel);
     void submit (uint32_t const level);
     void bindSamplers (unsigned int shadowSampler0);
@@ -134,6 +135,13 @@ namespace bgfxh
     void setLightMV (float const * modelMtx);
     void setLightMV (float const * modelMtx, unsigned int const csmLevel);
   };
+}
+namespace bgfxh
+{
+  LZZ_INLINE bool cascadingShadowMapEffect::isObjectInShadowVolume (float const * m_xyzr, unsigned int const csmLevel)
+                                                                                              {
+		return (bx::Vec3(m_xyzr[0], m_xyzr[1], m_xyzr[2]), m_xyzr[3], csmLevel);
+		}
 }
 namespace bgfxh
 {

@@ -384,6 +384,10 @@ public:
 			}
 		}
 		
+	inline bool isObjectInShadowVolume (const float* m_xyzr, const unsigned int csmLevel) {
+		return (bx::Vec3(m_xyzr[0], m_xyzr[1], m_xyzr[2]), m_xyzr[3], csmLevel);
+		}
+		
 	bool isObjectInShadowVolume (const bx::Vec3 & _pos, const float radius, const unsigned int csmLevel) {
 		/// Checks if an object with a specified bounding sphere is in the shadow volume
 		/// This function requires converting _pos to light space
