@@ -87,6 +87,10 @@
 	#define BGFXH_WARN BX_WARN
 #endif //BGFXH_WARN
 
+#ifndef BGFXH_NO_SSE2
+	#include <emmintrin.h>
+#endif
+
 #end
 
 
@@ -431,7 +435,6 @@ namespace bgfxh {
 			return bx::dot(p.normal, pos) + p.dist;
 			}
 		
-		
 		inline bool frustumCheck4 (const bx::Vec3 & where, const float objectBoundingRadius) const {
 			/// To do: sse optimisation
 			/// Checks left/right/top/bottom
@@ -500,6 +503,36 @@ namespace bgfxh {
 			planes[5] = bx::Plane( bx::Vec3(0.0f, 0.0f,-1.0f), zFar);
 			}
 		};
+		
+	#ifndef BGFXH_NO_SSE2
+	struct sse2_frustum4 {
+		// Each lane corresponds to one plane: left, right, top, bottom.
+		__m128 nx, ny, nz, d; // if this fails to compile #define BGFXH_NO_SSE to disable SSE2
+
+		sse2_frustum4(const frustum& f) {
+			const bx::Plane* planes = (const bx::Plane*) &f.planes[0]; 
+			nx = _mm_setr_ps(planes[0].normal.x, planes[1].normal.x, planes[2].normal.x, planes[3].normal.x);
+			ny = _mm_setr_ps(planes[0].normal.y, planes[1].normal.y, planes[2].normal.y, planes[3].normal.y);
+			nz = _mm_setr_ps(planes[0].normal.z, planes[1].normal.z, planes[2].normal.z, planes[3].normal.z);
+			d  = _mm_setr_ps(planes[0].dist, planes[1].dist, planes[2].dist, planes[3].dist);
+			}
+
+		inline bool frustumCheck4(const float* posRadius) const {
+			// posRadius = { x, y, z, radius }
+			const __m128 x = _mm_set1_ps(posRadius[0]);
+			const __m128 y = _mm_set1_ps(posRadius[1]);
+			const __m128 z = _mm_set1_ps(posRadius[2]);
+			const __m128 r = _mm_set1_ps(posRadius[3]);
+
+			__m128 v;
+			v = _mm_add_ps(_mm_mul_ps(nx, x), _mm_mul_ps(ny, y));
+			v = _mm_add_ps(v, _mm_mul_ps(nz, z));
+			v = _mm_add_ps(v, d);
+			v = _mm_add_ps(v, r);
+			return _mm_movemask_ps(_mm_cmpgt_ps(v, _mm_setzero_ps())) == 0xF;
+			}
+		};
+	#endif
 	
 	/// Vertex types
 	struct PosTexCoord0Vertex {

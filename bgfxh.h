@@ -91,6 +91,10 @@
 	#define BGFXH_WARN BX_WARN
 #endif //BGFXH_WARN
 
+#ifndef BGFXH_NO_SSE2
+	#include <emmintrin.h>
+#endif
+
 #define LZZ_INLINE inline
 namespace bgfxh
 {
@@ -239,6 +243,18 @@ namespace bgfxh
     bool frustumCheck6 (bx::Vec3 const & where, float const objectBoundingRadius) const;
     bool frustumCheck6 (float const * bgfxModelMtx, float const objectBoundingRadius) const;
     void buildViewFrustum (float * out, float const fovX, float const fovY, float const zNear, float const zFar);
+  };
+}
+namespace bgfxh
+{
+  struct sse2_frustum4
+  {
+    __m128 nx;
+    __m128 ny;
+    __m128 nz;
+    __m128 d;
+    sse2_frustum4 (frustum const & f);
+    bool frustumCheck4 (float const * posRadius) const;
   };
 }
 namespace bgfxh
@@ -438,6 +454,24 @@ namespace bgfxh
                                                                                                                {
 			bx::Vec3 where(bgfxModelMtx[12], bgfxModelMtx[13], bgfxModelMtx[14]);
 			return frustumCheck6(where, objectBoundingRadius);
+			}
+}
+namespace bgfxh
+{
+  LZZ_INLINE bool sse2_frustum4::frustumCheck4 (float const * posRadius) const
+                                                                        {
+			// posRadius = { x, y, z, radius }
+			const __m128 x = _mm_set1_ps(posRadius[0]);
+			const __m128 y = _mm_set1_ps(posRadius[1]);
+			const __m128 z = _mm_set1_ps(posRadius[2]);
+			const __m128 r = _mm_set1_ps(posRadius[3]);
+
+			__m128 v;
+			v = _mm_add_ps(_mm_mul_ps(nx, x), _mm_mul_ps(ny, y));
+			v = _mm_add_ps(v, _mm_mul_ps(nz, z));
+			v = _mm_add_ps(v, d);
+			v = _mm_add_ps(v, r);
+			return _mm_movemask_ps(_mm_cmpgt_ps(v, _mm_setzero_ps())) == 0xF;
 			}
 }
 namespace bgfxh
@@ -838,6 +872,17 @@ namespace bgfxh
 			// Near/far
 			planes[4] = bx::Plane( bx::Vec3(0.0f, 0.0f, 1.0f), zNear);
 			planes[5] = bx::Plane( bx::Vec3(0.0f, 0.0f,-1.0f), zFar);
+			}
+}
+namespace bgfxh
+{
+  sse2_frustum4::sse2_frustum4 (frustum const & f)
+                                                {
+			const bx::Plane* planes = (const bx::Plane*) &f.planes[0]; 
+			nx = _mm_setr_ps(planes[0].normal.x, planes[1].normal.x, planes[2].normal.x, planes[3].normal.x);
+			ny = _mm_setr_ps(planes[0].normal.y, planes[1].normal.y, planes[2].normal.y, planes[3].normal.y);
+			nz = _mm_setr_ps(planes[0].normal.z, planes[1].normal.z, planes[2].normal.z, planes[3].normal.z);
+			d  = _mm_setr_ps(planes[0].dist, planes[1].dist, planes[2].dist, planes[3].dist);
 			}
 }
 namespace bgfxh

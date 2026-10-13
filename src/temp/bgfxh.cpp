@@ -382,6 +382,17 @@ namespace bgfxh
 }
 namespace bgfxh
 {
+  sse2_frustum4::sse2_frustum4 (frustum const & f)
+                                                {
+			const bx::Plane* planes = (const bx::Plane*) &f.planes[0]; 
+			nx = _mm_setr_ps(planes[0].normal.x, planes[1].normal.x, planes[2].normal.x, planes[3].normal.x);
+			ny = _mm_setr_ps(planes[0].normal.y, planes[1].normal.y, planes[2].normal.y, planes[3].normal.y);
+			nz = _mm_setr_ps(planes[0].normal.z, planes[1].normal.z, planes[2].normal.z, planes[3].normal.z);
+			d  = _mm_setr_ps(planes[0].dist, planes[1].dist, planes[2].dist, planes[3].dist);
+			}
+}
+namespace bgfxh
+{
   void PosTexCoord0Vertex::init ()
                                    {
 			ms_decl.begin()
